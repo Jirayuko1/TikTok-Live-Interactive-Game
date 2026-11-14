@@ -23,89 +23,31 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root route now serves the Unified All-in-One Game & Admin Screen!
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/overlay', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ==========================================
-// 32 TILES: LINE เกมเศรษฐี MAP (1:1 Layout)
-// 4 Sides x 8 Tiles per side = 32 Tiles
+// GAME STATE (ARENA LIVE BATTLE ROYALE)
 // ==========================================
-const BOARD_TILES = [
-  // SIDE 1: Bottom-Right (Start -> Train)
-  { id: 0,  type: 'start',      name: 'จุดเริ่มต้น',   desc: 'รับเงินเดือน ⭐ +300M', icon: '🏁', color: '#f59e0b', corner: true },
-  { id: 1,  type: 'city',       name: 'กรุงเทพฯ',      desc: 'เมืองหลวง +450M',      icon: '🏙️', color: '#ef4444', points: 450 },
-  { id: 2,  type: 'city',       name: 'เชียงใหม่',     desc: 'เมืองเหนือ +350M',     icon: '🌸', color: '#ef4444', points: 350 },
-  { id: 3,  type: 'chance',     name: 'การ์ดดวง',      desc: 'สุ่มการ์ดพลิกเกม',     icon: '❓', color: '#eab308' },
-  { id: 4,  type: 'city',       name: 'ภูเก็ต',        desc: 'ไข่มุกอันดามัน +300M', icon: '🏖️', color: '#f97316', points: 300 },
-  { id: 5,  type: 'city',       name: 'ปัตตานี',       desc: 'เมืองใต้ +250M',       icon: '🕌', color: '#f97316', points: 250 },
-  { id: 6,  type: 'city',       name: 'พัทยา',         desc: 'เมืองท่องเที่ยว +250M', icon: '⛵', color: '#f43f5e', points: 250 },
-  { id: 7,  type: 'train',      name: 'เที่ยวทางรถไฟ', desc: 'นั่งรถไฟพุ่งไป 5 ช่อง', icon: '🚆', color: '#38bdf8', corner: true },
-
-  // SIDE 2: Top-Right (Train -> Expo)
-  { id: 8,  type: 'city',       name: 'บุรีรัมย์',     desc: 'เมืองปราสาท +200M',   icon: '🏰', color: '#a855f7', points: 200 },
-  { id: 9,  type: 'city',       name: 'ขอนแก่น',       desc: 'เมืองการศึกษา +220M', icon: '🎓', color: '#a855f7', points: 220 },
-  { id: 10, type: 'city',       name: 'นครราชสีมา',    desc: 'ประตูอีสาน +240M',    icon: '🌾', color: '#a855f7', points: 240 },
-  { id: 11, type: 'chance',     name: 'การ์ดดวง',      desc: 'สุ่มการ์ดพลิกเกม',     icon: '❓', color: '#eab308' },
-  { id: 12, type: 'city',       name: 'พิษณุโลก',      desc: 'เมืองสองแคว +180M',   icon: '🛶', color: '#ec4899', points: 180 },
-  { id: 13, type: 'island',     name: 'เกาะพะงัน',     desc: 'ฟูลมูนปาร์ตี้ +200M',   icon: '🌕', color: '#06b6d4', points: 200 },
-  { id: 14, type: 'city_x2',    name: 'หัวหิน (x2)',   desc: 'เมืองพักผ่อน โบนัส x2', icon: '⚡', color: '#06b6d4', multiplier: 2 },
-  { id: 15, type: 'expo',       name: 'จัดงานเอ็กซ์โป', desc: 'เทศกาลระดับโลก +500M', icon: '🎡', color: '#10b981', corner: true },
-
-  // SIDE 3: Top-Left (Expo -> Jail Island)
-  { id: 16, type: 'city_x2',    name: 'จันทบุรี (x2)', desc: 'เมืองผลไม้ โบนัส x2',   icon: '⚡', color: '#3b82f6', multiplier: 2 },
-  { id: 17, type: 'island',     name: 'เกาะเสม็ด',     desc: 'หาดทรายแก้ว +220M',   icon: '🏝️', color: '#3b82f6', points: 220 },
-  { id: 18, type: 'city',       name: 'ระยอง',         desc: 'เมืองอุตสาหกรรม +240M', icon: '🏭', color: '#3b82f6', points: 240 },
-  { id: 19, type: 'chance',     name: 'การ์ดดวง',      desc: 'สุ่มการ์ดพลิกเกม',     icon: '❓', color: '#eab308' },
-  { id: 20, type: 'city',       name: 'ราชบุรี',       desc: 'เมืองโอ่งมังกร +180M',  icon: '🏺', color: '#0284c7', points: 180 },
-  { id: 21, type: 'city',       name: 'สุพรรณบุรี',    desc: 'เมืองขุนแผน +190M',   icon: '🗡️', color: '#0284c7', points: 190 },
-  { id: 22, type: 'trap',       name: 'กับดักแกล้งเพื่อน', desc: 'พิมพ์ @ชื่อเพื่อนขังคุก', icon: '💣', color: '#a855f7' },
-  { id: 23, type: 'jail',       name: 'เกาะร้าง / คุก', desc: 'ขัง 3 เทิร์น (กุหลาบช่วยได้)', icon: '⛓️', color: '#ef4444', corner: true },
-
-  // SIDE 4: Bottom-Left (Jail Island -> Start)
-  { id: 24, type: 'city',       name: 'อยุธยา',        desc: 'กรุงเก่า +280M',       icon: '🏯', color: '#10b981', points: 280 },
-  { id: 25, type: 'city',       name: 'สมุทรปราการ',   desc: 'เมืองปากน้ำ +260M',    icon: '🦀', color: '#10b981', points: 260 },
-  { id: 26, type: 'city',       name: 'นครสวรรค์',     desc: 'ปากน้ำโพ +220M',       icon: '🐉', color: '#10b981', points: 220 },
-  { id: 27, type: 'chance',     name: 'การ์ดดวง',      desc: 'สุ่มการ์ดพลิกเกม',     icon: '❓', color: '#eab308' },
-  { id: 28, type: 'city_x2',    name: 'เกาะช้าง (x2)', desc: 'เกาะช้าง โบนัส x2',    icon: '⚡', color: '#10b981', multiplier: 2 },
-  { id: 29, type: 'city',       name: 'นครปฐม',        desc: 'องค์พระปฐมฯ +210M',    icon: '🛕', color: '#10b981', points: 210 },
-  { id: 30, type: 'gameroom',   name: 'ห้องเกมมินิเกม', desc: 'ทอยรับแจ็กพอตสุ่มแต้ม', icon: '🎮', color: '#f59e0b' },
-  { id: 31, type: 'city',       name: 'ลพบุรี',        desc: 'เมืองพระปรางค์ +200M',  icon: '🐒', color: '#10b981', points: 200 }
-];
-
-// CHANCE CARDS POOL
-const CHANCE_CARDS = [
-  { id: 'tycoon', title: 'ยศเศรษฐีชั่วคราว', desc: 'ได้รับเงินโบนัสทันที +500M!', points: 500, type: 'points' },
-  { id: 'steal_first', title: 'ขโมยเงินอันดับ 1', desc: 'ขโมยเงินจากอันดับ 1 มา 20%!', type: 'steal_first' },
-  { id: 'swap_lead', title: 'สลับร่างคนข้างหน้า', desc: 'สลับตำแหน่งกับผู้เล่นที่อยู่ข้างหน้าคุณ!', type: 'swap' },
-  { id: 'tax_audit', title: 'สรรพากรเรียกเก็บภาษี', desc: 'เสียภาษีบำรุงเมือง -150M', points: -150, type: 'points' },
-  { id: 'free_boost', title: 'นั่งสปีดโบ๊ทเร่งด่วน', desc: 'พุ่งไปข้างหน้าอีก 4 ช่องทันที!', steps: 4, type: 'move' },
-  { id: 'golden_ticket', title: 'ลูกเต๋าทองคำ', desc: 'ได้รับลูกเต๋าทองคำเดินเบิ้ล 2 เท่า!', type: 'golden_dice' }
-];
-
-const SETTINGS = {
-  freeRollCooldown: 120, // 2 minutes cooldown
-  likesPerRoll: 50,      // 50 likes gives 1 roll
-  roundDuration: 1800,   // 30 minutes round
-  maxVisiblePlayers: 35,
-  inactivityTimeout: 300
-};
+const ROUND_TIME_LIMIT = 75; // 75 seconds per round
 
 let gameState = {
-  board: BOARD_TILES,
-  players: {},          // key: username -> player object
-  hallOfFame: [],       // Top 4 of previous round
-  roundNumber: 1,
-  roundTimeLeft: SETTINGS.roundDuration,
-  roundStatus: 'ACTIVE',
-  currentRollAnimation: null,
-  activePopupEvent: null,
-  settings: { ...SETTINGS },
+  status: 'FIGHTING', // 'WAITING', 'FIGHTING', 'ROUND_END'
+  roundNumber: 131,
+  timeLeft: ROUND_TIME_LIMIT,
+  fighters: {}, // key: username -> fighter data
+  leaderboard: [
+    { nickname: 'พี่มารวยขายประกัน', avatar: '/assets/default-avatar-red.svg', wins: 14, kills: 15 },
+    { nickname: 'กฤษดา ประเสริฐสังข์', avatar: '/assets/default-avatar-blue.svg', wins: 3, kills: 16 },
+    { nickname: 'KOJiji', avatar: '/assets/default-avatar-red.svg', wins: 2, kills: 12 }
+  ],
+  lastWinner: null,
+  nextRoundCountdown: 5,
   tiktok: {
     username: '',
     isConnected: false,
-    viewerCount: 0,
+    viewerCount: 15,
     likeCount: 0,
     lastError: null
   },
@@ -166,6 +108,8 @@ function connectToTikTok(targetUsername) {
     tiktokLiveConnection.on('chat', data => handleChat(data));
     tiktokLiveConnection.on('gift', data => handleGift(data));
     tiktokLiveConnection.on('like', data => handleLike(data));
+    tiktokLiveConnection.on('follow', data => handleFollow(data));
+    tiktokLiveConnection.on('share', data => handleShare(data));
     tiktokLiveConnection.on('roomUser', data => {
       if (data && typeof data.viewerCount === 'number') {
         gameState.tiktok.viewerCount = data.viewerCount;
@@ -196,7 +140,7 @@ function disconnectTikTok() {
 }
 
 // ==========================================
-// CORE GAME MECHANICS
+// GAME EVENT LOGGING
 // ==========================================
 function logEvent(type, text, meta = {}) {
   const event = {
@@ -211,38 +155,54 @@ function logEvent(type, text, meta = {}) {
   io.emit('new_event', event);
 }
 
-function getOrCreatePlayer(uniqueId, nickname, avatar) {
-  if (!gameState.players[uniqueId]) {
-    // Alternate team red/blue for drama
-    const count = Object.keys(gameState.players).length;
-    const team = count % 2 === 0 ? 'red' : 'blue';
+// ==========================================
+// FIGHTER REGISTRATION & COMBAT LOGIC
+// ==========================================
+function spawnFighter(uniqueId, nickname, avatar, forceRevive = false) {
+  const existing = gameState.fighters[uniqueId];
 
-    gameState.players[uniqueId] = {
-      id: uniqueId,
-      nickname: nickname || uniqueId,
-      avatar: avatar || (team === 'red' ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg'),
-      position: 0,
-      stars: 0,
-      marbles: 200, // starting marble money 200M
-      team: team,
-      isJailed: false,
-      jailTurnsLeft: 0,
-      isGoldenDice: false,
-      hasAura: false,
-      lastRollTime: 0,
-      likesContributed: 0,
-      lastActiveTime: Date.now(),
-      pendingTrap: false
-    };
-    logEvent('game', `🎉 ${nickname} ลงทะเบียนเข้าสู่เกมเศรษฐีที่จุดเริ่มต้น!`, { avatar });
-  } else {
-    gameState.players[uniqueId].lastActiveTime = Date.now();
-    if (nickname) gameState.players[uniqueId].nickname = nickname;
-    if (avatar) gameState.players[uniqueId].avatar = avatar;
+  // If already alive and not reviving, just update active
+  if (existing && existing.alive && !forceRevive) {
+    existing.lastActive = Date.now();
+    return existing;
   }
-  return gameState.players[uniqueId];
+
+  // Choose team/color based on count
+  const colors = ['#f43f5e', '#38bdf8', '#fbbf24', '#a855f7', '#10b981', '#f97316'];
+  const assignedColor = colors[Object.keys(gameState.fighters).length % colors.length];
+
+  const fighter = {
+    id: uniqueId,
+    nickname: nickname || uniqueId,
+    avatar: avatar || '/assets/default-avatar-red.svg',
+    hp: 100,
+    maxHp: 100,
+    color: assignedColor,
+    weapon: 'none',       // 'none', 'sword', 'club', 'giant_glove'
+    hasShield: false,
+    speedBoost: 1,
+    kills: 0,
+    alive: true,
+    lastActive: Date.now(),
+    buffLevel: 0
+  };
+
+  gameState.fighters[uniqueId] = fighter;
+
+  // Tell client to spawn fighter with drop-in physics
+  io.emit('spawn_fighter', fighter);
+
+  if (forceRevive) {
+    logEvent('game', `✨ ${nickname} ฟื้นชีพกลับลงมาล้างแค้นบนสังเวียน!`, { avatar });
+  } else {
+    logEvent('game', `🥊 ${nickname} กระโดดลงสนามประลองมวยวัด!`, { avatar });
+  }
+
+  broadcastState();
+  return fighter;
 }
 
+// 1. Handle Chat ("เข้า" หรือ "JOIN")
 function handleChat(data) {
   const comment = (data.comment || '').trim();
   const commentLower = comment.toLowerCase();
@@ -250,95 +210,34 @@ function handleChat(data) {
   const nickname = data.nickname || username;
   const avatar = data.profilePictureUrl || '';
 
-  if (commentLower === 'เล่น' || commentLower === 'เข้าเกม' || commentLower === 'join' || commentLower === 'start') {
-    getOrCreatePlayer(username, nickname, avatar);
-    broadcastState();
+  if (commentLower === 'เข้า' || commentLower === 'join' || commentLower === 'ลงสนาม' || commentLower === 'สู้') {
+    spawnFighter(username, nickname, avatar);
     return;
   }
 
-  if (commentLower === 'ทอย' || commentLower === 'เดิน' || commentLower === 'roll') {
-    const player = getOrCreatePlayer(username, nickname, avatar);
-
-    if (player.isJailed) {
-      if (player.jailTurnsLeft > 0) {
-        player.jailTurnsLeft -= 1;
-        if (player.jailTurnsLeft <= 0) {
-          player.isJailed = false;
-          logEvent('game', `⛓️ ${player.nickname} รับโทษครบกำหนด หลุดออกจากเกาะร้าง!`);
-        } else {
-          logEvent('game', `⛓️ ${player.nickname} ยังติดเกาะร้าง! (เหลือ ${player.jailTurnsLeft} เทิร์น หรือส่งกุหลาบเพื่อประกันตัว)`);
-          broadcastState();
-          return;
-        }
-      }
-    }
-
-    const now = Date.now();
-    const elapsed = (now - player.lastRollTime) / 1000;
-    if (elapsed < gameState.settings.freeRollCooldown) {
-      const waitSec = Math.ceil(gameState.settings.freeRollCooldown - elapsed);
-      io.emit('chat_bubble', {
-        username,
-        nickname,
-        avatar,
-        comment: `รอคูลดาวน์อีก ${waitSec} วิ (ส่งกุหลาบเพื่อทอยทันที!)`
-      });
-      return;
-    }
-
-    player.lastRollTime = now;
-    rollDiceForPlayer(player, { isGolden: player.isGoldenDice, isFree: true });
-    player.isGoldenDice = false;
-    return;
-  }
-
-  if (comment.includes('@')) {
-    const player = gameState.players[username];
-    if (player && player.pendingTrap) {
-      player.pendingTrap = false;
-      const targetMatch = comment.match(/@([a-zA-Z0-9_.]+)/);
-      if (targetMatch && targetMatch[1]) {
-        const targetUsername = targetMatch[1];
-        const targetPlayer = gameState.players[targetUsername];
-        if (targetPlayer) {
-          targetPlayer.isJailed = true;
-          targetPlayer.jailTurnsLeft = 3;
-          targetPlayer.position = 23; // Jail Island (Tile 23)
-          logEvent('game', `💣 ${player.nickname} แกล้งสำเร็จ! สั่งส่ง @${targetPlayer.nickname} ไปติดเกาะร้าง!`);
-          triggerPopup('jail', {
-            title: `💣 โดนแกล้งส่งไปเกาะร้าง!`,
-            desc: `@${player.nickname} สั่งขัง @${targetPlayer.nickname} 3 เทิร์น!`,
-            avatar: targetPlayer.avatar
-          });
-          broadcastState();
-          return;
-        }
-      }
-    }
-  }
-
+  // Floating chat bubble over fighter head
   io.emit('chat_bubble', { username, nickname, avatar, comment });
   logEvent('chat', `${nickname}: "${comment}"`, { avatar });
 }
 
+// 2. Handle Likes (เคาะจอ 30 ครั้ง = +พลัง/ฮีล)
 function handleLike(data) {
   const count = data.likeCount || 1;
   gameState.tiktok.likeCount += count;
 
   const username = data.uniqueId;
-  if (username && gameState.players[username]) {
-    const player = gameState.players[username];
-    player.likesContributed += count;
-    if (player.likesContributed >= gameState.settings.likesPerRoll) {
-      player.likesContributed = 0;
-      logEvent('game', `❤️ ${player.nickname} เคาะจอครบ 50 ครั้ง ปลดล็อกสิทธิ์ทอยฟรี!`);
-      rollDiceForPlayer(player, { isGolden: player.isGoldenDice, isFree: true });
-      player.isGoldenDice = false;
+  if (username && gameState.fighters[username]) {
+    const fighter = gameState.fighters[username];
+    if (fighter.alive) {
+      fighter.hp = Math.min(fighter.maxHp, fighter.hp + (count * 0.5));
+      io.emit('fighter_heal', { id: username, hp: fighter.hp });
     }
   }
+
   io.emit('like_burst', { count });
 }
 
+// 3. Handle Gifts (หัวใจหลักของระบบมวยวัด)
 function handleGift(data) {
   const giftName = data.giftName || 'Gift';
   const diamondCount = (data.diamondCount || 1) * (data.repeatCount || 1);
@@ -346,258 +245,156 @@ function handleGift(data) {
   const nickname = data.nickname || username;
   const avatar = data.profilePictureUrl || '';
 
-  const player = getOrCreatePlayer(username, nickname, avatar);
+  let fighter = gameState.fighters[username];
 
-  if (player.isJailed) {
-    player.isJailed = false;
-    player.jailTurnsLeft = 0;
-    logEvent('game', `🔓 ${nickname} ส่ง ${giftName} ประกันตัวออกจากเกาะร้างสำเร็จ!`, { avatar });
-    triggerPopup('jail_free', {
-      title: '🔓 ประกันตัวสำเร็จ!',
-      desc: `${nickname} ได้รับอิสรภาพแล้ว!`,
-      avatar: player.avatar
-    });
+  // ถ้าตายอยู่ -> ส่งของขวัญอะไรก็ได้ (เช่น กุหลาบ 1 💎) = ฟื้นชีพทันที!
+  if (!fighter || !fighter.alive) {
+    fighter = spawnFighter(username, nickname, avatar, true);
   }
 
-  if (diamondCount >= 1 && diamondCount < 30) {
-    logEvent('gift', `🌹 ${nickname} ส่ง ${giftName} x${data.repeatCount || 1} ทอยลูกเต๋าเพิ่มทันที!`, { avatar });
-    rollDiceForPlayer(player, { isGolden: false, isFree: false });
-  } else if (diamondCount >= 30 && diamondCount < 100) {
-    player.hasAura = true;
-    player.isGoldenDice = true;
-    logEvent('gift', `🍩 ${nickname} ส่ง ${giftName} ปลุกพลัง "ลูกเต๋าทองคำ" เดินเบิ้ล 2 เท่า!`, { avatar });
-    rollDiceForPlayer(player, { isGolden: true, isFree: false });
-  } else if (diamondCount >= 100) {
-    logEvent('gift', `🚀 ${nickname} ส่ง ${giftName} มหาของขวัญ! "วาร์ปมหาเศรษฐี" พุ่ง 15 ช่อง!`, { avatar });
-    performTeleportWarp(player, 15);
+  // Tier 1: บัฟเลือด & พลังหมัด (1-4 💎)
+  if (diamondCount >= 1 && diamondCount < 5) {
+    fighter.hp = Math.min(fighter.maxHp + 30, fighter.hp + 40);
+    fighter.buffLevel += 1;
+    io.emit('fighter_buff', { id: username, type: 'hp', hp: fighter.hp });
+    logEvent('gift', `🩸 ${nickname} ส่ง ${giftName} บัฟพลังชีวิต +40 HP!`, { avatar });
+  }
+  // Tier 2: เสกอาวุธ (5-29 💎)
+  else if (diamondCount >= 5 && diamondCount < 30) {
+    fighter.weapon = 'sword';
+    io.emit('fighter_weapon', { id: username, weapon: 'sword' });
+    logEvent('gift', `⚔️ ${nickname} ส่ง ${giftName} เสกดาบยาวโจมตีหนักขึ้น!`, { avatar });
+  }
+  // Tier 3: อุปกรณ์/โล่สะท้อน (30-99 💎)
+  else if (diamondCount >= 30 && diamondCount < 100) {
+    fighter.hasShield = true;
+    fighter.maxHp += 50;
+    fighter.hp = fighter.maxHp;
+    io.emit('fighter_shield', { id: username });
+    logEvent('gift', `🛡️ ${nickname} ส่ง ${giftName} เสกเกราะสะท้อนพลัง!`, { avatar });
+  }
+  // Tier 4: สกิลระเบิดคลื่นพลังผลักรอบตัว (100-299 💎)
+  else if (diamondCount >= 100 && diamondCount < 300) {
+    io.emit('fighter_shockwave', { id: username });
+    logEvent('gift', `🔥 ${nickname} ส่ง ${giftName} ระเบิดคลื่นพลังผลักศัตรูรอบตัว!`, { avatar });
+  }
+  // Tier 5: อัลติเมท ฟ้าผ่า/ทุบทั้งสนาม (300-999 💎)
+  else if (diamondCount >= 300 && diamondCount < 1000) {
+    io.emit('fighter_ultimate', { id: username });
+    logEvent('gift', `🚀 ${nickname} ส่ง ${giftName} ปล่อยท่าไม้ตายอัลติเมททุบทั้งเวที!`, { avatar });
+  }
+  // Tier 6: มหาบอส (1000+ 💎)
+  else if (diamondCount >= 1000) {
+    fighter.maxHp += 300;
+    fighter.hp = fighter.maxHp;
+    fighter.weapon = 'giant_glove';
+    io.emit('fighter_boss', { id: username });
+    logEvent('gift', `🐍 ${nickname} ส่ง ${giftName} แปลงร่างเป็นบอสยักษ์ครองเวที!`, { avatar });
   }
 
   broadcastState();
 }
 
-function rollDiceForPlayer(player, opts = {}) {
-  const dice1 = Math.floor(Math.random() * 6) + 1;
-  const dice2 = opts.isGolden ? Math.floor(Math.random() * 6) + 1 : 0;
-  const totalSteps = opts.isGolden ? (dice1 * 2) : dice1;
-
-  gameState.currentRollAnimation = {
-    player: { id: player.id, nickname: player.nickname, avatar: player.avatar, team: player.team },
-    dice1,
-    dice2,
-    totalSteps,
-    isGolden: opts.isGolden
-  };
-  io.emit('dice_roll', gameState.currentRollAnimation);
-
-  setTimeout(() => {
-    movePlayerSteps(player, totalSteps);
-  }, 1200);
-}
-
-function movePlayerSteps(player, steps) {
-  const oldPos = player.position;
-  let newPos = (oldPos + steps);
-
-  // 32 Tiles Loop
-  if (newPos >= 32) {
-    newPos = newPos % 32;
-    player.stars += 1;
-    player.marbles += 300; // Lap bonus salary
-    logEvent('game', `⭐ ${player.nickname} ครบรอบกระดาน! ได้รับดาว ⭐ ดวงที่ ${player.stars} + เงินเดือน 300M!`, { avatar: player.avatar });
-    triggerPopup('star', {
-      title: '⭐ ครบรอบกระดานสำเร็จ!',
-      desc: `${player.nickname} รับดาวดวงที่ ${player.stars} + 300M!`,
-      avatar: player.avatar
-    });
-  }
-
-  player.position = newPos;
-  resolveTileLanding(player, BOARD_TILES[newPos]);
-  broadcastState();
-}
-
-function resolveTileLanding(player, tile) {
-  logEvent('game', `📍 ${player.nickname} เดินมาตกช่อง [${tile.name}] (${tile.desc})`);
-
-  switch (tile.type) {
-    case 'city':
-      player.marbles += (tile.points || 200);
-      break;
-
-    case 'city_x2':
-      player.marbles += Math.floor(player.marbles * 0.2) + 300;
-      break;
-
-    case 'island':
-      player.marbles += (tile.points || 200);
-      break;
-
-    case 'train':
-      // Fast travel: jump 5 steps ahead!
-      logEvent('game', `🚆 ${player.nickname} นั่งรถไฟด่วน พุ่งไปข้างหน้า 5 ช่อง!`);
-      setTimeout(() => movePlayerSteps(player, 5), 800);
-      break;
-
-    case 'expo':
-      player.hasAura = true;
-      player.marbles += 500;
-      triggerPopup('jackpot', {
-        title: '🎡 จัดงานเอ็กซ์โปสำเร็จ!',
-        desc: `${player.nickname} ได้รับโบนัสงานเทศกาล +500M!`,
-        avatar: player.avatar
-      });
-      break;
-
-    case 'gameroom':
-      const prize = Math.floor(Math.random() * 400) + 300;
-      player.marbles += prize;
-      triggerPopup('jackpot', {
-        title: '🎮 ชนะมินิเกมห้องเกม!',
-        desc: `${player.nickname} ทายถูก รับเงินรางวัล +${prize}M!`,
-        avatar: player.avatar
-      });
-      break;
-
-    case 'chance':
-      drawChanceCard(player);
-      break;
-
-    case 'jail':
-      player.isJailed = true;
-      player.jailTurnsLeft = 3;
-      player.position = 23; // Tile 23 is Jail Island
-      triggerPopup('jail', {
-        title: '⛓️ ติดเกาะร้าง / สรรพากรเรียกพบ!',
-        desc: `${player.nickname} ติดคุก 3 เทิร์น (หรือส่งกุหลาบประกันตัว)`,
-        avatar: player.avatar
-      });
-      break;
-
-    case 'trap':
-      player.pendingTrap = true;
-      triggerPopup('trap', {
-        title: '💣 กับดักแกล้งเพื่อน!',
-        desc: `พิมพ์ @ชื่อเพื่อน ในแชทเพื่อสั่งส่งเพื่อนไปเกาะร้าง!`,
-        avatar: player.avatar
-      });
-      break;
-
-    default:
-      break;
+// 4. Handle Follow & Share
+function handleFollow(data) {
+  const username = data.uniqueId;
+  if (username && gameState.fighters[username]) {
+    gameState.fighters[username].hasShield = true;
+    io.emit('fighter_shield', { id: username });
+    logEvent('game', `➕ ${data.nickname || username} กดติดตามช่อง ได้รับโล่ป้องกัน!`);
   }
 }
 
-function drawChanceCard(player) {
-  const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
-  logEvent('game', `❓ ${player.nickname} เปิดการ์ดดวง: [${card.title}] - ${card.desc}`, { avatar: player.avatar });
-
-  if (card.type === 'points') {
-    player.marbles = Math.max(0, player.marbles + (card.points || 0));
-  } else if (card.type === 'steal_first') {
-    const sorted = Object.values(gameState.players).sort((a, b) => (b.stars * 1000 + b.marbles) - (a.stars * 1000 + a.marbles));
-    if (sorted.length > 1 && sorted[0].id !== player.id) {
-      const target = sorted[0];
-      const stolen = Math.floor(target.marbles * 0.2);
-      target.marbles -= stolen;
-      player.marbles += stolen;
-      logEvent('game', `🦹 ${player.nickname} ขโมยเงินจาก ${target.nickname} มาได้ ${stolen}M!`);
-    }
-  } else if (card.type === 'swap') {
-    const candidates = Object.values(gameState.players).filter(p => p.id !== player.id && p.position > player.position);
-    if (candidates.length > 0) {
-      const target = candidates[0];
-      const tempPos = player.position;
-      player.position = target.position;
-      target.position = tempPos;
-      logEvent('game', `🔄 ${player.nickname} สลับตำแหน่งกับ ${target.nickname}!`);
-    }
-  } else if (card.type === 'move') {
-    movePlayerSteps(player, card.steps || 4);
-  } else if (card.type === 'golden_dice') {
-    player.isGoldenDice = true;
-    player.hasAura = true;
+function handleShare(data) {
+  const username = data.uniqueId;
+  if (username && gameState.fighters[username]) {
+    gameState.fighters[username].speedBoost = 1.6;
+    io.emit('fighter_speed', { id: username, speed: 1.6 });
+    logEvent('game', `🔗 ${data.nickname || username} แชร์ไลฟ์สด ได้รับบัฟวิ่งไวติดสปีด!`);
   }
-
-  triggerPopup('chance', {
-    title: `❓ การ์ดดวง: ${card.title}`,
-    desc: card.desc,
-    avatar: player.avatar
-  });
 }
 
-function performTeleportWarp(player, steps = 15) {
-  const oldPos = player.position;
-  let newPos = (oldPos + steps);
-
-  if (newPos >= 32) {
-    newPos = newPos % 32;
-    player.stars += 1;
-    player.marbles += 500;
-  }
-
-  player.position = newPos;
-
-  // Knock backward any competitors in the landing tile!
-  const knockedPlayers = Object.values(gameState.players).filter(p => p.id !== player.id && p.position === newPos);
-  knockedPlayers.forEach(kp => {
-    kp.position = (kp.position - 3 + 32) % 32;
-    logEvent('game', `💥 ${kp.nickname} โดนพลังวาร์ปของ ${player.nickname} ชนกระเด็นถอยหลัง 3 ช่อง!`);
-  });
-
-  triggerPopup('warp', {
-    title: '🚀 วาร์ปมหาเศรษฐี!',
-    desc: `${player.nickname} พุ่งทะยาน 15 ช่อง ชนคู่แข่งกระเด็น!`,
-    avatar: player.avatar
-  });
-
-  resolveTileLanding(player, BOARD_TILES[newPos]);
-  broadcastState();
-}
-
-function triggerPopup(type, data) {
-  gameState.activePopupEvent = { type, ...data, timestamp: Date.now() };
-  io.emit('board_popup', gameState.activePopupEvent);
-}
-
-// 30-Minute Round Timer
+// ==========================================
+// MATCH LOOP & ROUND CONTROLLER
+// ==========================================
 setInterval(() => {
-  if (gameState.roundStatus === 'ACTIVE') {
-    gameState.roundTimeLeft -= 1;
-    if (gameState.roundTimeLeft <= 0) {
-      endRoundAndCrownWinners();
+  if (gameState.status === 'FIGHTING') {
+    gameState.timeLeft -= 1;
+
+    // Check winner condition (Last fighter standing)
+    const aliveFighters = Object.values(gameState.fighters).filter(f => f.alive);
+
+    if ((aliveFighters.length === 1 && Object.keys(gameState.fighters).length >= 2) || gameState.timeLeft <= 0) {
+      endRound(aliveFighters[0] || null);
     }
+  } else if (gameState.status === 'ROUND_END') {
+    gameState.nextRoundCountdown -= 1;
+    if (gameState.nextRoundCountdown <= 0) {
+      startNewRound();
+    }
+    broadcastState();
   }
 }, 1000);
 
-function endRoundAndCrownWinners() {
-  const sorted = Object.values(gameState.players)
-    .sort((a, b) => (b.stars * 1000 + b.marbles) - (a.stars * 1000 + a.marbles));
+function endRound(winnerFighter) {
+  gameState.status = 'ROUND_END';
+  gameState.nextRoundCountdown = 5;
 
-  gameState.hallOfFame = sorted.slice(0, 4).map((p, idx) => ({
-    rank: idx + 1,
-    nickname: p.nickname,
-    avatar: p.avatar,
-    stars: p.stars,
-    marbles: p.marbles,
-    team: p.team
-  }));
+  if (winnerFighter) {
+    gameState.lastWinner = {
+      nickname: winnerFighter.nickname,
+      avatar: winnerFighter.avatar,
+      kills: winnerFighter.kills || 0,
+      round: gameState.roundNumber
+    };
 
-  logEvent('game', `🏆 จบรอบที่ ${gameState.roundNumber}! ยอดเศรษฐี 4 อันดับแรก: ${gameState.hallOfFame.map(h => h.nickname).join(', ')}`);
+    // Update Leaderboard
+    const lbEntry = gameState.leaderboard.find(l => l.nickname === winnerFighter.nickname);
+    if (lbEntry) {
+      lbEntry.wins += 1;
+      lbEntry.kills += (winnerFighter.kills || 0);
+    } else {
+      gameState.leaderboard.push({
+        nickname: winnerFighter.nickname,
+        avatar: winnerFighter.avatar,
+        wins: 1,
+        kills: winnerFighter.kills || 0
+      });
+    }
+    gameState.leaderboard.sort((a, b) => (b.wins * 100 + b.kills) - (a.wins * 100 + a.kills));
+    if (gameState.leaderboard.length > 5) gameState.leaderboard.pop();
 
-  triggerPopup('round_finish', {
-    title: `🏆 แชมป์เกมเศรษฐีรอบที่ ${gameState.roundNumber}!`,
-    winners: gameState.hallOfFame
-  });
+    logEvent('game', `🏆 ${winnerFighter.nickname} ชนะรอบที่ ${gameState.roundNumber} น็อคไป ${winnerFighter.kills} คน!`);
+    io.emit('round_winner', gameState.lastWinner);
+  } else {
+    logEvent('game', `⌛ จบรอบที่ ${gameState.roundNumber} เสมอ ไม่มีผู้รอดชีวิต!`);
+    io.emit('round_draw');
+  }
 
+  broadcastState();
+}
+
+function startNewRound() {
   gameState.roundNumber += 1;
-  gameState.roundTimeLeft = gameState.settings.roundDuration;
-  Object.values(gameState.players).forEach(p => {
-    p.position = 0;
-    p.stars = 0;
-    p.marbles = 200;
-    p.isJailed = false;
+  gameState.timeLeft = ROUND_TIME_LIMIT;
+  gameState.status = 'FIGHTING';
+  gameState.lastWinner = null;
+
+  // Reset all participating fighters to alive with full HP for the new round
+  Object.values(gameState.fighters).forEach(f => {
+    f.alive = true;
+    f.hp = f.maxHp || 100;
+    f.kills = 0;
+    f.weapon = 'none';
+    f.hasShield = false;
   });
 
+  io.emit('new_round_started', {
+    roundNumber: gameState.roundNumber,
+    fighters: gameState.fighters
+  });
+
+  logEvent('game', `🔔 ระฆังดังเริ่มศึกมวยวัดรอบที่ ${gameState.roundNumber}!`);
   broadcastState();
 }
 
@@ -606,7 +403,7 @@ function broadcastState() {
 }
 
 // ==========================================
-// SOCKET LISTENERS
+// SOCKET.IO EVENTS & ADMIN SIMULATOR
 // ==========================================
 io.on('connection', socket => {
   socket.emit('state_update', gameState);
@@ -614,81 +411,58 @@ io.on('connection', socket => {
   socket.on('tiktok_connect', username => connectToTikTok(username));
   socket.on('tiktok_disconnect', () => disconnectTikTok());
 
-  socket.on('admin_reset_round', () => {
-    gameState.roundTimeLeft = gameState.settings.roundDuration;
-    Object.values(gameState.players).forEach(p => {
-      p.position = 0;
-      p.stars = 0;
-      p.marbles = 200;
-      p.isJailed = false;
-    });
-    logEvent('system', 'แอดมินสั่งรีเซ็ตรอบกระดานใหม่');
+  // Knockout notification from client physics engine
+  socket.on('fighter_knocked_out', payload => {
+    const victim = gameState.fighters[payload.victimId];
+    if (victim) {
+      victim.alive = false;
+      logEvent('game', `💀 ${victim.nickname} โดนซัดตกเวที ตกรอบ! (ส่งกุหลาบเพื่อฟื้นชีพ)`, { avatar: victim.avatar });
+    }
+
+    if (payload.attackerId && gameState.fighters[payload.attackerId]) {
+      gameState.fighters[payload.attackerId].kills += 1;
+    }
+
     broadcastState();
   });
 
+  // Simulator Events for Testing
   socket.on('sim_join', (payload) => {
-    handleChat({
-      uniqueId: payload.username || 'user_' + Math.floor(Math.random() * 900 + 100),
-      nickname: payload.nickname || 'เศรษฐีมือใหม่',
-      profilePictureUrl: payload.avatar || '/assets/default-avatar-red.svg',
-      comment: 'เล่น'
-    });
-  });
-
-  socket.on('sim_roll', (payload) => {
-    const playerKeys = Object.keys(gameState.players);
-    const username = payload.username || (playerKeys.length > 0 ? playerKeys[Math.floor(Math.random() * playerKeys.length)] : null);
-    if (username && gameState.players[username]) {
-      handleChat({
-        uniqueId: username,
-        nickname: gameState.players[username].nickname,
-        profilePictureUrl: gameState.players[username].avatar,
-        comment: 'ทอย'
-      });
-    } else {
-      const p = getOrCreatePlayer('test_player', 'สายทอยทิพย์', '/assets/default-avatar-blue.svg');
-      rollDiceForPlayer(p, { isGolden: false, isFree: true });
-    }
+    const testNames = ['พี่มารวยขายประกัน', 'กฤษดา ประเสริฐสังข์', 'KOJiji', 'สิบสาม เมษา', 'จอมมารจี้', 'น้องแว่นสายบู๊'];
+    const randName = payload?.nickname || testNames[Math.floor(Math.random() * testNames.length)];
+    const randId = payload?.username || 'user_' + Math.floor(Math.random() * 900 + 100);
+    const randAvatar = Math.random() > 0.5 ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg';
+    spawnFighter(randId, randName, randAvatar);
   });
 
   socket.on('sim_gift', (payload) => {
-    const playerKeys = Object.keys(gameState.players);
-    const username = payload.username || (playerKeys.length > 0 ? playerKeys[0] : 'vip_player');
-    const player = gameState.players[username] || getOrCreatePlayer(username, 'ป๋าเปย์เบอร์หนึ่ง', '/assets/default-avatar-red.svg');
+    const keys = Object.keys(gameState.fighters);
+    const targetId = keys.length > 0 ? keys[Math.floor(Math.random() * keys.length)] : 'fighter_test';
+    const target = gameState.fighters[targetId] || { nickname: 'นักมวยสายเปย์', avatar: '/assets/default-avatar-red.svg' };
 
     handleGift({
-      uniqueId: player.id,
-      nickname: player.nickname,
-      profilePictureUrl: player.avatar,
-      giftName: payload.giftName || 'Rose',
-      diamondCount: payload.diamonds || 1,
+      uniqueId: targetId,
+      nickname: target.nickname,
+      profilePictureUrl: target.avatar,
+      giftName: payload?.giftName || 'Rose',
+      diamondCount: payload?.diamonds || 1,
       repeatCount: 1
     });
   });
 
-  socket.on('sim_jail', () => {
-    const firstPlayer = Object.values(gameState.players)[0] || getOrCreatePlayer('jail_test', 'ผู้ต้องหาทดสอบ', '/assets/default-avatar-red.svg');
-    firstPlayer.isJailed = true;
-    firstPlayer.jailTurnsLeft = 3;
-    firstPlayer.position = 23;
-    triggerPopup('jail', {
-      title: '⛓️ เข้าเกาะร้าง / สรรพากรเรียกพบ!',
-      desc: `${firstPlayer.nickname} โดนจับติดเกาะร้าง!`,
-      avatar: firstPlayer.avatar
-    });
-    broadcastState();
+  socket.on('sim_reset_round', () => {
+    startNewRound();
   });
 
-  socket.on('sim_chance', () => {
-    const firstPlayer = Object.values(gameState.players)[0] || getOrCreatePlayer('test_tycoon', 'เศรษฐีตัวตึง', '/assets/default-avatar-red.svg');
-    drawChanceCard(firstPlayer);
-    broadcastState();
+  socket.on('sim_force_win', () => {
+    const alive = Object.values(gameState.fighters).find(f => f.alive);
+    if (alive) endRound(alive);
   });
 });
 
 server.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🎲 LINE LET'S GET RICH STYLE BOARD GAME SERVER RUNNING!`);
-  console.log(`🌐 Unified App (Game + Admin): http://localhost:${PORT}`);
+  console.log(`🥊 ARENA LIVE: BATTLE ROYALE GAME SERVER RUNNING!`);
+  console.log(`🌐 Stream & Admin: http://localhost:${PORT}`);
   console.log(`====================================================`);
 });

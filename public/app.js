@@ -1,44 +1,28 @@
 // Connect to Socket.IO
 const socket = io();
 
-// UI Elements: HUD 4 Corners
-const hudP1 = { root: document.getElementById('hudP1'), avatar: document.getElementById('p1Avatar'), nick: document.getElementById('p1Nick'), marbles: document.getElementById('p1Marbles'), stars: document.getElementById('p1Stars') };
-const hudP2 = { root: document.getElementById('hudP2'), avatar: document.getElementById('p2Avatar'), nick: document.getElementById('p2Nick'), marbles: document.getElementById('p2Marbles'), stars: document.getElementById('p2Stars') };
-const hudP3 = { root: document.getElementById('hudP3'), avatar: document.getElementById('p3Avatar'), nick: document.getElementById('p3Nick'), marbles: document.getElementById('p3Marbles'), stars: document.getElementById('p3Stars') };
-const hudP4 = { root: document.getElementById('hudP4'), avatar: document.getElementById('p4Avatar'), nick: document.getElementById('p4Nick'), marbles: document.getElementById('p4Marbles'), stars: document.getElementById('p4Stars') };
-const cornerHUDs = [hudP1, hudP2, hudP3, hudP4];
+// Canvas Elements
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+const arenaCanvas = document.getElementById('arenaCanvas');
+const ctx = arenaCanvas.getContext('2d');
 
-// Center Pond HUD
-const roundTimerText = document.getElementById('roundTimerText');
-const roundNumText = document.getElementById('roundNumText');
-const jackpotPoolText = document.getElementById('jackpotPoolText');
-const centerRollBtn = document.getElementById('centerRollBtn');
-
-// Dice Showcase & Popups
-const diceShowcase = document.getElementById('diceShowcase');
-const rollerImg = document.getElementById('rollerImg');
-const rollerName = document.getElementById('rollerName');
-const dice1 = document.getElementById('dice1');
-const dice2 = document.getElementById('dice2');
-const diceSummary = document.getElementById('diceSummary');
-
-const eventPopup = document.getElementById('eventPopup');
-const popupIcon = document.getElementById('popupIcon');
-const popupTitle = document.getElementById('popupTitle');
-const popupDesc = document.getElementById('popupDesc');
-const popupAvatar = document.getElementById('popupAvatar');
-
+// HUD Elements
+const arenaTimerVal = document.getElementById('arenaTimerVal');
+const roundInfoText = document.getElementById('roundInfoText');
+const champList = document.getElementById('champList');
+const victoryOverlay = document.getElementById('victoryOverlay');
+const nextRoundSec = document.getElementById('nextRoundSec');
+const winnerNameText = document.getElementById('winnerNameText');
+const winnerDescText = document.getElementById('winnerDescText');
+const winnerAvatarImg = document.getElementById('winnerAvatarImg');
 const chatBubbleLayer = document.getElementById('chatBubbleLayer');
-const tilesContainer = document.getElementById('tilesContainer');
 
-// Sidebar & Layout Controls
+// Sidebar Elements
 const adminSidebar = document.getElementById('adminSidebar');
 const toggleAdminBtn = document.getElementById('toggleAdminBtn');
 const toggleAdminText = document.getElementById('toggleAdminText');
 const obsModeBtn = document.getElementById('obsModeBtn');
-const viewModeToggleBtn = document.getElementById('viewModeToggleBtn');
-const viewModeToggleText = document.getElementById('viewModeToggleText');
-const gameArenaWrapper = document.getElementById('gameArenaWrapper');
 
 const sideUsernameInput = document.getElementById('sideUsernameInput');
 const sideConnectBtn = document.getElementById('sideConnectBtn');
@@ -46,21 +30,18 @@ const sideDisconnectBtn = document.getElementById('sideDisconnectBtn');
 const sideConnStatus = document.getElementById('sideConnStatus');
 const sideViewerCount = document.getElementById('sideViewerCount');
 const sideLikeCount = document.getElementById('sideLikeCount');
-const sidePlayerCount = document.getElementById('sidePlayerCount');
-const sidePlayerTable = document.getElementById('sidePlayerTable');
+const sideFighterCount = document.getElementById('sideFighterCount');
+const sideFighterTable = document.getElementById('sideFighterTable');
 const sideEventLog = document.getElementById('sideEventLog');
 const sideClearLogBtn = document.getElementById('sideClearLogBtn');
-const sideResetBtn = document.getElementById('sideResetBtn');
 
 const tiktokPill = document.getElementById('tiktokPill');
 const tiktokPillText = document.getElementById('tiktokPillText');
 
-const DICE_FACES = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-
 // ==========================================
 // AUDIO SYNTHESIZER (Web Audio API)
 // ==========================================
-class RichSoundFX {
+class ArenaSoundFX {
   constructor() {
     this.ctx = null;
   }
@@ -73,65 +54,73 @@ class RichSoundFX {
       this.ctx.resume();
     }
   }
-  playDice() {
+
+  // Punch hit sound ("ผัวะ!")
+  playPunch() {
     this.ensure();
     if (!this.ctx) return;
     try {
-      for (let i = 0; i < 4; i++) {
-        setTimeout(() => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(320 + Math.random() * 200, this.ctx.currentTime);
-          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.08);
-        }, i * 70);
-      }
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      const now = this.ctx.currentTime;
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.14);
     } catch(e) {}
   }
-  playStep() {
+
+  // Boxing bell ("เก๊งงง!")
+  playBell() {
     this.ensure();
     if (!this.ctx) return;
     try {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(450, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(850, this.ctx.currentTime + 0.09);
-      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+      const now = this.ctx.currentTime;
+      osc.frequency.setValueAtTime(987.77, now);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.1);
+      osc.start(now);
+      osc.stop(now + 1.2);
     } catch(e) {}
   }
-  playCoin() {
+
+  // Shockwave / Ultimate blast
+  playShockwave() {
     this.ensure();
     if (!this.ctx) return;
     try {
-      const notes = [987.77, 1318.51];
-      notes.forEach((freq, idx) => {
-        setTimeout(() => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.25);
-        }, idx * 90);
-      });
+      const bufferSize = this.ctx.sampleRate * 0.5;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(400, this.ctx.currentTime);
+      filter.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.5);
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+      noise.start();
     } catch(e) {}
   }
-  playFanfare() {
+
+  // Victory Fanfare
+  playVictory() {
     this.ensure();
     if (!this.ctx) return;
     try {
@@ -148,209 +137,684 @@ class RichSoundFX {
           gain.connect(this.ctx.destination);
           osc.start();
           osc.stop(this.ctx.currentTime + 0.4);
-        }, idx * 110);
+        }, idx * 120);
       });
     } catch(e) {}
   }
 }
-const sfx = new RichSoundFX();
+const sfx = new ArenaSoundFX();
 window.addEventListener('click', () => sfx.ensure(), { once: true });
 
 // ==========================================
-// 32 TILES GRID COORDINATE GENERATOR (9x9)
+// RESIZE & CANVAS SETUP
 // ==========================================
-const TILE_COORDS = [
-  // Side 1 (Start -> Train): 8 tiles (row 9, col 9) -> (row 1, col 9)
-  { row: 9, col: 9 }, // 0: Start
-  { row: 8, col: 9 }, // 1: กรุงเทพ
-  { row: 7, col: 9 }, // 2: เชียงใหม่
-  { row: 6, col: 9 }, // 3: ดวง
-  { row: 5, col: 9 }, // 4: ภูเก็ต
-  { row: 4, col: 9 }, // 5: ปัตตานี
-  { row: 3, col: 9 }, // 6: พัทยา
-  { row: 2, col: 9 }, // 7: Train Travel (Corner)
+function resizeCanvases() {
+  const rect = arenaCanvas.parentElement.getBoundingClientRect();
+  bgCanvas.width = rect.width;
+  bgCanvas.height = rect.height;
+  arenaCanvas.width = rect.width;
+  arenaCanvas.height = rect.height;
+}
+window.addEventListener('resize', resizeCanvases);
+resizeCanvases();
 
-  // Side 2 (Train -> Expo): 8 tiles (row 1, col 9) -> (row 1, col 1)
-  { row: 1, col: 8 }, // 8: บุรีรัมย์
-  { row: 1, col: 7 }, // 9: ขอนแก่น
-  { row: 1, col: 6 }, // 10: โคราช
-  { row: 1, col: 5 }, // 11: ดวง
-  { row: 1, col: 4 }, // 12: พิษณุโลก
-  { row: 1, col: 3 }, // 13: เกาะพะงัน
-  { row: 1, col: 2 }, // 14: หัวหิน
-  { row: 1, col: 1 }, // 15: Expo (Corner)
+// Ring Geometry
+function getRing() {
+  const cx = arenaCanvas.width / 2;
+  const cy = arenaCanvas.height * 0.54;
+  const rx = arenaCanvas.width * 0.42; // Elliptical ring radius X
+  const ry = arenaCanvas.height * 0.22; // Elliptical ring radius Y
+  return { cx, cy, rx, ry };
+}
 
-  // Side 3 (Expo -> Jail): 8 tiles (row 2, col 1) -> (row 9, col 1)
-  { row: 2, col: 1 }, // 16: จันทบุรี
-  { row: 3, col: 1 }, // 17: เกาะเสม็ด
-  { row: 4, col: 1 }, // 18: ระยอง
-  { row: 5, col: 1 }, // 19: ดวง
-  { row: 6, col: 1 }, // 20: ราชบุรี
-  { row: 7, col: 1 }, // 21: สุพรรณบุรี
-  { row: 8, col: 1 }, // 22: กับดัก
-  { row: 9, col: 1 }, // 23: Jail Island (Corner)
+// Image cache for fighter avatars
+const avatarImgCache = new Map();
+function getAvatarImg(url) {
+  if (!url) return null;
+  if (avatarImgCache.has(url)) return avatarImgCache.get(url);
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = url;
+  avatarImgCache.set(url, img);
+  return img;
+}
 
-  // Side 4 (Jail -> Start): 8 tiles (row 9, col 2) -> (row 9, col 8)
-  { row: 9, col: 2 }, // 24: อยุธยา
-  { row: 9, col: 3 }, // 25: สมุทรปราการ
-  { row: 9, col: 4 }, // 26: นครสวรรค์
-  { row: 9, col: 5 }, // 27: ดวง
-  { row: 9, col: 6 }, // 28: เกาะช้าง
-  { row: 9, col: 7 }, // 29: นครปฐม
-  { row: 9, col: 8 }, // 30: ห้องเกม
-  { row: 9, col: 8.5 } // 31: ลพบุรี
-];
+// ==========================================
+// PARTICLES & COMBAT VISUALS
+// ==========================================
+let hitParticles = [];
+let damageFloats = [];
+let ghosts = [];
+let confetti = [];
 
-let tileElements = [];
+function spawnHitSparks(x, y) {
+  for (let i = 0; i < 7; i++) {
+    hitParticles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      life: 1,
+      color: Math.random() > 0.5 ? '#fbbf24' : '#ef4444',
+      size: Math.random() * 3 + 2
+    });
+  }
+}
 
-function initBoard32Tiles(tiles) {
-  tilesContainer.innerHTML = '';
-  tileElements = [];
+function spawnDamageNumber(x, y, amount) {
+  damageFloats.push({
+    x: x + (Math.random() - 0.5) * 10,
+    y: y - 10,
+    text: `-${amount}`,
+    life: 1,
+    color: '#ef4444'
+  });
+}
 
-  tiles.forEach((t, idx) => {
-    const pos = TILE_COORDS[idx] || { row: 1, col: 1 };
-    const div = document.createElement('div');
-    div.className = `tile-cube ${t.corner ? 'corner-tile' : ''}`;
-    div.id = `tile_${idx}`;
-    div.style.gridRow = Math.floor(pos.row);
-    div.style.gridColumn = Math.floor(pos.col);
-
-    let priceTag = t.points ? `+${t.points}M` : (t.multiplier ? `x${t.multiplier}` : '');
-    let tagBg = t.color || '#3b82f6';
-
-    div.innerHTML = `
-      <div class="tile-badge" style="background: ${t.color}">${idx}</div>
-      <div class="tile-main-icon">${t.icon}</div>
-      <div class="tile-label-th" title="${t.name}">${t.name}</div>
-      ${priceTag ? `<div class="tile-cost-tag" style="background: ${tagBg}">${priceTag}</div>` : ''}
-      <div id="tile_box_${idx}" class="tile-players-box"></div>
-    `;
-
-    tilesContainer.appendChild(div);
-    tileElements.push(div);
+function spawnGhost(x, y, avatar) {
+  ghosts.push({
+    x, y,
+    vy: -1.5,
+    avatar,
+    alpha: 0.9,
+    life: 2
   });
 }
 
 // ==========================================
-// STATE UPDATE & HUD RENDERING
+// CLIENT FIGHTERS (Physics & AI State)
 // ==========================================
-let currentGameState = null;
-let diceTimeout = null;
-let popupTimeout = null;
+let clientFighters = []; // local physics fighters
+let ferrisAngle = 0;
+let spotlightAngle = 0;
 
-socket.on('state_update', (state) => {
-  currentGameState = state;
+class ClientFighter {
+  constructor(data) {
+    const ring = getRing();
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * (ring.rx * 0.6);
 
-  if (tileElements.length === 0 && state.board) {
-    initBoard32Tiles(state.board);
+    this.id = data.id;
+    this.nickname = data.nickname;
+    this.avatar = data.avatar;
+    this.color = data.color || '#f43f5e';
+    this.hp = data.hp || 100;
+    this.maxHp = data.maxHp || 100;
+    this.alive = true;
+    this.weapon = data.weapon || 'none';
+    this.hasShield = data.hasShield || false;
+    this.speedBoost = data.speedBoost || 1;
+    this.kills = 0;
+
+    // Physics position on ring
+    this.x = ring.cx + Math.cos(spawnAngle) * dist;
+    this.y = ring.cy + Math.sin(spawnAngle) * (dist * (ring.ry / ring.rx));
+    this.vx = 0;
+    this.vy = 0;
+    this.radius = 16;
+
+    // Combat state
+    this.punchCooldown = 0;
+    this.punchProgress = 0; // 0 to 1 for punching arm extend
+    this.punchAngle = 0;
   }
 
-  // Timer
-  const mins = Math.floor(state.roundTimeLeft / 60);
-  const secs = state.roundTimeLeft % 60;
-  roundTimerText.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  roundNumText.innerText = state.roundNumber;
+  update(dt, allFighters) {
+    if (!this.alive) return;
 
-  // Render 4 Corner HUDs
-  renderCornerHUDs(state.players);
+    const ring = getRing();
 
-  // Render 3D Chibi Tokens on 32 Tiles
-  renderTokensOnBoard(state.players);
+    // 1. Friction & Velocity
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vx *= 0.88;
+    this.vy *= 0.88;
 
-  // Render Sidebar
+    // 2. Check Ring-Out (Elliptical boundary)
+    const dx = (this.x - ring.cx) / ring.rx;
+    const dy = (this.y - ring.cy) / ring.ry;
+    const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+
+    if (distFromCenter > 1.05 || this.hp <= 0) {
+      this.alive = false;
+      spawnGhost(this.x, this.y, this.avatar);
+      socket.emit('fighter_knocked_out', { victimId: this.id });
+      return;
+    }
+
+    // 3. AI Target Closest Enemy
+    let closest = null;
+    let closestDist = 9999;
+    allFighters.forEach(other => {
+      if (other.id !== this.id && other.alive) {
+        const d = Math.hypot(other.x - this.x, other.y - this.y);
+        if (d < closestDist) {
+          closestDist = d;
+          closest = other;
+        }
+      }
+    });
+
+    if (closest) {
+      const angle = Math.atan2(closest.y - this.y, closest.x - this.x);
+      const moveSpeed = (0.7 + Math.random() * 0.4) * (this.speedBoost || 1);
+
+      this.vx += Math.cos(angle) * moveSpeed;
+      this.vy += Math.sin(angle) * (moveSpeed * (ring.ry / ring.rx));
+
+      // 4. Attack when in range
+      const attackRange = this.weapon === 'sword' ? 36 : 28;
+      if (closestDist < attackRange && this.punchCooldown <= 0) {
+        this.punchCooldown = 18 + Math.floor(Math.random() * 10);
+        this.punchProgress = 1;
+        this.punchAngle = angle;
+
+        // Damage & Knockback
+        const damage = this.weapon === 'sword' ? 28 : 16;
+        closest.hp -= damage;
+        spawnHitSparks(closest.x, closest.y);
+        spawnDamageNumber(closest.x, closest.y, damage);
+        sfx.playPunch();
+
+        // Push opponent
+        const knockForce = this.weapon === 'sword' ? 8 : 5;
+        closest.vx += Math.cos(angle) * knockForce;
+        closest.vy += Math.sin(angle) * knockForce;
+
+        if (closest.hp <= 0 && closest.alive) {
+          this.kills += 1;
+        }
+      }
+    }
+
+    if (this.punchCooldown > 0) this.punchCooldown--;
+    if (this.punchProgress > 0) this.punchProgress -= 0.15;
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    // 1. Soft Shadow on Ring Floor
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Shield Bubble (if active)
+    if (this.hasShield) {
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // 3. Stickman Body
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+
+    // Torso
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 12);
+    ctx.stroke();
+
+    // Legs
+    ctx.beginPath();
+    ctx.moveTo(0, 12);
+    ctx.lineTo(-6, 20);
+    ctx.moveTo(0, 12);
+    ctx.lineTo(6, 20);
+    ctx.stroke();
+
+    // Arms & Punching Glove
+    if (this.punchProgress > 0) {
+      const punchDist = this.punchProgress * 18;
+      const px = Math.cos(this.punchAngle) * punchDist;
+      const py = Math.sin(this.punchAngle) * punchDist;
+
+      // Punching Arm
+      ctx.beginPath();
+      ctx.moveTo(0, 4);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+
+      // Glove
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Idle Arms
+      ctx.beginPath();
+      ctx.moveTo(0, 4);
+      ctx.lineTo(-8, 8);
+      ctx.moveTo(0, 4);
+      ctx.lineTo(8, 8);
+      ctx.stroke();
+    }
+
+    // 4. Weapon (Sword / Club)
+    if (this.weapon === 'sword') {
+      ctx.fillStyle = '#cbd5e1';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(8, 4);
+      ctx.lineTo(22, -10);
+      ctx.stroke();
+    }
+
+    // 5. Head (Profile Avatar with Golden Ring)
+    const headRadius = 14;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, -10, headRadius, 0, Math.PI * 2);
+    ctx.clip();
+
+    const avatarImg = getAvatarImg(this.avatar);
+    if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+      ctx.drawImage(avatarImg, -headRadius, -10 - headRadius, headRadius * 2, headRadius * 2);
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Head border ring
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -10, headRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 6. HP Bar above head
+    const hpWidth = 28;
+    const hpHeight = 3.5;
+    const hpRatio = Math.max(0, this.hp / this.maxHp);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(-hpWidth / 2, -30, hpWidth, hpHeight);
+    ctx.fillStyle = hpRatio > 0.5 ? '#10b981' : (hpRatio > 0.25 ? '#f59e0b' : '#ef4444');
+    ctx.fillRect(-hpWidth / 2, -30, hpWidth * hpRatio, hpHeight);
+
+    // 7. Nickname
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9px Kanit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.nickname, 0, -34);
+
+    ctx.restore();
+  }
+}
+
+// ==========================================
+// BACKGROUND STAGE RENDERING (Temple Fair งานวัด)
+// ==========================================
+function drawTempleFairBackground() {
+  const w = bgCanvas.width;
+  const h = bgCanvas.height;
+  const ring = getRing();
+
+  bgCtx.clearRect(0, 0, w, h);
+
+  // 1. Deep Night Sky
+  const skyGrad = bgCtx.createLinearGradient(0, 0, 0, h * 0.7);
+  skyGrad.addColorStop(0, '#090d1f');
+  skyGrad.addColorStop(0.5, '#131835');
+  skyGrad.addColorStop(1, '#1e1c38');
+  bgCtx.fillStyle = skyGrad;
+  bgCtx.fillRect(0, 0, w, h);
+
+  // 2. Rotating Spotlights in Night Sky
+  spotlightAngle += 0.015;
+  const spotSources = [w * 0.2, w * 0.5, w * 0.8];
+  spotSources.forEach((sx, idx) => {
+    bgCtx.save();
+    const beamAngle = Math.sin(spotlightAngle + idx * 1.5) * 0.35 - (Math.PI / 2);
+    const grad = bgCtx.createLinearGradient(sx, h * 0.45, sx + Math.cos(beamAngle) * 400, (h * 0.45) + Math.sin(beamAngle) * 400);
+    grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+    grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    bgCtx.fillStyle = grad;
+    bgCtx.beginPath();
+    bgCtx.moveTo(sx - 10, h * 0.45);
+    bgCtx.lineTo(sx + Math.cos(beamAngle - 0.15) * 400, (h * 0.45) + Math.sin(beamAngle - 0.15) * 400);
+    bgCtx.lineTo(sx + Math.cos(beamAngle + 0.15) * 400, (h * 0.45) + Math.sin(beamAngle + 0.15) * 400);
+    bgCtx.closePath();
+    bgCtx.fill();
+    bgCtx.restore();
+  });
+
+  // 3. Golden Ferris Wheel (Left side)
+  ferrisAngle += 0.008;
+  const fwx = w * 0.18;
+  const fwy = h * 0.28;
+  const fwr = 48;
+  bgCtx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+  bgCtx.lineWidth = 2;
+  bgCtx.beginPath();
+  bgCtx.arc(fwx, fwy, fwr, 0, Math.PI * 2);
+  bgCtx.stroke();
+
+  // Ferris Spokes & Cabins
+  for (let a = 0; a < 8; a++) {
+    const ang = ferrisAngle + (a * Math.PI / 4);
+    bgCtx.beginPath();
+    bgCtx.moveTo(fwx, fwy);
+    bgCtx.lineTo(fwx + Math.cos(ang) * fwr, fwy + Math.sin(ang) * fwr);
+    bgCtx.stroke();
+    // Bulb cabin
+    bgCtx.fillStyle = ['#f43f5e', '#38bdf8', '#fbbf24', '#a855f7'][a % 4];
+    bgCtx.beginPath();
+    bgCtx.arc(fwx + Math.cos(ang) * fwr, fwy + Math.sin(ang) * fwr, 4, 0, Math.PI * 2);
+    bgCtx.fill();
+  }
+
+  // 4. Golden Thai Temple Pagoda (Center/Right)
+  const px = w * 0.5;
+  const py = h * 0.35;
+  bgCtx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+  bgCtx.beginPath();
+  bgCtx.moveTo(px, py - 60);
+  bgCtx.lineTo(px - 22, py);
+  bgCtx.lineTo(px + 22, py);
+  bgCtx.closePath();
+  bgCtx.fill();
+
+  // 5. Carnival Tents (งานวัดผ้าใบสลับสี)
+  const tentX = w * 0.82;
+  const tentY = h * 0.36;
+  bgCtx.fillStyle = '#e11d48';
+  bgCtx.fillRect(tentX - 25, tentY, 50, 20);
+  bgCtx.fillStyle = '#ffffff';
+  for (let s = 0; s < 5; s++) {
+    bgCtx.fillRect(tentX - 25 + s * 10, tentY, 5, 20);
+  }
+
+  // 6. MAIN CIRCULAR RING PLATFORM (เวทีวงกลมมวยวัด)
+  // Ring Platform Base (Drop shadow & depth)
+  bgCtx.fillStyle = '#451a03';
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy + 12, ring.rx, ring.ry, 0, 0, Math.PI * 2);
+  bgCtx.fill();
+
+  // Ring Floor (Warm Yellow/Gold Canvas)
+  const ringGrad = bgCtx.createRadialGradient(ring.cx, ring.cy, 10, ring.cx, ring.cy, ring.rx);
+  ringGrad.addColorStop(0, '#92400e');
+  ringGrad.addColorStop(0.7, '#78350f');
+  ringGrad.addColorStop(1, '#451a03');
+  bgCtx.fillStyle = ringGrad;
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
+  bgCtx.fill();
+
+  // Concentric Stage Ring Lines
+  bgCtx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+  bgCtx.lineWidth = 1.5;
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy, ring.rx * 0.65, ring.ry * 0.65, 0, 0, Math.PI * 2);
+  bgCtx.stroke();
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy, ring.rx * 0.35, ring.ry * 0.35, 0, 0, Math.PI * 2);
+  bgCtx.stroke();
+
+  // Glowing Neon Border with Festive Bulbs
+  bgCtx.strokeStyle = '#f59e0b';
+  bgCtx.lineWidth = 4;
+  bgCtx.shadowColor = '#fbbf24';
+  bgCtx.shadowBlur = 15;
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
+  bgCtx.stroke();
+  bgCtx.shadowBlur = 0;
+
+  // Bulbs around the perimeter
+  const numBulbs = 28;
+  for (let b = 0; b < numBulbs; b++) {
+    const bAngle = (b / numBulbs) * Math.PI * 2;
+    const bx = ring.cx + Math.cos(bAngle) * ring.rx;
+    const by = ring.cy + Math.sin(bAngle) * ring.ry;
+    bgCtx.fillStyle = (b % 2 === 0) ? '#fef08a' : '#f59e0b';
+    bgCtx.beginPath();
+    bgCtx.arc(bx, by, 3, 0, Math.PI * 2);
+    bgCtx.fill();
+  }
+}
+
+// ==========================================
+// GAME COMBAT ANIMATION LOOP
+// ==========================================
+function gameLoop() {
+  requestAnimationFrame(gameLoop);
+
+  drawTempleFairBackground();
+
+  ctx.clearRect(0, 0, arenaCanvas.width, arenaCanvas.height);
+
+  // Update & Draw Fighters
+  clientFighters.forEach(f => {
+    f.update(0.016, clientFighters);
+    f.draw(ctx);
+  });
+
+  // Draw Hit Sparks
+  for (let i = hitParticles.length - 1; i >= 0; i--) {
+    const p = hitParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.05;
+    if (p.life <= 0) {
+      hitParticles.splice(i, 1);
+      continue;
+    }
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw Floating Damage Numbers
+  for (let i = damageFloats.length - 1; i >= 0; i--) {
+    const d = damageFloats[i];
+    d.y -= 1;
+    d.life -= 0.03;
+    if (d.life <= 0) {
+      damageFloats.splice(i, 1);
+      continue;
+    }
+    ctx.fillStyle = d.color;
+    ctx.globalAlpha = d.life;
+    ctx.font = 'bold 13px Chakra Petch, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.text, d.x, d.y);
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw Floating Defeated Ghosts 👻
+  for (let i = ghosts.length - 1; i >= 0; i--) {
+    const g = ghosts[i];
+    g.y += g.vy;
+    g.life -= 0.02;
+    if (g.life <= 0) {
+      ghosts.splice(i, 1);
+      continue;
+    }
+    ctx.globalAlpha = g.life;
+    ctx.font = '22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('👻', g.x, g.y);
+    ctx.globalAlpha = 1;
+  }
+}
+requestAnimationFrame(gameLoop);
+
+// ==========================================
+// SOCKET STATE LISTENERS
+// ==========================================
+socket.on('state_update', (state) => {
+  // Update Timer
+  const mins = Math.floor(state.timeLeft / 60);
+  const secs = state.timeLeft % 60;
+  arenaTimerVal.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+  // Update Round & Alive Count
+  const fightersList = Object.values(state.fighters || {});
+  const aliveCount = fightersList.filter(f => f.alive).length;
+  roundInfoText.innerText = `รอบที่ ${state.roundNumber} • เหลือ ${aliveCount}/${fightersList.length} คน`;
+
+  // Update Leaderboard
+  champList.innerHTML = (state.leaderboard || []).slice(0, 3).map((c, idx) => `
+    <div class="champ-row">
+      <span class="champ-name">${idx + 1}. ${escapeHtml(c.nickname)}</span>
+      <span class="champ-score">${c.wins} 🏆 | ${c.kills} ⚔️</span>
+    </div>
+  `).join('');
+
+  // Update Victory Screen (Screenshot 2)
+  if (state.status === 'ROUND_END' && state.lastWinner) {
+    victoryOverlay.classList.remove('hidden');
+    nextRoundSec.innerText = state.nextRoundCountdown;
+    winnerNameText.innerText = state.lastWinner.nickname;
+    winnerDescText.innerText = `ชนะรอบที่ ${state.lastWinner.round} • น็อคไป ${state.lastWinner.kills} คน!`;
+    winnerAvatarImg.src = state.lastWinner.avatar || '/assets/default-avatar-red.svg';
+  } else {
+    victoryOverlay.classList.add('hidden');
+  }
+
+  // Update Sidebar
   renderSidebar(state);
 });
 
-function renderCornerHUDs(players) {
-  const sorted = Object.values(players || {})
-    .sort((a, b) => (b.stars * 1000 + b.marbles) - (a.stars * 1000 + a.marbles));
-
-  for (let i = 0; i < 4; i++) {
-    const hud = cornerHUDs[i];
-    const p = sorted[i];
-    if (p) {
-      hud.root.style.opacity = '1';
-      hud.avatar.src = p.avatar || (p.team === 'red' ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg');
-      hud.nick.innerText = p.nickname;
-      hud.marbles.innerText = `${p.marbles}M`;
-      hud.stars.innerText = p.stars;
-    } else {
-      hud.root.style.opacity = '0.45';
-      hud.nick.innerText = 'รอผู้เล่น...';
-      hud.marbles.innerText = '200M';
-      hud.stars.innerText = '0';
-    }
+// Spawn Fighter Event
+socket.on('spawn_fighter', (fighterData) => {
+  let existing = clientFighters.find(f => f.id === fighterData.id);
+  if (existing) {
+    existing.alive = true;
+    existing.hp = fighterData.hp;
+    existing.maxHp = fighterData.maxHp;
+    // Reposition to ring
+    const ring = getRing();
+    existing.x = ring.cx + (Math.random() - 0.5) * 80;
+    existing.y = ring.cy + (Math.random() - 0.5) * 50;
+    existing.vx = 0;
+    existing.vy = 0;
+  } else {
+    clientFighters.push(new ClientFighter(fighterData));
   }
-}
+  sfx.playBell();
+});
 
-// ==========================================
-// ✨ RENDER 3D CHIBI FIGURINES ON TILES
-// ==========================================
-function renderTokensOnBoard(players) {
-  for (let i = 0; i < 32; i++) {
-    const box = document.getElementById(`tile_box_${i}`);
-    if (box) box.innerHTML = '';
-  }
+// New Round Started
+socket.on('new_round_started', (data) => {
+  sfx.playBell();
+  victoryOverlay.classList.add('hidden');
 
-  Object.values(players || {}).forEach(p => {
-    const box = document.getElementById(`tile_box_${p.position}`);
-    if (!box) return;
-
-    const chibi = document.createElement('div');
-    chibi.className = `chibi-char ${p.hasAura ? 'has-aura' : ''} ${p.isJailed ? 'is-jailed' : ''}`;
-    chibi.id = `token_${p.id}`;
-    chibi.title = `${p.nickname} (${p.marbles}M | ⭐${p.stars})`;
-
-    const teamClass = p.team || (p.position % 2 === 0 ? 'red' : 'blue');
-    const avatarUrl = p.avatar || (teamClass === 'red' ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg');
-
-    chibi.innerHTML = `
-      <!-- Soft Ground Shadow -->
-      <div class="chibi-shadow"></div>
-
-      <!-- Floating Name Tag -->
-      <div class="chibi-nametag ${teamClass}">
-        ${p.stars > 0 ? `<span>⭐${p.stars}</span>` : ''}
-        <span>${escapeHtml(p.nickname)}</span>
-      </div>
-
-      <!-- 3D Chibi Head with Avatar Face -->
-      <div class="chibi-head ${teamClass}">
-        <img src="${avatarUrl}" class="chibi-face" alt="${p.nickname}">
-      </div>
-
-      <!-- Cute Chibi Torso (Jacket) with Arms -->
-      <div class="chibi-torso ${teamClass}">
-        <div class="chibi-arm left"></div>
-        <div class="chibi-arm right"></div>
-      </div>
-
-      <!-- Chibi Legs & Sneakers -->
-      <div class="chibi-legs">
-        <div class="chibi-foot"></div>
-        <div class="chibi-foot"></div>
-      </div>
-
-      <!-- Jail State Chain (if jailed) -->
-      ${p.isJailed ? '<div class="chibi-jail-chain">⛓️</div>' : ''}
-    `;
-
-    box.appendChild(chibi);
+  // Reset all client fighters
+  clientFighters.forEach(f => {
+    f.alive = true;
+    f.hp = f.maxHp;
+    f.weapon = 'none';
+    f.hasShield = false;
+    const ring = getRing();
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * (ring.rx * 0.65);
+    f.x = ring.cx + Math.cos(spawnAngle) * dist;
+    f.y = ring.cy + Math.sin(spawnAngle) * (dist * (ring.ry / ring.rx));
+    f.vx = 0;
+    f.vy = 0;
   });
-}
+});
 
+// Round Winner Fanfare
+socket.on('round_winner', (winner) => {
+  sfx.playVictory();
+});
+
+// Combat Buffs & Weapons
+socket.on('fighter_weapon', (data) => {
+  const f = clientFighters.find(cf => cf.id === data.id);
+  if (f) f.weapon = data.weapon;
+});
+
+socket.on('fighter_shield', (data) => {
+  const f = clientFighters.find(cf => cf.id === data.id);
+  if (f) f.hasShield = true;
+});
+
+socket.on('fighter_shockwave', (data) => {
+  sfx.playShockwave();
+  const source = clientFighters.find(cf => cf.id === data.id);
+  if (!source) return;
+
+  clientFighters.forEach(f => {
+    if (f.id !== source.id && f.alive) {
+      const angle = Math.atan2(f.y - source.y, f.x - source.x);
+      f.vx += Math.cos(angle) * 16;
+      f.vy += Math.sin(angle) * 16;
+      f.hp -= 25;
+      spawnHitSparks(f.x, f.y);
+      spawnDamageNumber(f.x, f.y, 25);
+    }
+  });
+});
+
+socket.on('fighter_ultimate', (data) => {
+  sfx.playShockwave();
+  clientFighters.forEach(f => {
+    if (f.alive) {
+      f.hp -= 35;
+      f.vx += (Math.random() - 0.5) * 18;
+      f.vy += (Math.random() - 0.5) * 18;
+      spawnHitSparks(f.x, f.y);
+      spawnDamageNumber(f.x, f.y, 35);
+    }
+  });
+});
+
+// Floating Chat Bubble
+socket.on('chat_bubble', (data) => {
+  const bubble = document.createElement('div');
+  bubble.className = 'fighter-chat-bubble';
+  bubble.innerHTML = `
+    <img src="${data.avatar || '/assets/default-avatar-red.svg'}">
+    <span><b>${escapeHtml(data.nickname)}:</b> ${escapeHtml(data.comment)}</span>
+  `;
+
+  const fighter = clientFighters.find(cf => cf.id === data.username);
+  if (fighter) {
+    bubble.style.left = `${fighter.x}px`;
+    bubble.style.top = `${fighter.y - 45}px`;
+  } else {
+    bubble.style.left = `${arenaCanvas.width * 0.4}px`;
+    bubble.style.top = `${arenaCanvas.height * 0.5}px`;
+  }
+
+  chatBubbleLayer.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 3500);
+});
+
+// ==========================================
+// SIDEBAR & LOGS
+// ==========================================
 function renderSidebar(state) {
   if (state.tiktok.isConnected) {
     sideConnStatus.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
     sideConnStatus.innerText = "เชื่อมต่อสด";
-    tiktokPill.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-semibold flex items-center gap-1.5";
+    tiktokPill.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-semibold flex items-center gap-1.5";
     tiktokPillText.innerText = `@${state.tiktok.username}`;
     sideConnectBtn.classList.add('hidden');
     sideDisconnectBtn.classList.remove('hidden');
   } else {
     sideConnStatus.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800";
     sideConnStatus.innerText = "ออฟไลน์";
-    tiktokPill.className = "text-[11px] px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5";
+    tiktokPill.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5";
     tiktokPillText.innerText = "ออฟไลน์";
     sideConnectBtn.classList.remove('hidden');
     sideDisconnectBtn.classList.add('hidden');
@@ -359,142 +823,31 @@ function renderSidebar(state) {
   sideViewerCount.innerText = Number(state.tiktok.viewerCount || 0).toLocaleString();
   sideLikeCount.innerText = Number(state.tiktok.likeCount || 0).toLocaleString();
 
-  const playerList = Object.values(state.players || {});
-  sidePlayerCount.innerText = playerList.length;
+  const fighters = Object.values(state.fighters || {});
+  sideFighterCount.innerText = fighters.length;
 
-  if (playerList.length === 0) {
-    sidePlayerTable.innerHTML = `<tr><td class="text-slate-500 italic text-center py-4">ยังไม่มีผู้เล่น</td></tr>`;
+  if (fighters.length === 0) {
+    sideFighterTable.innerHTML = `<tr><td class="text-slate-500 italic text-center py-4">ยังไม่มีนักสู้ลงเวที... กดปุ่มจำลองได้เลย!</td></tr>`;
     return;
   }
 
-  sidePlayerTable.innerHTML = playerList.map(p => {
-    const tileName = state.board && state.board[p.position] ? `${state.board[p.position].icon} #${p.position} ${state.board[p.position].name}` : `#${p.position}`;
-    return `
-      <tr class="hover:bg-slate-900">
-        <td class="py-1 px-1 flex items-center gap-1.5">
-          <img src="${p.avatar || '/assets/default-avatar-red.svg'}" class="w-4 h-4 rounded-full">
-          <span class="font-bold text-slate-200 truncate max-w-[80px]">${escapeHtml(p.nickname)}</span>
-        </td>
-        <td class="py-1 px-1 text-slate-400">${tileName}</td>
-        <td class="py-1 px-1 text-amber-300 font-bold">⭐${p.stars}</td>
-        <td class="py-1 px-1 text-sky-300 font-bold">${p.marbles}M</td>
-      </tr>
-    `;
-  }).join('');
+  sideFighterTable.innerHTML = fighters.map(f => `
+    <tr class="hover:bg-slate-900">
+      <td class="py-1 px-1 flex items-center gap-1.5">
+        <img src="${f.avatar || '/assets/default-avatar-red.svg'}" class="w-4 h-4 rounded-full">
+        <span class="font-bold text-slate-200 truncate max-w-[85px]">${escapeHtml(f.nickname)}</span>
+      </td>
+      <td class="py-1 px-1 ${f.alive ? 'text-emerald-400 font-bold' : 'text-slate-500 line-through'}">
+        ${f.alive ? `HP ${Math.floor(f.hp)}` : '💀 น็อค'}
+      </td>
+      <td class="py-1 px-1 text-amber-300 font-bold">⚔️ ${f.kills || 0}</td>
+    </tr>
+  `).join('');
 }
 
-// ==========================================
-// DICE ROLL SHOWCASE
-// ==========================================
-socket.on('dice_roll', (data) => {
-  sfx.playDice();
-  clearTimeout(diceTimeout);
-
-  rollerImg.src = data.player.avatar || '/assets/default-avatar-red.svg';
-  rollerName.innerText = `${data.player.nickname} กำลังทอย...`;
-
-  // Animate chibi jumping
-  const activeToken = document.getElementById(`token_${data.player.id}`);
-  if (activeToken) activeToken.classList.add('jumping');
-
-  dice1.innerText = '🎲';
-  if (data.isGolden) {
-    dice2.classList.remove('hidden');
-    dice2.innerText = '🎲';
-  } else {
-    dice2.classList.add('hidden');
-  }
-
-  diceSummary.innerText = data.isGolden ? '✨ ลูกเต๋าทองคำเดินเบิ้ล 2 เท่า!' : 'กำลังสุ่มลูกเต๋า...';
-  diceShowcase.classList.remove('hidden');
-
-  setTimeout(() => {
-    sfx.playStep();
-    dice1.innerText = DICE_FACES[data.dice1] || '⚅';
-    if (data.isGolden) {
-      dice2.innerText = DICE_FACES[data.dice2 || data.dice1] || '⚅';
-      diceSummary.innerText = `🎲 ได้เลข ${data.dice1} x 2 = ${data.totalSteps} ช่อง!`;
-    } else {
-      diceSummary.innerText = `🎲 ได้เลข ${data.totalSteps} ช่อง!`;
-    }
-
-    if (activeToken) activeToken.classList.remove('jumping');
-
-    diceTimeout = setTimeout(() => {
-      diceShowcase.classList.add('hidden');
-    }, 2500);
-  }, 900);
-});
-
-// ==========================================
-// POPUP EVENTS
-// ==========================================
-socket.on('board_popup', (data) => {
-  clearTimeout(popupTimeout);
-
-  if (data.type === 'star') {
-    sfx.playFanfare();
-    popupIcon.innerText = '⭐';
-  } else if (data.type === 'jail') {
-    popupIcon.innerText = '⛓️';
-  } else if (data.type === 'jackpot') {
-    sfx.playCoin();
-    popupIcon.innerText = '👑';
-  } else if (data.type === 'warp') {
-    sfx.playCoin();
-    popupIcon.innerText = '🚀';
-  } else {
-    sfx.playCoin();
-    popupIcon.innerText = '❓';
-  }
-
-  popupTitle.innerText = data.title;
-  popupDesc.innerText = data.desc;
-  if (data.avatar) {
-    popupAvatar.src = data.avatar;
-    popupAvatar.classList.remove('hidden');
-  } else {
-    popupAvatar.classList.add('hidden');
-  }
-
-  eventPopup.classList.remove('hidden');
-  popupTimeout = setTimeout(() => {
-    eventPopup.classList.add('hidden');
-  }, 4000);
-});
-
-// ==========================================
-// CHAT BUBBLES
-// ==========================================
-socket.on('chat_bubble', (data) => {
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble-item';
-
-  bubble.innerHTML = `
-    <img src="${data.avatar || '/assets/default-avatar-red.svg'}">
-    <span><b>${escapeHtml(data.nickname)}:</b> ${escapeHtml(data.comment)}</span>
-  `;
-
-  const token = document.getElementById(`token_${data.username}`);
-  if (token) {
-    const rect = token.getBoundingClientRect();
-    bubble.style.left = `${rect.left}px`;
-    bubble.style.top = `${rect.top - 35}px`;
-  } else {
-    bubble.style.left = `${window.innerWidth * 0.35 + (Math.random() - 0.5) * 80}px`;
-    bubble.style.top = `${window.innerHeight * 0.45 + (Math.random() - 0.5) * 60}px`;
-  }
-
-  chatBubbleLayer.appendChild(bubble);
-  setTimeout(() => bubble.remove(), 4000);
-});
-
-// ==========================================
-// SIDEBAR EVENTS & LOGS
-// ==========================================
+// Event Log Feed
 socket.on('new_event', (event) => {
   if (sideEventLog.querySelector('.italic')) sideEventLog.innerHTML = '';
-
   const div = document.createElement('div');
   div.className = "flex items-start gap-1.5 p-1 bg-slate-900/60 rounded";
   div.innerHTML = `
@@ -516,17 +869,6 @@ sideConnectBtn.addEventListener('click', () => {
 });
 sideDisconnectBtn.addEventListener('click', () => socket.emit('tiktok_disconnect'));
 
-sideResetBtn.addEventListener('click', () => {
-  if (confirm('คุณต้องการรีเซ็ตรอบกระดานใหม่หรือไม่?')) {
-    socket.emit('admin_reset_round');
-  }
-});
-
-// Big Center Roll Button
-centerRollBtn.addEventListener('click', () => {
-  socket.emit('sim_roll', {});
-});
-
 // Toggle Admin Sidebar
 toggleAdminBtn.addEventListener('click', () => {
   adminSidebar.classList.toggle('sidebar-collapsed');
@@ -534,17 +876,7 @@ toggleAdminBtn.addEventListener('click', () => {
   toggleAdminText.innerText = isCollapsed ? 'เปิดเมนูแอดมิน' : 'ซ่อนเมนูแอดมิน';
 });
 
-// Toggle Vertical Mobile (TikTok 9:16) vs Widescreen
-viewModeToggleBtn.addEventListener('click', () => {
-  gameArenaWrapper.classList.toggle('widescreen-mode');
-  const isWide = gameArenaWrapper.classList.contains('widescreen-mode');
-  viewModeToggleText.innerText = isWide ? 'โหมดแนวนอน (Desktop)' : 'โหมดมือถือแนวตั้ง (TikTok 9:16)';
-  viewModeToggleBtn.className = isWide 
-    ? 'px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5 transition'
-    : 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition';
-});
-
-// OBS Fullscreen Mode
+// OBS Fullscreen
 obsModeBtn.addEventListener('click', () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});
@@ -556,9 +888,9 @@ obsModeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// SIMULATOR FUNCTIONS (ปุ่มกดทดสอบ)
+// SIMULATOR ACTIONS (ทดสอบระบบ)
 // ==========================================
-const TEST_NAMES = ['น้องแว่น', 'ป๋าเบิร์ด', 'กัปตันมาร์เวล', 'มาดามแพรว', 'เสี่ยท็อป', 'เด็กวัดสายเปย์'];
+const TEST_NAMES = ['พี่มารวยขายประกัน', 'กฤษดา ประเสริฐสังข์', 'KOJiji', 'สิบสาม เมษา', 'จอมมารจี้', 'น้องแว่นสายบู๊'];
 
 window.simJoin = function() {
   const randName = TEST_NAMES[Math.floor(Math.random() * TEST_NAMES.length)];
@@ -567,28 +899,36 @@ window.simJoin = function() {
   socket.emit('sim_join', { username: randId, nickname: randName, avatar: randAvatar });
 };
 
-window.simRoll = function() {
-  socket.emit('sim_roll', {});
+window.simLike = function() {
+  socket.emit('sim_like', { count: 30 });
 };
 
 window.simRose = function() {
   socket.emit('sim_gift', { giftName: 'Rose', diamonds: 1 });
 };
 
-window.simDonut = function() {
-  socket.emit('sim_gift', { giftName: 'Donut', diamonds: 30 });
+window.simWeapon = function() {
+  socket.emit('sim_gift', { giftName: 'Sword', diamonds: 15 });
 };
 
-window.simBigGift = function() {
-  socket.emit('sim_gift', { giftName: 'Dragon', diamonds: 100 });
+window.simShield = function() {
+  socket.emit('sim_gift', { giftName: 'Shield', diamonds: 50 });
 };
 
-window.simChance = function() {
-  socket.emit('sim_chance');
+window.simShockwave = function() {
+  socket.emit('sim_gift', { giftName: 'Fireball', diamonds: 150 });
 };
 
-window.simJail = function() {
-  socket.emit('sim_jail');
+window.simUltimate = function() {
+  socket.emit('sim_gift', { giftName: 'Rocket', diamonds: 500 });
+};
+
+window.simReset = function() {
+  socket.emit('sim_reset_round');
+};
+
+window.simForceWin = function() {
+  socket.emit('sim_force_win');
 };
 
 function escapeHtml(text) {

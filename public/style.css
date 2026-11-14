@@ -24,592 +24,309 @@ body {
   background: #1e293b;
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
-}
 
 /* =========================================
-   VERTICAL 9:16 MOBILE SCREEN CANVAS (TIKTOK LIVE)
+   VERTICAL 9:16 SCREEN BOX (TIKTOK LIVE)
 ========================================= */
-.vertical-screen-box {
-  width: min(100%, 460px);
+.arena-vertical-screen {
+  width: min(100%, 440px);
   height: min(100%, 820px);
-  max-height: calc(100vh - 56px);
+  max-height: calc(100vh - 50px);
   aspect-ratio: 9 / 16;
-  border-radius: 28px;
+  border-radius: 24px;
   border: 4px solid #1e293b;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(56, 189, 248, 0.15);
-  background: radial-gradient(circle at 50% 40%, #3e5e29 0%, #293f1b 60%, #17240f 100%);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(245, 158, 11, 0.2);
+  background: radial-gradient(circle at 50% 30%, #171b38 0%, #0c0f24 50%, #050711 100%);
   position: relative;
 }
 
-/* Widescreen Mode class (if user toggles to desktop mode) */
-.widescreen-mode .vertical-screen-box {
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  aspect-ratio: auto;
-  border-radius: 0;
-  border: none;
-}
-
-/* Mobile Top Status Bar */
-.mobile-top-bar {
+/* 1. Top HUD Header */
+.arena-top-hud {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(10, 15, 26, 0.88);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 14, 26, 0.85);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
   z-index: 25;
 }
 
-.top-pill {
-  font-size: 10px;
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 2px 7px;
-  border-radius: 12px;
-  font-weight: 700;
-}
-.top-pill.gold { color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-
-/* Players Row: Top (Rank 1 & 2) & Bottom (Rank 3 & 4) */
-.players-top-row, .players-bottom-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 10px;
-  z-index: 20;
-  position: relative;
-}
-
-.mini-player-hud {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(10, 15, 26, 0.88);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  padding: 4px 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  min-width: 130px;
-}
-.mini-player-hud.blue { border-left: 3px solid #38bdf8; }
-.mini-player-hud.red { border-right: 3px solid #ef4444; flex-direction: row-reverse; }
-
-.mini-rank {
+.arena-title {
   font-family: 'Chakra Petch', sans-serif;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 900;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  flex-shrink: 0;
-}
-.rank-1 { background: radial-gradient(circle, #38bdf8, #0369a1); }
-.rank-2 { background: radial-gradient(circle, #ec4899, #9d174d); }
-.rank-3 { background: radial-gradient(circle, #0284c7, #0c4a6e); }
-.rank-4 { background: radial-gradient(circle, #b91c1c, #7f1d1d); }
-
-.mini-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid #ffffff;
-  flex-shrink: 0;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
 }
 
-.mini-info {
-  flex: 1;
-  overflow: hidden;
-}
-.mini-name {
-  font-size: 10px;
-  font-weight: 800;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 70px;
-}
-.mini-stats {
+.arena-round-sub {
   font-size: 9px;
   color: #94a3b8;
   font-weight: 700;
 }
 
-/* =========================================
-   MONEY STACKS AT 4 CORNERS
-========================================= */
-.money-stack {
-  position: absolute;
-  font-size: 20px;
-  opacity: 0.85;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
-  z-index: 10;
-  pointer-events: none;
-}
-.stack-tl { top: 75px; left: 16px; }
-.stack-tr { top: 75px; right: 16px; }
-.stack-bl { bottom: 90px; left: 16px; }
-.stack-br { bottom: 90px; right: 16px; }
-
-/* =========================================
-   ISOMETRIC 3D BOARD CONTAINER (OPTIMIZED FOR VERTICAL)
-========================================= */
-.isometric-viewport {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1100px;
-  overflow: hidden;
-  pointer-events: auto;
-}
-
-.iso-board {
-  position: relative;
-  width: 360px;
-  height: 360px;
-  transform-style: preserve-3d;
-  transform: rotateX(54deg) rotateZ(-45deg);
-  background: #6a421b;
-  border: 8px solid #533314;
-  border-radius: 16px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 0 25px rgba(0, 0, 0, 0.6);
-}
-
-/* Widescreen Board Scaled Up */
-.widescreen-mode .iso-board {
-  width: 520px;
-  height: 520px;
-}
-
-/* 32 TILES PERIMETER (9x9 Grid layout) */
-.tiles-container {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
-  gap: 2px;
-  padding: 3px;
-}
-
-.tile-cube {
-  position: relative;
-  border-radius: 4px;
-  background: #f1f5f9;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+.timer-badge-box {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
-  padding: 2px 1px;
-  color: #0f172a;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  overflow: hidden;
-  transition: transform 0.2s;
-}
-
-.tile-cube:hover {
-  transform: translateZ(6px);
-  filter: brightness(1.1);
-}
-
-.tile-cube.corner-tile {
-  background: #ffffff;
+  background: rgba(245, 158, 11, 0.12);
   border: 1.5px solid #f59e0b;
+  border-radius: 10px;
+  padding: 2px 10px;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
 }
 
-.tile-badge {
-  font-size: 7px;
-  font-weight: 800;
-  color: #ffffff;
-  background: #64748b;
-  padding: 1px 2px;
-  border-radius: 2px;
-  line-height: 1;
-}
-
-.tile-main-icon {
-  font-size: 12px;
-  line-height: 1;
-}
-
-.tile-label-th {
-  font-size: 6.5px;
-  font-weight: 800;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.tile-cost-tag {
-  font-size: 6px;
-  font-weight: 800;
-  color: #ffffff;
-  padding: 0 2px;
-  border-radius: 2px;
-  width: 100%;
-  text-align: center;
-  line-height: 1.1;
-}
-
-/* Tile Players Box */
-.tile-players-box {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-/* =========================================
-   ✨ 3D CHIBI CHARACTER FIGURINE (แนว Nendoroid/Chibi 3D)
-========================================= */
-.chibi-char {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform-style: preserve-3d;
-  transform: rotateZ(45deg) rotateX(-54deg) translateY(-14px);
-  animation: chibiIdle 2.2s infinite ease-in-out;
-  cursor: pointer;
-  z-index: 15;
-}
-
-@keyframes chibiIdle {
-  0%, 100% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-14px); }
-  50% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-19px); }
-}
-
-@keyframes chibiJump {
-  0% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-14px) scale(1); }
-  50% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-32px) scale(1.15); }
-  100% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-14px) scale(1); }
-}
-
-.chibi-char.jumping {
-  animation: chibiJump 0.4s ease-out;
-}
-
-/* Ground Soft Shadow */
-.chibi-shadow {
-  position: absolute;
-  bottom: -4px;
-  width: 20px;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.55);
-  border-radius: 50%;
-  filter: blur(1.5px);
-  transform: translateZ(-2px);
-}
-
-/* Floating Name Tag */
-.chibi-nametag {
-  position: absolute;
-  top: -16px;
-  background: rgba(10, 15, 26, 0.92);
-  border: 1px solid #38bdf8;
-  color: #ffffff;
-  font-size: 7.5px;
-  font-weight: 800;
-  padding: 1px 4px;
-  border-radius: 6px;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.chibi-nametag.red { border-color: #ef4444; }
-
-/* 3D Chibi Head (Big Cute Head) */
-.chibi-head {
-  position: relative;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
-  background: #0f172a;
-  z-index: 2;
-  overflow: hidden;
-}
-
-.chibi-face {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* Chibi Torso (Cute Jacket/Hoodie) */
-.chibi-torso {
-  position: relative;
-  width: 15px;
-  height: 11px;
-  border-radius: 4px 4px 3px 3px;
-  margin-top: -3px;
-  z-index: 1;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-}
-
-.chibi-torso.red {
-  background: linear-gradient(135deg, #ef4444, #991b1b);
-  border: 1px solid #f87171;
-}
-
-.chibi-torso.blue {
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  border: 1px solid #60a5fa;
-}
-
-.chibi-arm {
-  position: absolute;
-  top: 1px;
-  width: 4px;
-  height: 7px;
-  border-radius: 3px;
-  background: inherit;
-}
-.chibi-arm.left { left: -3px; }
-.chibi-arm.right { right: -3px; }
-
-/* Chibi Legs & Sneakers */
-.chibi-legs {
-  display: flex;
-  gap: 2px;
-  margin-top: -1px;
-}
-
-.chibi-foot {
-  width: 5px;
-  height: 4px;
-  background: #ffffff;
-  border-radius: 2px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-/* Golden Aura Effect */
-.chibi-char.has-aura .chibi-head {
-  box-shadow: 0 0 14px 4px #fbbf24;
-  border-color: #fef08a;
-}
-.chibi-char.has-aura .chibi-shadow {
-  background: radial-gradient(circle, rgba(251, 191, 36, 0.7), transparent 70%);
-  box-shadow: 0 0 12px 3px #f59e0b;
-}
-
-/* Jail State */
-.chibi-char.is-jailed .chibi-head {
-  border-color: #ef4444;
-  filter: grayscale(0.5);
-}
-.chibi-jail-chain {
-  position: absolute;
-  inset: -2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  z-index: 10;
-}
-
-/* =========================================
-   CENTER SUNKEN POND & WATER ARENA
-========================================= */
-.center-pond {
-  grid-column: 2 / 9;
-  grid-row: 2 / 9;
-  position: absolute;
-  inset: 42px;
-  background: radial-gradient(circle at 50% 50%, #1e4a66 0%, #0d273a 70%, #061522 100%);
-  border-radius: 12px;
-  border: 4px solid #4a2e12;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-}
-
-.widescreen-mode .center-pond {
-  inset: 60px;
-}
-
-.pond-logo {
-  text-align: center;
-  opacity: 0.85;
-}
-
-.pond-logo-text {
-  font-family: 'Kanit', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 189, 248, 0.4);
-}
-
-.pond-logo-sub {
-  font-family: 'Chakra Petch', sans-serif;
+.timer-sub-label {
   font-size: 8px;
+  color: #fbbf24;
   font-weight: 800;
-  color: #38bdf8;
-  letter-spacing: 1.5px;
 }
 
-/* Big Glowing Pink Roll Button & Even/Odd */
-.pond-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-dice-opt {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #475569, #1e293b);
-  border: 1.5px solid #94a3b8;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 800;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.6);
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-.btn-dice-opt:active { transform: scale(0.92); }
-
-.btn-big-roll {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 30%, #f472b6, #db2777 60%, #9d174d 100%);
-  border: 3px solid #fbcfe8;
-  box-shadow: 0 0 20px rgba(244, 114, 182, 0.8), 0 6px 16px rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-.btn-big-roll:hover { transform: scale(1.06); }
-.btn-big-roll:active { transform: scale(0.94); }
-
-.roll-arrow {
-  color: #38bdf8;
-  font-size: 13px;
-  line-height: 1;
-}
-
-.roll-text {
-  font-size: 13px;
+.timer-num {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 16px;
   font-weight: 900;
   color: #ffffff;
 }
 
-/* =========================================
-   DICE ROLLER SHOWCASE OVERLAY
-========================================= */
-.dice-showcase-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(10, 15, 26, 0.96);
-  border: 2px solid #38bdf8;
-  border-radius: 18px;
-  padding: 14px 22px;
-  box-shadow: 0 0 45px rgba(56, 189, 248, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  z-index: 50;
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* 2. Pink Join Banner */
+.join-banner-bar {
+  background: linear-gradient(90deg, #db2777, #e11d48, #f43f5e);
+  padding: 5px 8px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
+  z-index: 24;
 }
 
-.roller-chip {
-  display: flex;
+.join-banner-content {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
   font-weight: 800;
-}
-.roller-chip img {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid #38bdf8;
-}
-
-.dice-pair { display: flex; gap: 10px; }
-
-.dice-cube-face {
-  font-size: 48px;
-  line-height: 1;
   color: #ffffff;
-  text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-  animation: tumble 0.5s infinite;
-}
-.dice-cube-face.gold { color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.8); }
-
-@keyframes tumble {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.15) rotate(180deg); }
-  100% { transform: scale(1) rotate(360deg); }
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-.dice-summary-label {
+.join-dot {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+/* 3. Gift Reward Guide Panel (ตรงตามรูปที่ 1) */
+.reward-guide-panel {
+  background: rgba(8, 11, 22, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 8px;
+  z-index: 22;
+}
+
+.reward-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.tier-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 2px 1px;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+.tier-item .cost {
+  display: block;
+  font-size: 7.5px;
+  color: #fbbf24;
+}
+
+.reward-sub-actions {
+  font-size: 8.5px;
+  color: #cbd5e1;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* 4. Champion Leaderboard (Top Right inside canvas) */
+.champion-hud-card {
+  position: absolute;
+  top: 96px;
+  right: 10px;
+  width: 145px;
+  background: rgba(10, 14, 26, 0.9);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+
+.champ-head {
   font-family: 'Chakra Petch', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 3px;
+  margin-bottom: 4px;
+}
+
+.champ-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  padding: 2px 0;
+  color: #e2e8f0;
+}
+
+.champ-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75px;
+}
+
+.champ-score {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+/* 5. Main Combat Ring Viewport */
+.arena-ring-viewport {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-stage-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.combat-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+/* Cheering Crowd Silhouettes */
+.crowd-silhouettes {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: radial-gradient(circle at 50% 120%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+  pointer-events: none;
+  z-index: 12;
+}
+
+/* 6. Victory Overlay Modal (ตรงตามรูปที่ 2) */
+.victory-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.next-round-counter {
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 24px;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+.victory-winner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.trophy-badge {
+  font-size: 56px;
+  line-height: 1;
+  filter: drop-shadow(0 0 20px #fbbf24);
+  animation: bounceTrophy 1.5s infinite;
+}
+
+@keyframes bounceTrophy {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.victory-winner-title {
+  margin-top: 10px;
+}
+
+.winner-name {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+  letter-spacing: 1px;
+}
+
+.winner-desc {
   font-size: 15px;
   font-weight: 800;
-  color: #38bdf8;
+  color: #ffffff;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
 }
 
-/* =========================================
-   POPUP EVENT CARD
-========================================= */
-.event-popup-card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
-  border: 2px solid #fbbf24;
-  border-radius: 18px;
-  padding: 16px 22px;
-  box-shadow: 0 0 45px rgba(251, 191, 36, 0.6);
-  text-align: center;
-  z-index: 55;
-  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  max-width: 320px;
+.winner-avatar-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #fbbf24;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+  overflow: hidden;
 }
-.popup-big-icon { font-size: 38px; margin-bottom: 4px; }
-.popup-title-text { font-family: 'Chakra Petch', sans-serif; font-size: 18px; font-weight: 900; color: #fbbf24; }
-.popup-desc-text { font-size: 12px; color: #e2e8f0; margin: 4px 0 8px 0; }
-.popup-user-avatar { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #fbbf24; margin: 0 auto; }
 
-/* =========================================
-   FLOATING CHAT BUBBLES
-========================================= */
+.winner-avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 7. Floating Chat Bubbles */
 .chat-bubble-layer {
   position: absolute;
   inset: 0;
@@ -618,7 +335,7 @@ body {
   z-index: 30;
 }
 
-.chat-bubble-item {
+.fighter-chat-bubble {
   position: absolute;
   display: flex;
   align-items: center;
@@ -626,67 +343,32 @@ body {
   padding: 4px 8px;
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.95);
-  border: 1.5px solid #38bdf8;
+  border: 1.5px solid #fbbf24;
   color: #ffffff;
   font-size: 10px;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-  animation: bubbleFloat 4s forwards;
+  animation: bubbleFloat 3.5s forwards;
 }
-.chat-bubble-item img { width: 16px; height: 16px; border-radius: 50%; }
+
+.fighter-chat-bubble img {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
 
 @keyframes bubbleFloat {
-  0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+  0% { opacity: 0; transform: translateY(8px) scale(0.9); }
   10% { opacity: 1; transform: translateY(0) scale(1); }
   80% { opacity: 1; transform: translateY(-20px); }
   100% { opacity: 0; transform: translateY(-40px); }
 }
 
-/* =========================================
-   BOTTOM INSTRUCTIONS FOOTER
-========================================= */
-.game-footer-bar {
-  display: flex;
-  justify-content: space-between;
-  gap: 4px;
-  padding: 6px 8px;
-  background: rgba(6, 10, 20, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 20;
-}
-
-.footer-chip {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(15, 23, 42, 0.8);
-  padding: 3px 5px;
-  border-radius: 6px;
-  font-size: 9px;
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.chip-badge {
-  font-size: 8px;
-  font-weight: 800;
-  padding: 1px 3px;
-  border-radius: 3px;
-}
-.chip-badge.free { background: #10b981; color: #ffffff; }
-.chip-badge.rose { background: #f59e0b; color: #000000; }
-.chip-badge.donut { background: #a855f7; color: #ffffff; }
-.chip-badge.warp { background: #ef4444; color: #ffffff; }
-
-/* Admin Sidebar Collapsed state */
+/* Sidebar Collapsed state */
 .sidebar-collapsed {
   margin-right: -384px;
 }
 
-@keyframes popIn {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}
-
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 .hidden { display: none !important; }
