@@ -1,6 +1,6 @@
 // ========================================================
-// ARENA LIVE: FIGHTER BLAZE (16-BIT RETRO PIXEL EDITION)
-// สังเวียนประลองมวยวัด TikTok Live สไตล์ Retro Arcade 16-Bit
+// ARENA LIVE: FIGHTER BLAZE (16-BIT CYBERPUNK ROOFTOP ARENA)
+// สังเวียนดาดฟ้าไซเบอร์พังก์ TikTok Live สไตล์ Retro 16-Bit
 // ========================================================
 
 const socket = io();
@@ -11,7 +11,6 @@ const bgCtx = bgCanvas.getContext('2d');
 const arenaCanvas = document.getElementById('arenaCanvas');
 const ctx = arenaCanvas.getContext('2d');
 
-// Enable pixelated rendering on all contexts
 bgCtx.imageSmoothingEnabled = false;
 ctx.imageSmoothingEnabled = false;
 
@@ -49,7 +48,7 @@ const sideEventLog = document.getElementById('sideEventLog');
 const sideClearLogBtn = document.getElementById('sideClearLogBtn');
 
 // ========================================================
-// RETRO 16-BIT / 8-BIT AUDIO SYNTHESIZER (Web Audio API)
+// RETRO 16-BIT / 8-BIT AUDIO SYNTHESIZER
 // ========================================================
 class RetroSoundFX {
   constructor() {
@@ -66,7 +65,6 @@ class RetroSoundFX {
     }
   }
 
-  // 8-Bit Boxing Bell (Ring Ring!)
   playBell() {
     if (this.muted) return;
     this.ensure();
@@ -88,7 +86,6 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
-  // Retro Punch / Kick Impact (Noise + Square drop)
   playPunch() {
     if (this.muted) return;
     this.ensure();
@@ -109,7 +106,6 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
-  // Special Laser Projectile Blast (Cybernetic Arm Beam)
   playSpecial() {
     if (this.muted) return;
     this.ensure();
@@ -130,7 +126,6 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
-  // Energy Block / Shield Deflect (High ping)
   playBlock() {
     if (this.muted) return;
     this.ensure();
@@ -151,7 +146,6 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
-  // Retro Arcade Victory Jingle (8-bit Arpeggio)
   playVictory() {
     if (this.muted) return;
     this.ensure();
@@ -221,18 +215,31 @@ function resizeCanvases() {
 window.addEventListener('resize', resizeCanvases);
 resizeCanvases();
 
-// Ring Geometry (Elliptical 16-Bit Battle Stage in Perspective)
+// Rooftop Arena Combat Boundary (Positioned on the wet rooftop floor)
 function getRing() {
   const cx = viewW / 2;
-  const cy = viewH * 0.58;
-  const rx = viewW * 0.44;
-  const ry = viewH * 0.22;
+  const cy = viewH * 0.72; // Centered on the open concrete rooftop
+  const rx = viewW * 0.43; // Width
+  const ry = viewH * 0.18; // 2.5D perspective height
   return { cx, cy, rx, ry };
 }
 
 // ========================================================
-// FIGHTER BLAZE SPRITE SYSTEM (Loading all 6 Palettes)
+// ASSET LOADERS (CYBERPUNK BG & FIGHTER BLAZE SPRITES)
 // ========================================================
+const cyberpunkBgImg = new Image();
+cyberpunkBgImg.src = '/assets/cyberpunk-bg.png';
+
+const cyberSharkImg = new Image();
+cyberSharkImg.src = '/assets/cyber_shark.png';
+
+const cyberCarImg = new Image();
+cyberCarImg.src = '/assets/cyber_car1.png';
+
+const projectileImg = new Image();
+projectileImg.src = '/assets/fighter/projectile_0.png';
+
+// Pre-load all 6 palettes of Fighter: Blaze
 const SPRITE_NAMES = {
   idle: ['idle_0', 'idle_1', 'idle_2', 'idle_3', 'idle_4'],
   attack: ['attack_0', 'attack_1', 'attack_2', 'attack_3', 'attack_4', 'attack_5'],
@@ -243,48 +250,46 @@ const SPRITE_NAMES = {
   projectile: ['projectile_0']
 };
 
-// Cache for all loaded sprite images
 const SPRITE_CACHE = {};
-
-function loadSpriteImage(url) {
-  const img = new Image();
-  img.src = url;
-  return img;
-}
-
-// Pre-load all 6 palettes
 for (let pal = 0; pal < 6; pal++) {
   SPRITE_CACHE[pal] = {};
   const basePath = pal === 0 ? '/assets/fighter' : `/assets/fighter/pal_${pal}`;
-
   for (const [cat, names] of Object.entries(SPRITE_NAMES)) {
-    SPRITE_CACHE[pal][cat] = names.map(name => loadSpriteImage(`${basePath}/${name}.png`));
+    SPRITE_CACHE[pal][cat] = names.map(name => {
+      const im = new Image();
+      im.src = `${basePath}/${name}.png`;
+      return im;
+    });
   }
 }
 
-// Projectile image
-const projectileImg = loadSpriteImage('/assets/fighter/projectile_0.png');
-
-// Avatar Image Cache
-const avatarImgCache = new Map();
-function getAvatarImg(url) {
-  if (!url) return null;
-  if (avatarImgCache.has(url)) return avatarImgCache.get(url);
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.src = url;
-  avatarImgCache.set(url, img);
-  return img;
-}
-
 // ========================================================
-// PARTICLES, PROJECTILES & COMBAT VISUALS
+// DYNAMIC CYBERPUNK SCENE OBJECTS & PARTICLES
 // ========================================================
+// 1. Flying Cyberpunk Hovercars (รถบินข้ามตึกในอากาศ)
+const hoverCars = [
+  { x: -60, yRel: 0.28, speed: 1.7, dir: 1, type: 'police' },
+  { x: 500, yRel: 0.33, speed: -1.3, dir: -1, type: 'taxi' },
+  { x: -120, yRel: 0.23, speed: 0.9, dir: 1, type: 'transport' }
+];
+
+// 2. Rising Steam & Smoke from Pipes (ควันลอยพวยพุ่งจากท่อ)
+let steamParticles = [];
+
+// 3. Fire Particles for the Barrels (ไฟลุกในถังน้ำมัน)
+let fireParticles = [];
+
+// 4. Combat Hit Sparks & Damage Numbers
 let hitParticles = [];
 let damageFloats = [];
 let ghosts = [];
 let activeProjectiles = [];
 
+// Rotating Moon HUD angle & Searchlight angles
+let moonHudAngle = 0;
+let searchlightAngle = 0;
+
+// Spawn Hit Sparks
 function spawnPixelHitSparks(x, y, isSpecial = false) {
   const count = isSpecial ? 16 : 8;
   const colors = isSpecial ? ['#38bdf8', '#0284c7', '#ffffff'] : ['#facc15', '#ef4444', '#ffffff'];
@@ -321,7 +326,7 @@ function spawnPixelGhost(x, y, palette) {
   });
 }
 
-// Special Projectile Class (แถวที่ 3 Special Energy Ball)
+// Special Projectile Class (แถวที่ 3 Special Plasma Blast)
 class SpecialProjectile {
   constructor(x, y, vx, vy, ownerId, palette) {
     this.x = x;
@@ -341,28 +346,25 @@ class SpecialProjectile {
     this.y += this.vy;
     this.angle += 0.2;
 
-    // Trail particle
     hitParticles.push({
       x: this.x + (Math.random() - 0.5) * 8,
       y: this.y + (Math.random() - 0.5) * 8,
       vx: -this.vx * 0.15,
       vy: -this.vy * 0.15,
       size: Math.floor(Math.random() * 3 + 2),
-      life: 0.6,
+      life: 0.5,
       color: '#38bdf8'
     });
 
-    // Check collision with enemy fighters
     allFighters.forEach(other => {
       if (other.id !== this.ownerId && other.alive && this.alive) {
         const d = Math.hypot(other.x - this.x, other.y - this.y);
         if (d < this.radius + 16) {
           this.alive = false;
 
-          // Damage & Knockback
           other.hp -= 35;
           other.state = 'hurt';
-          other.stateTimer = 18;
+          other.animTicks = 0;
 
           const angle = Math.atan2(other.y - this.y, other.x - this.x);
           other.vx += Math.cos(angle) * 16;
@@ -387,7 +389,6 @@ class SpecialProjectile {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
 
-    // Glowing Cyan Core
     ctx.shadowColor = '#38bdf8';
     ctx.shadowBlur = 12;
 
@@ -404,11 +405,9 @@ class SpecialProjectile {
 }
 
 // ========================================================
-// CLIENT FIGHTER (FIGHTER: BLAZE SPRITE ANIMATIONS)
+// CLIENT FIGHTER (FIGHTER: BLAZE ANIMATION ENGINE)
 // ========================================================
 let clientFighters = [];
-let ferrisAngle = 0;
-let spotlightAngle = 0;
 
 class ClientFighter {
   constructor(data) {
@@ -430,21 +429,18 @@ class ClientFighter {
     this.kills = 0;
     this.isBoss = false;
 
-    // Physics position on ring
     this.x = ring.cx + Math.cos(spawnAngle) * dist;
     this.y = ring.cy + Math.sin(spawnAngle) * (dist * (ring.ry / ring.rx));
     this.vx = (Math.random() - 0.5) * 1;
     this.vy = (Math.random() - 0.5) * 1;
 
-    // Sprite State Machine
-    // 'idle', 'run', 'attack', 'special', 'block', 'hurt'
+    // Sprite State: 'idle', 'run', 'attack', 'special', 'block', 'hurt'
     this.state = 'idle';
     this.frameIndex = 0;
     this.animTicks = 0;
     this.facingLeft = false;
     this.attackCooldown = Math.floor(Math.random() * 20);
-    this.attackType = 0; // 0: punch combo, 1: flying kick, 2: sweep kick, 3: dash punch
-    this.tumbleAngle = 0;
+    this.attackType = 0;
   }
 
   update(dt, allFighters) {
@@ -452,18 +448,17 @@ class ClientFighter {
 
     const ring = getRing();
 
-    // 1. Friction & Velocity
+    // Friction & Velocity
     this.x += this.vx;
     this.y += this.vy;
     this.vx *= 0.86;
     this.vy *= 0.86;
 
-    // Facing direction
     if (Math.abs(this.vx) > 0.2) {
       this.facingLeft = this.vx < 0;
     }
 
-    // 2. Check Ring-Out (Elliptical Boundary)
+    // Check Ring-Out (Falls off the skyscraper rooftop!)
     const dx = (this.x - ring.cx) / ring.rx;
     const dy = (this.y - ring.cy) / ring.ry;
     const distRatio = Math.sqrt(dx * dx + dy * dy);
@@ -475,7 +470,7 @@ class ClientFighter {
       return;
     }
 
-    // 3. AI Target Closest Enemy
+    // AI Target Closest Enemy
     let closest = null;
     let closestDist = 9999;
     allFighters.forEach(other => {
@@ -504,16 +499,15 @@ class ClientFighter {
         this.state = 'idle';
       }
 
-      // 4. Attack when in range
+      // Attack when close
       const attackRange = 36;
       if (closestDist < attackRange && this.attackCooldown <= 0) {
         this.attackCooldown = 24 + Math.floor(Math.random() * 15);
         this.state = 'attack';
         this.frameIndex = 0;
         this.animTicks = 0;
-        this.attackType = Math.floor(Math.random() * 4); // Variety of punch/kicks from Row 2
+        this.attackType = Math.floor(Math.random() * 4);
 
-        // Deal damage on attack frame
         const damage = this.isBoss ? 45 : (this.weapon === 'sword' ? 28 : 18);
         closest.hp -= damage;
         closest.state = 'hurt';
@@ -523,7 +517,6 @@ class ClientFighter {
         spawnPixelDamage(closest.x, closest.y, damage);
         sfx.playPunch();
 
-        // Push opponent
         const knockForce = this.isBoss ? 14 : 7;
         closest.vx += Math.cos(angle) * knockForce;
         closest.vy += Math.sin(angle) * knockForce;
@@ -536,28 +529,23 @@ class ClientFighter {
 
     if (this.attackCooldown > 0) this.attackCooldown--;
 
-    // 5. Update Sprite Animation Frames
     this.updateAnimation();
   }
 
-  // Handle frame progression for each animation state
   updateAnimation() {
     this.animTicks++;
 
     if (this.state === 'idle') {
-      // Row 1 (IDLE): 5 frames, gentle breathing & cyber arm pulse
       if (this.animTicks >= 7) {
         this.animTicks = 0;
         this.frameIndex = (this.frameIndex + 1) % 5;
       }
     } 
     else if (this.state === 'run') {
-      // Row 4 (MOVEMENT): 4 frames, running with pixel dust
       if (this.animTicks >= 5) {
         this.animTicks = 0;
         this.frameIndex = (this.frameIndex + 1) % 4;
 
-        // Running dust particles
         if (Math.random() > 0.4) {
           hitParticles.push({
             x: this.x + (this.facingLeft ? 8 : -8),
@@ -566,13 +554,12 @@ class ClientFighter {
             vy: -Math.random() * 0.8,
             size: 2,
             life: 0.4,
-            color: '#cbd5e1'
+            color: '#94a3b8'
           });
         }
       }
     } 
     else if (this.state === 'attack') {
-      // Row 2 (PUNCH & KICK): 6 frames
       if (this.animTicks >= 4) {
         this.animTicks = 0;
         this.frameIndex++;
@@ -584,12 +571,10 @@ class ClientFighter {
       }
     } 
     else if (this.state === 'special') {
-      // Row 3 (SPECIAL): 4 frames
       if (this.animTicks >= 6) {
         this.animTicks = 0;
         this.frameIndex++;
 
-        // Fire projectile on frame 2
         if (this.frameIndex === 2) {
           const dir = this.facingLeft ? -1 : 1;
           activeProjectiles.push(new SpecialProjectile(
@@ -605,14 +590,12 @@ class ClientFighter {
       }
     } 
     else if (this.state === 'block') {
-      // Row 5 (HIT & BLOCK): 3 block frames
       if (this.animTicks >= 6) {
         this.animTicks = 0;
         this.frameIndex = (this.frameIndex + 1) % 3;
       }
     } 
     else if (this.state === 'hurt') {
-      // Row 5 Hurt: hold for 14 ticks then return
       if (this.animTicks >= 14) {
         this.animTicks = 0;
         this.state = 'idle';
@@ -621,7 +604,6 @@ class ClientFighter {
     }
   }
 
-  // Render the 16-Bit Pixel Sprite
   draw(ctx) {
     if (!this.alive) return;
 
@@ -631,17 +613,17 @@ class ClientFighter {
     const scale = this.isBoss ? 1.4 : 0.72;
     ctx.scale(scale, scale);
 
-    // 1. Pixel Art Drop Shadow on Arena Floor
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    // Realistic Drop Shadow on Wet Rooftop Floor
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     ctx.fillRect(-18, 12, 36, 6);
     ctx.fillRect(-12, 10, 24, 10);
 
-    // 2. Flip horizontally based on facing direction
+    // Orientation Flip
     if (this.facingLeft) {
       ctx.scale(-1, 1);
     }
 
-    // 3. Get Active Sprite Frame
+    // Active Sprite Frame
     const palSprites = SPRITE_CACHE[this.palette] || SPRITE_CACHE[0];
     let spriteImg = null;
 
@@ -659,49 +641,42 @@ class ClientFighter {
       spriteImg = palSprites.hurt[0];
     }
 
-    // 4. Draw Sprite Anchored to Ground
     if (spriteImg && spriteImg.complete) {
       const sw = spriteImg.naturalWidth || 70;
       const sh = spriteImg.naturalHeight || 95;
-      // Anchor bottom-center at (0, 16)
       ctx.drawImage(spriteImg, -sw / 2, 16 - sh);
     } else {
-      // Fallback pixel rect if image loading
       ctx.fillStyle = this.color;
       ctx.fillRect(-12, -40, 24, 52);
     }
 
-    // Restore orientation for overhead HUD elements
     if (this.facingLeft) {
       ctx.scale(-1, 1);
     }
 
-    // 5. Crown for Top Killer (👑 16-Bit Pixel Crown)
+    // Crown for Kill Leader
     if (this.kills >= 2) {
       ctx.font = '16px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('👑', 0, -82);
     }
 
-    // 6. Retro 16-Bit Arcade HP Bar
+    // Retro 16-Bit Arcade HP Bar
     const hpW = 42;
     const hpH = 5;
     const hpY = -68;
     const hpRatio = Math.max(0, this.hp / this.maxHp);
 
-    // Black outer border
     ctx.fillStyle = '#000000';
     ctx.fillRect(-hpW / 2 - 2, hpY - 2, hpW + 4, hpH + 4);
 
-    // Red background
     ctx.fillStyle = '#7f1d1d';
     ctx.fillRect(-hpW / 2, hpY, hpW, hpH);
 
-    // Green/Amber/Red Health Fill (Chunky pixel blocks)
     ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : (hpRatio > 0.25 ? '#eab308' : '#ef4444');
     ctx.fillRect(-hpW / 2, hpY, Math.floor(hpW * hpRatio), hpH);
 
-    // 7. Player Nickname Badge (Retro Pixel Font)
+    // Player Nickname
     ctx.fillStyle = '#000000';
     ctx.fillRect(-35, hpY - 14, 70, 11);
     ctx.fillStyle = '#ffffff';
@@ -715,210 +690,304 @@ class ClientFighter {
 }
 
 // ========================================================
-// RETRO PIXEL ART TEMPLE FAIR BACKGROUND (16-BIT RETRO)
+// CYBERPUNK ROOFTOP BACKGROUND & ANIMATED SCENE OBJECTS
 // ========================================================
-// Offscreen Low-Res Canvas for authentic chunky pixel rasterization
-const offBgCanvas = document.createElement('canvas');
-const offBgCtx = offBgCanvas.getContext('2d');
-offBgCtx.imageSmoothingEnabled = false;
+function drawCyberpunkBackground() {
+  const w = viewW;
+  const h = viewH;
+  const time = Date.now() * 0.001;
 
-// Pre-computed stars
-const PIXEL_STARS = [];
-for (let i = 0; i < 40; i++) {
-  PIXEL_STARS.push({
-    x: Math.random(),
-    y: Math.random() * 0.42,
-    blinkSpeed: Math.random() * 0.08 + 0.02
+  bgCtx.clearRect(0, 0, w, h);
+
+  // 1. Base High-Fidelity Cyberpunk Rooftop Background Image
+  if (cyberpunkBgImg.complete && cyberpunkBgImg.naturalWidth > 0) {
+    bgCtx.drawImage(cyberpunkBgImg, 0, 0, w, h);
+  } else {
+    bgCtx.fillStyle = '#090d1f';
+    bgCtx.fillRect(0, 0, w, h);
+  }
+
+  // 2. Animated Sky Searchlights (ลำแสงสปอตไลท์ส่องฟ้ากวาดไปมา)
+  searchlightAngle += 0.01;
+  [w * 0.38, w * 0.55].forEach((sx, idx) => {
+    bgCtx.save();
+    const beamAng = Math.sin(searchlightAngle + idx * 2.2) * 0.3 - (Math.PI / 2);
+    const grad = bgCtx.createLinearGradient(sx, h * 0.42, sx + Math.cos(beamAng) * 280, h * 0.42 + Math.sin(beamAng) * 280);
+    grad.addColorStop(0, idx === 0 ? 'rgba(56, 189, 248, 0.22)' : 'rgba(168, 85, 247, 0.18)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    bgCtx.fillStyle = grad;
+    bgCtx.beginPath();
+    bgCtx.moveTo(sx - 10, h * 0.42);
+    bgCtx.lineTo(sx + Math.cos(beamAng - 0.12) * 280, h * 0.42 + Math.sin(beamAng - 0.12) * 280);
+    bgCtx.lineTo(sx + Math.cos(beamAng + 0.12) * 280, h * 0.42 + Math.sin(beamAng + 0.12) * 280);
+    bgCtx.closePath();
+    bgCtx.fill();
+    bgCtx.restore();
   });
-}
 
-function drawPixelTempleFairBackground() {
-  const pw = 160; // 16-bit retro internal resolution
-  const ph = 284;
-  offBgCanvas.width = pw;
-  offBgCanvas.height = ph;
+  // 3. Animated Cyber Moon & Rotating Tech HUD Reticle (พระจันทร์และวงแหวน HUD หมุน)
+  const mx = w * 0.68;
+  const my = h * 0.12;
+  moonHudAngle += 0.008;
 
-  offBgCtx.clearRect(0, 0, pw, ph);
+  bgCtx.save();
+  bgCtx.translate(mx, my);
 
-  // 1. Dithered 16-Bit Night Sky
-  const skyColors = ['#04060f', '#090e24', '#121838', '#1c1b3f', '#2a1a3a'];
-  skyColors.forEach((color, idx) => {
-    offBgCtx.fillStyle = color;
-    offBgCtx.fillRect(0, idx * (ph * 0.12), pw, ph * 0.13);
+  // Rotating Outer HUD Ring
+  bgCtx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+  bgCtx.lineWidth = 1.5;
+  bgCtx.beginPath();
+  bgCtx.arc(0, 0, 22, moonHudAngle, moonHudAngle + Math.PI * 1.5);
+  bgCtx.stroke();
+
+  // Rotating Inner Dashed Ring
+  bgCtx.strokeStyle = 'rgba(254, 240, 138, 0.5)';
+  bgCtx.setLineDash([3, 4]);
+  bgCtx.beginPath();
+  bgCtx.arc(0, 0, 16, -moonHudAngle * 1.4, -moonHudAngle * 1.4 + Math.PI * 2);
+  bgCtx.stroke();
+  bgCtx.setLineDash([]);
+
+  // Crosshairs & Target Text
+  bgCtx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+  bgCtx.font = 'bold 6.5px monospace';
+  bgCtx.textAlign = 'center';
+  bgCtx.fillText('TARGET:LOCK', 0, 32);
+
+  bgCtx.restore();
+
+  // 4. Animated Holographic Shark (ป้ายโฮโลแกรมฉลามขยับได้ / ลอยว่ายน้ำ)
+  const sharkBaseX = w * 0.22;
+  const sharkBaseY = h * 0.16;
+  const sharkFloatY = sharkBaseY + Math.sin(time * 3) * 2.5;
+
+  bgCtx.save();
+  // Cyan Holographic Glow
+  bgCtx.shadowColor = '#38bdf8';
+  bgCtx.shadowBlur = 10;
+
+  if (cyberSharkImg.complete && cyberSharkImg.naturalWidth > 0) {
+    const sw = 56;
+    const sh = 38;
+    // Occasional micro glitch
+    const glitchX = (Math.random() > 0.96) ? (Math.random() - 0.5) * 4 : 0;
+    bgCtx.drawImage(cyberSharkImg, sharkBaseX - sw / 2 + glitchX, sharkFloatY - sh / 2, sw, sh);
+
+    // Holographic Scanline Sweep passing through the shark
+    const scanlineY = sharkFloatY - sh / 2 + ((Date.now() * 0.05) % sh);
+    bgCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.beginPath();
+    bgCtx.moveTo(sharkBaseX - sw / 2 + 4, scanlineY);
+    bgCtx.lineTo(sharkBaseX + sw / 2 - 4, scanlineY);
+    bgCtx.stroke();
+  }
+  bgCtx.restore();
+
+  // 5. Animated Flying Hovercars across Skyway (รถบินข้ามตึกไป-มา)
+  hoverCars.forEach(car => {
+    car.x += car.speed;
+    const cy = h * car.yRel;
+
+    // Wrap around screen edges
+    if (car.dir > 0 && car.x > w + 60) car.x = -60;
+    if (car.dir < 0 && car.x < -60) car.x = w + 60;
+
+    bgCtx.save();
+    bgCtx.translate(car.x, cy);
+    if (car.dir < 0) bgCtx.scale(-1, 1);
+
+    // Draw Cyber Hovercar
+    if (cyberCarImg.complete && cyberCarImg.naturalWidth > 0) {
+      bgCtx.drawImage(cyberCarImg, -18, -10, 36, 20);
+    } else {
+      bgCtx.fillStyle = '#0284c7';
+      bgCtx.fillRect(-14, -6, 28, 12);
+    }
+
+    // Jet Thruster Flame
+    bgCtx.fillStyle = '#38bdf8';
+    bgCtx.fillRect(-22 - Math.random() * 4, -2, 6 + Math.random() * 4, 4);
+
+    // Headlight Beam
+    const headBeam = bgCtx.createLinearGradient(16, 0, 60, 0);
+    headBeam.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+    headBeam.addColorStop(1, 'rgba(254, 240, 138, 0)');
+    bgCtx.fillStyle = headBeam;
+    bgCtx.beginPath();
+    bgCtx.moveTo(16, -3);
+    bgCtx.lineTo(65, -10);
+    bgCtx.lineTo(65, 10);
+    bgCtx.lineTo(16, 3);
+    bgCtx.closePath();
+    bgCtx.fill();
+
+    // Police Flashing Strobe (if police type)
+    if (car.type === 'police') {
+      const isRed = Math.floor(Date.now() * 0.01) % 2 === 0;
+      bgCtx.fillStyle = isRed ? '#ef4444' : '#38bdf8';
+      bgCtx.fillRect(0, -9, 4, 3);
+    }
+
+    bgCtx.restore();
   });
 
-  // 2. Pixel Stars
-  const timeSec = Date.now() * 0.001;
-  PIXEL_STARS.forEach((s, idx) => {
-    if (Math.sin(timeSec * 8 * s.blinkSpeed + idx) > -0.2) {
-      offBgCtx.fillStyle = idx % 2 === 0 ? '#fef08a' : '#ffffff';
-      offBgCtx.fillRect(Math.floor(s.x * pw), Math.floor(s.y * ph), 1, 1);
+  // 6. Animated Neon Signs (ป้ายไฟนีออนกะพริบ)
+  // Caution Neon Sign on the Rooftop Ledge
+  const cautionX = w * 0.26;
+  const cautionY = h * 0.66;
+  const cautionPulse = 0.7 + 0.3 * Math.sin(time * 6);
+  bgCtx.save();
+  bgCtx.strokeStyle = `rgba(251, 191, 36, ${cautionPulse})`;
+  bgCtx.lineWidth = 2;
+  bgCtx.shadowColor = '#fbbf24';
+  bgCtx.shadowBlur = 10;
+  bgCtx.strokeRect(cautionX - 16, cautionY - 24, 32, 40);
+
+  // Micro flicker on caution sign
+  if (Math.random() > 0.04) {
+    bgCtx.fillStyle = `rgba(254, 240, 138, ${cautionPulse})`;
+    bgCtx.beginPath();
+    bgCtx.moveTo(cautionX, cautionY - 14);
+    bgCtx.lineTo(cautionX - 8, cautionY);
+    bgCtx.lineTo(cautionX + 8, cautionY);
+    bgCtx.closePath();
+    bgCtx.fill();
+  }
+  bgCtx.restore();
+
+  // 7. Animated Barrels with Fire (ไฟลุกโชนในถังน้ำมัน ขยับลุกเป็นเปลว)
+  const barrelPositions = [
+    { x: w * 0.94, y: h * 0.81, size: 1.2 }, // Right foreground barrel
+    { x: w * 0.70, y: h * 0.64, size: 0.9 }  // Mid-right barrel
+  ];
+
+  barrelPositions.forEach(b => {
+    // Warm firelight glow on concrete floor
+    const firePulse = 0.8 + 0.2 * Math.sin(time * 12 + b.x);
+    const fireGlow = bgCtx.createRadialGradient(b.x, b.y, 4, b.x, b.y, 45 * b.size);
+    fireGlow.addColorStop(0, `rgba(249, 115, 22, ${0.4 * firePulse})`);
+    fireGlow.addColorStop(0.6, `rgba(239, 68, 68, ${0.15 * firePulse})`);
+    fireGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    bgCtx.fillStyle = fireGlow;
+    bgCtx.beginPath();
+    bgCtx.arc(b.x, b.y, 45 * b.size, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    // Dancing flame tongues (Yellow, Orange, Red)
+    for (let f = 0; f < 5; f++) {
+      const flOffset = (f - 2) * (3 * b.size);
+      const flHeight = (12 + Math.sin(time * 15 + f * 2.5) * 6 + Math.random() * 4) * b.size;
+
+      // Outer Red Flame
+      bgCtx.fillStyle = '#ef4444';
+      bgCtx.fillRect(b.x + flOffset - 2, b.y - flHeight, 4, flHeight);
+
+      // Mid Orange Flame
+      bgCtx.fillStyle = '#f97316';
+      bgCtx.fillRect(b.x + flOffset - 1.5, b.y - flHeight * 0.8, 3, flHeight * 0.8);
+
+      // Inner Yellow Core
+      bgCtx.fillStyle = '#fef08a';
+      bgCtx.fillRect(b.x + flOffset - 1, b.y - flHeight * 0.5, 2, flHeight * 0.5);
+    }
+
+    // Spawn rising sparks/embers
+    if (Math.random() > 0.4) {
+      fireParticles.push({
+        x: b.x + (Math.random() - 0.5) * (10 * b.size),
+        y: b.y - 12 * b.size,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: -Math.random() * 1.8 - 0.8,
+        size: Math.floor(Math.random() * 2 + 1),
+        life: 0.8,
+        color: Math.random() > 0.3 ? '#fde047' : '#f97316'
+      });
     }
   });
 
-  // 3. Pixel Full Moon (พระจันทร์พิกเซล)
-  const mx = Math.floor(pw * 0.82);
-  const my = Math.floor(ph * 0.12);
-  const mr = 9;
+  // Update & Draw Fire Sparks
+  for (let i = fireParticles.length - 1; i >= 0; i--) {
+    const p = fireParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.03;
 
-  offBgCtx.fillStyle = '#fef08a';
-  for (let y = -mr; y <= mr; y++) {
-    for (let x = -mr; x <= mr; x++) {
-      if (x * x + y * y <= mr * mr) {
-        offBgCtx.fillRect(mx + x, my + y, 1, 1);
-      }
-    }
+    bgCtx.fillStyle = p.color;
+    bgCtx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+
+    if (p.life <= 0) fireParticles.splice(i, 1);
   }
-  // Moon craters
-  offBgCtx.fillStyle = '#facc15';
-  offBgCtx.fillRect(mx - 3, my - 2, 2, 2);
-  offBgCtx.fillRect(mx + 2, my + 1, 2, 2);
 
-  // 4. Stepped Searchlight Beams in Night Sky
-  spotlightAngle += 0.012;
-  const spotSources = [pw * 0.22, pw * 0.5, pw * 0.78];
-  spotSources.forEach((sx, idx) => {
-    const beamAngle = Math.sin(spotlightAngle + idx * 1.6) * 0.35 - (Math.PI / 2);
-    offBgCtx.strokeStyle = idx % 2 === 0 ? 'rgba(56, 189, 248, 0.18)' : 'rgba(251, 191, 36, 0.18)';
-    offBgCtx.lineWidth = 3;
-    offBgCtx.beginPath();
-    offBgCtx.moveTo(sx, ph * 0.5);
-    offBgCtx.lineTo(sx + Math.cos(beamAngle) * 90, ph * 0.5 + Math.sin(beamAngle) * 90);
-    offBgCtx.stroke();
+  // 8. Animated Steam & Smoke Venting from Pipes (ควันลอยพวยพุ่ง)
+  const ventPositions = [
+    { x: w * 0.14, y: h * 0.86 }, // Sewer pipe on left
+    { x: w * 0.08, y: h * 0.68 }  // Pipe vent on wall
+  ];
+
+  ventPositions.forEach(v => {
+    if (Math.random() > 0.6) {
+      steamParticles.push({
+        x: v.x + (Math.random() - 0.5) * 4,
+        y: v.y,
+        vx: Math.random() * 0.5 + 0.2, // Drift rightward with city breeze
+        vy: -Math.random() * 1.2 - 0.6,
+        size: 3,
+        alpha: 0.5,
+        life: 1
+      });
+    }
   });
 
-  // 5. Pixel Golden Thai Pagoda (เจดีย์ทองพิกเซล)
-  const pagX = Math.floor(pw * 0.5);
-  const pagY = Math.floor(ph * 0.38);
+  for (let i = steamParticles.length - 1; i >= 0; i--) {
+    const s = steamParticles[i];
+    s.x += s.vx;
+    s.y += s.vy;
+    s.size += 0.18; // Expand puff
+    s.life -= 0.02;
+    s.alpha = Math.max(0, s.life * 0.45);
 
-  // Pagoda Spire (ยอดฉัตร)
-  offBgCtx.fillStyle = '#fef08a';
-  offBgCtx.fillRect(pagX - 1, pagY - 32, 2, 10);
-  offBgCtx.fillRect(pagX - 2, pagY - 22, 4, 3);
-  offBgCtx.fillRect(pagX - 3, pagY - 19, 6, 3);
+    bgCtx.fillStyle = `rgba(224, 242, 254, ${s.alpha})`;
+    bgCtx.fillRect(Math.floor(s.x), Math.floor(s.y), Math.floor(s.size), Math.floor(s.size));
 
-  // Pagoda Bell Shape (ระฆังทอง)
-  offBgCtx.fillStyle = '#d97706';
-  for (let row = 0; row < 12; row++) {
-    const rw = 4 + row * 1.5;
-    offBgCtx.fillRect(pagX - Math.floor(rw), pagY - 16 + row, Math.floor(rw * 2), 1);
-  }
-  // Golden highlights
-  offBgCtx.fillStyle = '#f59e0b';
-  offBgCtx.fillRect(pagX - 4, pagY - 14, 3, 8);
-
-  // Tiered Base
-  offBgCtx.fillStyle = '#b45309';
-  offBgCtx.fillRect(pagX - 12, pagY - 4, 24, 3);
-  offBgCtx.fillRect(pagX - 14, pagY - 1, 28, 4);
-
-  // 6. Pixel Ferris Wheel (ชิงช้าสวรรค์พิกเซล)
-  ferrisAngle += 0.008;
-  const fwx = Math.floor(pw * 0.18);
-  const fwy = Math.floor(ph * 0.32);
-  const fwr = 18;
-
-  // Support Legs
-  offBgCtx.strokeStyle = '#b45309';
-  offBgCtx.lineWidth = 1;
-  offBgCtx.beginPath();
-  offBgCtx.moveTo(fwx, fwy);
-  offBgCtx.lineTo(fwx - 8, fwy + 22);
-  offBgCtx.moveTo(fwx, fwy);
-  offBgCtx.lineTo(fwx + 8, fwy + 22);
-  offBgCtx.stroke();
-
-  // Outer Wheel Ring
-  offBgCtx.strokeStyle = '#f59e0b';
-  offBgCtx.beginPath();
-  offBgCtx.arc(fwx, fwy, fwr, 0, Math.PI * 2);
-  offBgCtx.stroke();
-
-  // Spokes & Pixel Gondolas
-  const gondolaColors = ['#f43f5e', '#38bdf8', '#facc15', '#a855f7', '#4ade80'];
-  for (let a = 0; a < 6; a++) {
-    const ang = ferrisAngle + (a * Math.PI / 3);
-    const gx = Math.floor(fwx + Math.cos(ang) * fwr);
-    const gy = Math.floor(fwy + Math.sin(ang) * fwr);
-
-    offBgCtx.fillStyle = gondolaColors[a % gondolaColors.length];
-    offBgCtx.fillRect(gx - 2, gy - 2, 4, 4);
-  }
-  offBgCtx.fillStyle = '#facc15';
-  offBgCtx.fillRect(fwx - 1, fwy - 1, 3, 3);
-
-  // 7. Striped Pixel Carnival Tents (ซุ้มผ้าใบงานวัด)
-  // Left tent
-  offBgCtx.fillStyle = '#e11d48';
-  offBgCtx.fillRect(2, ph * 0.40, 20, 8);
-  offBgCtx.fillStyle = '#ffffff';
-  for (let s = 0; s < 4; s++) offBgCtx.fillRect(2 + s * 5, ph * 0.40, 2, 8);
-
-  // Right tent
-  offBgCtx.fillStyle = '#0284c7';
-  offBgCtx.fillRect(pw - 24, ph * 0.40, 22, 8);
-  offBgCtx.fillStyle = '#facc15';
-  for (let s = 0; s < 4; s++) offBgCtx.fillRect(pw - 24 + s * 5, ph * 0.40, 2, 8);
-
-  // Bunting Flags (ธงราวงานวัด)
-  const pennantColors = ['#f43f5e', '#facc15', '#38bdf8', '#4ade80'];
-  for (let i = 0; i < 12; i++) {
-    offBgCtx.fillStyle = pennantColors[i % pennantColors.length];
-    const bx = Math.floor(4 + i * (pw / 12));
-    const by = Math.floor(ph * 0.36 + Math.sin(i * 0.5) * 2);
-    offBgCtx.fillRect(bx, by, 3, 3);
+    if (s.life <= 0) steamParticles.splice(i, 1);
   }
 
-  // 8. PIXEL BATTLE RING PLATFORM (สังเวียนพิกเซล 2.5D)
-  const ring = {
-    cx: pw / 2,
-    cy: ph * 0.58,
-    rx: pw * 0.44,
-    ry: ph * 0.22
-  };
+  // 9. Spectator Crowd Cheering & Bobbing (กองเชียร์ดาดฟ้าโยกตัวเชียร์)
+  const crowdBob = Math.sin(time * 6) * 1.5;
+  // Left crowd glow visors
+  bgCtx.fillStyle = '#38bdf8';
+  bgCtx.fillRect(w * 0.08, h * 0.66 + crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.12, h * 0.65 - crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.16, h * 0.67 + crowdBob, 3, 1.5);
 
-  // Ring Skirting (Depth)
-  offBgCtx.fillStyle = '#3f1107';
-  for (let y = 0; y <= ring.ry; y++) {
-    const xr = Math.floor(Math.sqrt(Math.max(0, 1 - (y * y) / (ring.ry * ring.ry))) * ring.rx);
-    offBgCtx.fillRect(ring.cx - xr, Math.floor(ring.cy + y), xr * 2, 8);
-  }
+  // Right crowd glow visors
+  bgCtx.fillStyle = '#4ade80';
+  bgCtx.fillRect(w * 0.84, h * 0.65 - crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.89, h * 0.66 + crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.93, h * 0.64 - crowdBob, 3, 1.5);
 
-  // Ring Mat Floor (Dithered wood/leather)
-  offBgCtx.fillStyle = '#78350f';
-  for (let y = -ring.ry; y <= ring.ry; y++) {
-    const xr = Math.floor(Math.sqrt(Math.max(0, 1 - (y * y) / (ring.ry * ring.ry))) * ring.rx);
-    offBgCtx.fillRect(ring.cx - xr, Math.floor(ring.cy + y), xr * 2, 1);
-  }
+  // 10. High-Tech Holographic Arena Floor Boundary
+  const ring = getRing();
+  bgCtx.save();
+  bgCtx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+  bgCtx.lineWidth = 1.5;
+  bgCtx.setLineDash([6, 6]);
+  bgCtx.beginPath();
+  bgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
+  bgCtx.stroke();
+  bgCtx.setLineDash([]);
 
-  // Inner Ring Markings
-  offBgCtx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
-  offBgCtx.lineWidth = 1;
-  offBgCtx.beginPath();
-  offBgCtx.ellipse(ring.cx, ring.cy, ring.rx * 0.65, ring.ry * 0.65, 0, 0, Math.PI * 2);
-  offBgCtx.stroke();
-
-  // Bright Golden Perimeter Ring with Square Pixel LED Bulbs
-  offBgCtx.strokeStyle = '#f59e0b';
-  offBgCtx.lineWidth = 1.5;
-  offBgCtx.beginPath();
-  offBgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
-  offBgCtx.stroke();
-
-  // Perimeter Bulbs (2x2 Pixel LEDs)
-  const numBulbs = 24;
-  for (let b = 0; b < numBulbs; b++) {
-    const bAngle = (b / numBulbs) * Math.PI * 2;
-    const bx = Math.floor(ring.cx + Math.cos(bAngle) * ring.rx);
-    const by = Math.floor(ring.cy + Math.sin(bAngle) * ring.ry);
-
-    offBgCtx.fillStyle = (b % 2 === 0) ? '#fef08a' : '#f59e0b';
-    offBgCtx.fillRect(bx - 1, by - 1, 2, 2);
-  }
-
-  // 9. Scale up offscreen low-res canvas to view canvas with pixelated mode
-  bgCtx.clearRect(0, 0, viewW, viewH);
-  bgCtx.drawImage(offBgCanvas, 0, 0, viewW, viewH);
+  // Corner holographic laser nodes
+  [-1, 1].forEach(sideX => {
+    [-1, 1].forEach(sideY => {
+      const px = ring.cx + sideX * (ring.rx * 0.85);
+      const py = ring.cy + sideY * (ring.ry * 0.85);
+      bgCtx.fillStyle = '#38bdf8';
+      bgCtx.fillRect(px - 2, py - 2, 4, 4);
+    });
+  });
+  bgCtx.restore();
 }
 
 // ========================================================
@@ -927,8 +996,8 @@ function drawPixelTempleFairBackground() {
 function gameLoop() {
   requestAnimationFrame(gameLoop);
 
-  // 1. Draw 16-Bit Pixel Fair Background
-  drawPixelTempleFairBackground();
+  // 1. Draw Living Animated Cyberpunk Scene
+  drawCyberpunkBackground();
 
   // 2. Clear Fighter Canvas
   ctx.clearRect(0, 0, viewW, viewH);
@@ -990,11 +1059,9 @@ function gameLoop() {
     ctx.globalAlpha = g.alpha;
     ctx.translate(g.x, g.y);
 
-    // Pixel Halo
     ctx.fillStyle = '#facc15';
     ctx.fillRect(-8, -20, 16, 3);
 
-    // 8-Bit Ghost Face
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('👻', 0, 0);
@@ -1010,7 +1077,6 @@ requestAnimationFrame(gameLoop);
 // SOCKET.IO EVENT HANDLERS
 // ========================================================
 socket.on('state_update', (state) => {
-  // Timer & Round HUD
   const mins = Math.floor(state.timeLeft / 60);
   const secs = state.timeLeft % 60;
   arenaTimerVal.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -1019,14 +1085,10 @@ socket.on('state_update', (state) => {
   const aliveCount = fightersList.filter(f => f.alive).length;
   roundInfoText.innerText = `รอบที่ ${state.roundNumber} • เหลือ ${aliveCount}/${fightersList.length} คน`;
 
-  // Sync Fighters
   syncFighters(state.fighters || {});
-
-  // Leaderboard & Sidebar
   renderLeaderboard(state.leaderboard || []);
   renderSidebar(state);
 
-  // Victory Overlay
   if (state.status === 'ROUND_END' && state.lastWinner) {
     victoryOverlay.classList.remove('hidden');
     nextRoundSec.innerText = state.nextRoundCountdown || 5;
@@ -1038,7 +1100,6 @@ socket.on('state_update', (state) => {
   }
 });
 
-// Synchronize Server Fighters to Client
 function syncFighters(serverFighters) {
   Object.values(serverFighters).forEach(sf => {
     let local = clientFighters.find(f => f.id === sf.id);
@@ -1074,11 +1135,9 @@ socket.on('spawn_fighter', (fighterData) => {
   }
 });
 
-// Audio & Combat Event Triggers
 socket.on('round_winner', () => sfx.playVictory());
 socket.on('new_round_started', () => sfx.playBell());
 
-// Trigger Special Beam Attack
 socket.on('fighter_shockwave', (payload) => {
   const fighter = clientFighters.find(f => f.id === payload.id);
   if (fighter) {
@@ -1093,7 +1152,6 @@ socket.on('fighter_ultimate', (payload) => {
   const ring = getRing();
   sfx.playSpecial();
 
-  // Fire 4 cross-projectiles across arena
   [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(ang => {
     activeProjectiles.push(new SpecialProjectile(
       ring.cx, ring.cy, Math.cos(ang) * 9, Math.sin(ang) * 9, payload.id, 0
@@ -1126,7 +1184,6 @@ socket.on('chat_bubble', (data) => {
   setTimeout(() => bubble.remove(), 3000);
 });
 
-// Render Leaderboard
 function renderLeaderboard(board) {
   if (!board || board.length === 0) {
     champList.innerHTML = '<div class="text-[9px] text-slate-500 text-center py-1">รอแชมเปียน...</div>';
@@ -1143,7 +1200,6 @@ function renderLeaderboard(board) {
   `).join('');
 }
 
-// Render Sidebar Stats & Fighters
 function renderSidebar(state) {
   if (state.tiktok.isConnected) {
     sideConnStatus.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
@@ -1198,7 +1254,6 @@ function renderSidebar(state) {
   }).join('');
 }
 
-// Live Event Feed
 socket.on('new_event', (event) => {
   if (sideEventLog.querySelector('.italic')) sideEventLog.innerHTML = '';
   const div = document.createElement('div');
@@ -1215,14 +1270,12 @@ sideClearLogBtn.addEventListener('click', () => {
   sideEventLog.innerHTML = '<div class="text-slate-500 italic text-center py-2">ล้างแล้ว</div>';
 });
 
-// TikTok Connect Buttons
 sideConnectBtn.addEventListener('click', () => {
   const user = sideUsernameInput.value.trim();
   if (user) socket.emit('tiktok_connect', user);
 });
 sideDisconnectBtn.addEventListener('click', () => socket.emit('tiktok_disconnect'));
 
-// Toggle Admin Sidebar
 toggleAdminBtn.addEventListener('click', () => {
   adminSidebar.classList.toggle('hidden');
   const isHidden = adminSidebar.classList.contains('hidden');
@@ -1230,7 +1283,6 @@ toggleAdminBtn.addEventListener('click', () => {
   resizeCanvases();
 });
 
-// Copy OBS URL Button
 copyObsBtn.addEventListener('click', () => {
   const url = `${window.location.origin}/?mode=obs`;
   navigator.clipboard.writeText(url).then(() => {
@@ -1245,56 +1297,19 @@ if (new URLSearchParams(window.location.search).get('mode') === 'obs') {
   resizeCanvases();
 }
 
-// ========================================================
-// SIMULATOR BUTTON HANDLERS (Arcade Actions)
-// ========================================================
-window.simJoin = function() {
-  socket.emit('sim_join');
-};
-
-window.simSpawnBots = function() {
-  socket.emit('sim_spawn_bots');
-};
-
-window.simLike = function() {
-  socket.emit('sim_like', { count: 30 });
-};
-
-window.simFollow = function() {
-  socket.emit('sim_follow');
-};
-
-window.simShare = function() {
-  socket.emit('sim_share');
-};
-
-window.simRose = function() {
-  socket.emit('sim_gift', { giftName: 'Rose', diamonds: 1 });
-};
-
-window.simWeapon = function() {
-  socket.emit('sim_gift', { giftName: 'Sword', diamonds: 15 });
-};
-
-window.simShield = function() {
-  socket.emit('sim_gift', { giftName: 'Shield', diamonds: 50 });
-};
-
-window.simSpecial = function() {
-  socket.emit('sim_gift', { giftName: 'SpecialBeam', diamonds: 150 });
-};
-
-window.simUltimate = function() {
-  socket.emit('sim_gift', { giftName: 'UltimateBlast', diamonds: 500 });
-};
-
-window.simReset = function() {
-  socket.emit('sim_reset_round');
-};
-
-window.simForceWin = function() {
-  socket.emit('sim_force_win');
-};
+// Simulator Handlers
+window.simJoin = function() { socket.emit('sim_join'); };
+window.simSpawnBots = function() { socket.emit('sim_spawn_bots'); };
+window.simLike = function() { socket.emit('sim_like', { count: 30 }); };
+window.simFollow = function() { socket.emit('sim_follow'); };
+window.simShare = function() { socket.emit('sim_share'); };
+window.simRose = function() { socket.emit('sim_gift', { giftName: 'Rose', diamonds: 1 }); };
+window.simWeapon = function() { socket.emit('sim_gift', { giftName: 'Sword', diamonds: 15 }); };
+window.simShield = function() { socket.emit('sim_gift', { giftName: 'Shield', diamonds: 50 }); };
+window.simSpecial = function() { socket.emit('sim_gift', { giftName: 'SpecialBeam', diamonds: 150 }); };
+window.simUltimate = function() { socket.emit('sim_gift', { giftName: 'UltimateBlast', diamonds: 500 }); };
+window.simReset = function() { socket.emit('sim_reset_round'); };
+window.simForceWin = function() { socket.emit('sim_force_win'); };
 
 function escapeHtml(text) {
   const div = document.createElement('div');
