@@ -3,101 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เกมเศรษฐี TikTok Live Interactive Board Game</title>
+  <title>LINE เกมเศรษฐี TikTok Live Interactive Game</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800;900&family=Chakra+Petch:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800;900&family=Kanit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-['Kanit'] selection:bg-amber-500 selection:text-slate-950 flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-['Kanit'] overflow-hidden selection:bg-amber-400 selection:text-slate-950">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur py-4 px-6">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="text-3xl">🎲👑</span>
-        <span class="font-extrabold text-xl font-['Chakra_Petch'] bg-gradient-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent">
-          TIKTOK TYCOON BOARD GAME
-        </span>
-      </div>
-      <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-        🟢 ระบบพร้อมทำงาน
+  <!-- TOP HEADER / ACTION BAR -->
+  <header class="h-12 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-4 z-50 relative select-none">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🎲👑</span>
+      <h1 class="font-extrabold text-sm font-['Chakra_Petch'] bg-gradient-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent">
+        LINE เกมเศรษฐี LIVE INTERACTIVE
+      </h1>
+      <span id="tiktokPill" class="text-[11px] px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+        <span id="tiktokPillText">ออฟไลน์</span>
       </span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Toggle Admin Panel Button -->
+      <button id="toggleAdminBtn" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-amber-950/40">
+        <i class="fa-solid fa-sliders"></i>
+        <span id="toggleAdminText">ซ่อนเมนูแอดมิน</span>
+      </button>
+
+      <!-- Fullscreen Game (OBS Mode) -->
+      <button id="obsModeBtn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-expand"></i>
+        <span>ขยายเต็มจอ (OBS)</span>
+      </button>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <main class="max-w-4xl mx-auto px-6 py-12 text-center space-y-10 flex-1 flex flex-col justify-center">
-    <div class="space-y-4">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-semibold">
-        <span>🎲 เกมเศรษฐีไต่เต้าเจ้าสัว (Interactive Monopoly Board Game)</span>
+  <!-- MAIN WRAPPER (Split Screen: Board Area + Admin Sidebar) -->
+  <div class="flex h-[calc(100vh-48px)] w-full relative overflow-hidden">
+
+    <!-- ================================================= -->
+    <!-- LEFT: LINE LET'S GET RICH 3D ISOMETRIC GAME ARENA -->
+    <!-- ================================================= -->
+    <div id="gameArena" class="flex-1 relative flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#41622b] via-[#334e21] to-[#253918]">
+
+      <!-- 4 PLAYER CORNERS HUD (สไตล์ LINE เกมเศรษฐี) -->
+
+      <!-- Top-Left: Player 3 (ทีมน้ำเงิน) -->
+      <div id="hudP3" class="player-hud-box top-left">
+        <div class="rank-circle rank-3">ที่ 3</div>
+        <div class="hud-avatar-box blue-border">
+          <img id="p3Avatar" src="/assets/default-avatar-blue.svg" alt="P3">
+          <span class="team-badge blue">ทีมน้ำเงิน</span>
+        </div>
+        <div class="hud-details">
+          <div id="p3Nick" class="hud-name">รอผู้เล่น...</div>
+          <div class="hud-marbles">มาร์เบิล: <b id="p3Marbles" class="text-sky-300">200M</b></div>
+          <div class="hud-stars">⭐ <span id="p3Stars">0</span></div>
+        </div>
       </div>
-      <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-        เปลี่ยนแชทและของขวัญ TikTok Live<br>
-        <span class="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-400 bg-clip-text text-transparent">
-          เป็นเกมเศรษฐีเดินกระดานบนจอไลฟ์!
+
+      <!-- Top-Right: Player 4 (ทีมแดง) -->
+      <div id="hudP4" class="player-hud-box top-right">
+        <div class="rank-circle rank-4">ที่ 4</div>
+        <div class="hud-avatar-box red-border">
+          <img id="p4Avatar" src="/assets/default-avatar-red.svg" alt="P4">
+          <span class="team-badge red">ทีมแดง</span>
+        </div>
+        <div class="hud-details text-right">
+          <div id="p4Nick" class="hud-name">รอผู้เล่น...</div>
+          <div class="hud-marbles">มาร์เบิล: <b id="p4Marbles" class="text-rose-300">200M</b></div>
+          <div class="hud-stars">⭐ <span id="p4Stars">0</span></div>
+        </div>
+      </div>
+
+      <!-- Bottom-Left: Player 2 (ทีมแดง) -->
+      <div id="hudP2" class="player-hud-box bottom-left">
+        <div class="rank-circle rank-2">ที่ 2</div>
+        <div class="hud-avatar-box red-border">
+          <img id="p2Avatar" src="/assets/default-avatar-red.svg" alt="P2">
+          <span class="team-badge red">ทีมแดง</span>
+        </div>
+        <div class="hud-details">
+          <div id="p2Nick" class="hud-name">รอผู้เล่น...</div>
+          <div class="hud-marbles">มาร์เบิล: <b id="p2Marbles" class="text-rose-300">200M</b></div>
+          <div class="hud-stars">⭐ <span id="p2Stars">0</span></div>
+        </div>
+      </div>
+
+      <!-- Bottom-Right: Player 1 (ทีมน้ำเงิน) -->
+      <div id="hudP1" class="player-hud-box bottom-right">
+        <div class="rank-circle rank-1">ที่ 1</div>
+        <div class="hud-avatar-box blue-border">
+          <img id="p1Avatar" src="/assets/default-avatar-blue.svg" alt="P1">
+          <span class="team-badge blue">ทีมน้ำเงิน</span>
+        </div>
+        <div class="hud-details text-right">
+          <div id="p1Nick" class="hud-name">รอผู้เล่น...</div>
+          <div class="hud-marbles">มาร์เบิล: <b id="p1Marbles" class="text-sky-300">200M</b></div>
+          <div class="hud-stars">⭐ <span id="p1Stars">0</span></div>
+        </div>
+      </div>
+
+      <!-- 4 CORNER CASH MONEY STACKS (มัดเงินสดมุมกระดาน) -->
+      <div class="money-stack stack-tl">💵💵💵</div>
+      <div class="money-stack stack-tr">💵💵💵</div>
+      <div class="money-stack stack-bl">💵💵💵</div>
+      <div class="money-stack stack-br">💵💵💵</div>
+
+      <!-- ISOMETRIC 3D BOARD CONTAINER -->
+      <div class="isometric-viewport">
+        <div id="isoBoard" class="iso-board">
+
+          <!-- 32 TILES GRID (8 TILES PER SIDE) -->
+          <div id="tilesContainer" class="tiles-container">
+            <!-- Dynamically populated via app.js -->
+          </div>
+
+          <!-- CENTER SUNKEN POND & WATER ARENA -->
+          <div class="center-pond">
+            <!-- Center Top Game Info Bar -->
+            <div class="pond-top-hud">
+              <span class="info-pill">⏱️ เวลา <b id="roundTimerText">30:00</b></span>
+              <span class="info-pill">รอบที่ <b id="roundNumText">1</b></span>
+              <span class="info-pill gold">🪙 กองกลาง <b id="jackpotPoolText">8M</b></span>
+            </div>
+
+            <!-- Logo Water Lily Emboss -->
+            <div class="pond-logo">
+              <div class="pond-logo-text">LINE เกมเศรษฐี</div>
+              <div class="pond-logo-sub">TIKTOK LIVE EDITION</div>
+            </div>
+
+            <!-- Dice Control Arena (Even/Odd + Big Pink Roll Button) -->
+            <div class="pond-controls">
+              <button class="btn-dice-opt">คู่</button>
+              <button id="centerRollBtn" class="btn-big-roll">
+                <span class="roll-arrow">▼</span>
+                <span class="roll-text">ทอย</span>
+              </button>
+              <button class="btn-dice-opt">คี่</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CENTER ANIMATED DICE ROLLER OVERLAY -->
+      <div id="diceShowcase" class="dice-showcase-overlay hidden">
+        <div class="roller-chip">
+          <img id="rollerImg" src="/assets/default-avatar-red.svg" alt="Roller">
+          <span id="rollerName">ผู้เล่นกำลังทอย...</span>
+        </div>
+        <div class="dice-pair">
+          <div id="dice1" class="dice-cube-face">⚄</div>
+          <div id="dice2" class="dice-cube-face gold hidden">⚅</div>
+        </div>
+        <div id="diceSummary" class="dice-summary-label">ทอยได้เลข 5!</div>
+      </div>
+
+      <!-- CENTER POPUP EVENT BANNER (Chance, Jail, Expo, Warp) -->
+      <div id="eventPopup" class="event-popup-card hidden">
+        <div id="popupIcon" class="popup-big-icon">❓</div>
+        <h2 id="popupTitle" class="popup-title-text">การ์ดดวง!</h2>
+        <p id="popupDesc" class="popup-desc-text">คำอธิบายเหตุการณ์</p>
+        <img id="popupAvatar" class="popup-user-avatar" src="/assets/default-avatar-red.svg" alt="User">
+      </div>
+
+      <!-- FLOATING CHAT BUBBLES LAYER -->
+      <div id="chatBubbleLayer" class="chat-bubble-layer"></div>
+
+      <!-- INSTRUCTIONS BOTTOM BAR -->
+      <footer class="game-footer-bar">
+        <div class="footer-chip">
+          <span class="chip-badge free">ฟรี</span>
+          <span>พิมพ์ <b>เล่น</b> เข้าเกม | พิมพ์ <b>ทอย</b> หรือเคาะใจ 50 ครั้ง</span>
+        </div>
+        <div class="footer-chip">
+          <span class="chip-badge rose">🌹 กุหลาบ</span>
+          <span>ทอยทันที / <b>ประกันตัวจากเกาะร้าง!</b></span>
+        </div>
+        <div class="footer-chip">
+          <span class="chip-badge donut">🍩 โดนัท</span>
+          <span><b>ลูกเต๋าทองคำ</b> เดินเบิ้ล x2!</span>
+        </div>
+        <div class="footer-chip">
+          <span class="chip-badge warp">🚀 100+ เหรียญ</span>
+          <span><b>วาร์ป 15 ช่อง</b> ชนคนอื่นกระเด็น!</span>
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- ================================================= -->
+    <!-- RIGHT: UNIFIED ADMIN CONTROL SIDEBAR (หน้าหลังบ้าน) -->
+    <!-- ================================================= -->
+    <aside id="adminSidebar" class="w-96 bg-slate-900/95 border-l border-slate-800 flex flex-col justify-between overflow-y-auto p-4 space-y-4 shadow-2xl transition-all duration-300 select-none z-40">
+      
+      <!-- Section 1: TikTok Live Connection -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white flex items-center gap-1.5">
+            <i class="fa-brands fa-tiktok text-pink-400"></i>
+            <span>เชื่อมต่อ TikTok Live</span>
+          </span>
+          <span id="sideConnStatus" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800">
+            ออฟไลน์
+          </span>
+        </div>
+
+        <div class="flex gap-2">
+          <input type="text" id="sideUsernameInput" placeholder="@ชื่อช่อง เช่น somchai_live" 
+            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
+          <button id="sideConnectBtn" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 text-xs font-bold rounded-lg transition active:scale-95">
+            เชื่อม
+          </button>
+          <button id="sideDisconnectBtn" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 text-xs font-bold rounded-lg border border-slate-700">
+            ตัด
+          </button>
+        </div>
+
+        <!-- Room Live Stats -->
+        <div class="grid grid-cols-2 gap-2 text-center pt-1">
+          <div class="p-1.5 bg-slate-900/80 rounded-lg border border-slate-800/80">
+            <span class="text-[10px] text-slate-400 block">👁️ ผู้ชมในไลฟ์</span>
+            <span id="sideViewerCount" class="text-sm font-black text-amber-300 font-['Chakra_Petch']">0</span>
+          </div>
+          <div class="p-1.5 bg-slate-900/80 rounded-lg border border-slate-800/80">
+            <span class="text-[10px] text-slate-400 block">❤️ ยอดเคาะใจ</span>
+            <span id="sideLikeCount" class="text-sm font-black text-rose-400 font-['Chakra_Petch']">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Simulator Sandbox (ทดสอบตรงตามรูปทั้ง 3 รูป!) -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-gamepad"></i>
+          <span>เครื่องจำลองเกม (Simulator)</span>
         </span>
-      </h1>
-      <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
-        คนดูพิมพ์ "เล่น" เพื่อเสกตัวหมาก, พิมพ์ "ทอย" เพื่อทอยลูกเต๋าเดินตามช่อง 24 ช่อง, ติดคุกต้องส่งกุหลาบประกันตัว, ส่งโดนัทได้ลูกเต๋าทองคำ x2, หรือส่งของขวัญใหญ่เพื่อวาร์ป 15 ช่อง!
-      </p>
-    </div>
 
-    <!-- Quick Navigation Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto w-full">
-      <!-- Admin Card -->
-      <a href="/admin" class="group p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 hover:border-amber-500/60 transition shadow-xl hover:shadow-amber-950/30 flex flex-col justify-between">
-        <div>
-          <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
-            <i class="fa-solid fa-sliders"></i>
-          </div>
-          <h2 class="text-xl font-bold text-white group-hover:text-amber-400 transition">เว็บหลังบ้าน (Admin Panel)</h2>
-          <p class="text-xs text-slate-400 mt-2">
-            ควบคุมรอบการแข่ง, จัดการผู้เล่นบนกระดาน, ปล่อยตัวจากคุก, และมีเครื่องจำลอง (Simulator) สำหรับกดทดสอบกติกาครบทุกรูปแบบ
-          </p>
+        <div class="grid grid-cols-2 gap-1.5 pt-1">
+          <button onclick="simJoin()" class="py-2 px-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold transition active:scale-95">
+            🟢 พิมพ์ "เล่น"
+          </button>
+          <button onclick="simRoll()" class="py-2 px-2 rounded-lg bg-sky-600/20 hover:bg-sky-600/40 border border-sky-500/40 text-sky-300 text-[11px] font-bold transition active:scale-95">
+            🎲 พิมพ์ "ทอย"
+          </button>
+          <button onclick="simRose()" class="py-2 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition active:scale-95">
+            🌹 กุหลาบ (ประกันตัว)
+          </button>
+          <button onclick="simDonut()" class="py-2 px-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-300 text-[11px] font-bold transition active:scale-95">
+            🍩 โดนัท (เต๋า x2)
+          </button>
         </div>
-        <div class="mt-6 flex items-center gap-2 text-amber-400 text-sm font-bold">
-          <span>เข้าสู่หน้าควบคุม</span>
-          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+
+        <button onclick="simBigGift()" class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-rose-600 via-amber-500 to-indigo-600 text-white text-[11px] font-extrabold shadow-md transition active:scale-95">
+          🚀 วาร์ป 15 ช่อง + ชนคนอื่นกระเด็น!
+        </button>
+
+        <div class="grid grid-cols-2 gap-1.5">
+          <button onclick="simChance()" class="py-1.5 px-2 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-300 text-[10px] font-bold">
+            ❓ การ์ดดวง
+          </button>
+          <button onclick="simJail()" class="py-1.5 px-2 rounded-lg bg-red-600/15 hover:bg-red-600/30 border border-red-500/30 text-red-300 text-[10px] font-bold">
+            ⛓️ สั่งขังคุก
+          </button>
         </div>
-      </a>
+      </div>
 
-      <!-- Overlay Card -->
-      <a href="/overlay" target="_blank" class="group p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 hover:border-indigo-500/60 transition shadow-xl hover:shadow-indigo-950/30 flex flex-col justify-between">
-        <div>
-          <div class="w-12 h-12 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
-            <i class="fa-solid fa-desktop"></i>
-          </div>
-          <h2 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">หน้าจอเกม (OBS Overlay)</h2>
-          <p class="text-xs text-slate-400 mt-2">
-            กระดานสี่เหลี่ยม 24 ช่องรอบจอ ตรงกลางโชว์การทอยลูกเต๋า 3D, การ์ดดวง Chance, Leaderboard และลูกเต๋าทองคำ
-          </p>
+      <!-- Section 3: Active Players Table -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 flex-1 flex flex-col min-h-[160px]">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-users text-sky-400"></i>
+            <span>ผู้เล่นบนกระดาน (<span id="sidePlayerCount">0</span>)</span>
+          </span>
+          <button id="sideResetBtn" class="text-[10px] text-amber-400 hover:underline">รีเซ็ตกระดาน</button>
         </div>
-        <div class="mt-6 flex items-center gap-2 text-indigo-400 text-sm font-bold">
-          <span>เปิดหน้าจอเกม</span>
-          <i class="fa-solid fa-arrow-up-right-from-square group-hover:translate-x-1 group-hover:-translate-y-1 transition"></i>
+
+        <div class="flex-1 overflow-y-auto max-h-[140px] pr-1">
+          <table class="w-full text-[11px] text-left">
+            <tbody id="sidePlayerTable" class="divide-y divide-slate-800/80">
+              <tr>
+                <td class="text-slate-500 italic text-center py-4">ยังไม่มีผู้เล่น</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </a>
-    </div>
+      </div>
 
-    <!-- Quick OBS Setup Guide -->
-    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 text-left max-w-2xl mx-auto w-full space-y-3">
-      <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
-        <i class="fa-solid fa-circle-info text-amber-400"></i>
-        <span>วิธีนำไปขึ้นไลฟ์สดด้วย OBS / TikTok Live Studio</span>
-      </h3>
-      <ol class="text-xs text-slate-400 space-y-2 list-decimal list-inside">
-        <li>ในโปรแกรม OBS กดเพิ่ม Source เลือก <b>Browser</b> (เบราว์เซอร์)</li>
-        <li>ใส่ URL: <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono">http://localhost:3000/overlay</code></li>
-        <li>ตั้งค่าความละเอียดเป็น <b>1080 x 1920</b> (แนวตั้งสำหรับ TikTok) หรือ <b>1920 x 1080</b> (แนวนอน)</li>
-        <li>เปิดหน้า <a href="/admin" class="text-amber-400 underline font-semibold">/admin</a> บนคอมหรือมือถือเพื่อควบคุมและเริ่มเกม</li>
-      </ol>
-    </div>
-  </main>
+      <!-- Section 4: Live Event Log Feed -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 h-[150px] flex flex-col">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-list-ul text-emerald-400"></i>
+            <span>ฟีดเหตุการณ์สด</span>
+          </span>
+          <button id="sideClearLogBtn" class="text-[10px] text-slate-500 hover:text-slate-300">ล้าง</button>
+        </div>
 
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-    TikTok Live Interactive Monopoly Board Game System &copy; 2026
-  </footer>
+        <div id="sideEventLog" class="flex-1 overflow-y-auto space-y-1.5 text-[10px] font-mono pr-1">
+          <div class="text-slate-500 italic text-center py-3">พร้อมรับเหตุการณ์...</div>
+        </div>
+      </div>
 
+    </aside>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

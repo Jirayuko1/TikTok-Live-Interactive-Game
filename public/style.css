@@ -1,0 +1,610 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #030712;
+  color: #f8fafc;
+  font-family: 'Kanit', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* =========================================
+   4 CORNERS PLAYER HUD (LINE เกมเศรษฐี STYLE)
+========================================= */
+.player-hud-box {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 15, 26, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 8px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 20;
+  backdrop-filter: blur(8px);
+  min-width: 170px;
+}
+
+.player-hud-box.top-left {
+  top: 14px;
+  left: 14px;
+  border-left: 4px solid #38bdf8;
+}
+
+.player-hud-box.top-right {
+  top: 14px;
+  right: 14px;
+  border-right: 4px solid #ef4444;
+  flex-direction: row-reverse;
+}
+
+.player-hud-box.bottom-left {
+  bottom: 50px;
+  left: 14px;
+  border-left: 4px solid #ef4444;
+}
+
+.player-hud-box.bottom-right {
+  bottom: 50px;
+  right: 14px;
+  border-right: 4px solid #38bdf8;
+  flex-direction: row-reverse;
+}
+
+.rank-circle {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+}
+
+.rank-1 { background: radial-gradient(circle, #38bdf8, #0369a1); border: 2px solid #bae6fd; }
+.rank-2 { background: radial-gradient(circle, #ec4899, #9d174d); border: 2px solid #fbcfe8; }
+.rank-3 { background: radial-gradient(circle, #0284c7, #0c4a6e); border: 2px solid #7dd3fc; }
+.rank-4 { background: radial-gradient(circle, #b91c1c, #7f1d1d); border: 2px solid #fca5a5; }
+
+.hud-avatar-box {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hud-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.blue-border { border: 2.5px solid #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+.red-border { border: 2.5px solid #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
+.team-badge {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.team-badge.blue { background: #0284c7; color: #ffffff; }
+.team-badge.red { background: #dc2626; color: #ffffff; }
+
+.hud-details {
+  flex: 1;
+}
+
+.hud-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.hud-marbles {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.hud-stars {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+/* =========================================
+   MONEY STACKS AT 4 CORNERS
+========================================= */
+.money-stack {
+  position: absolute;
+  font-size: 28px;
+  opacity: 0.85;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+  z-index: 10;
+  pointer-events: none;
+}
+.stack-tl { top: 90px; left: 80px; }
+.stack-tr { top: 90px; right: 80px; }
+.stack-bl { bottom: 120px; left: 80px; }
+.stack-br { bottom: 120px; right: 80px; }
+
+/* =========================================
+   ISOMETRIC 3D BOARD VIEWPORT & CONTAINER
+========================================= */
+.isometric-viewport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.iso-board {
+  position: relative;
+  width: 660px;
+  height: 660px;
+  transform-style: preserve-3d;
+  transform: rotateX(54deg) rotateZ(-45deg);
+  background: #6a421b;
+  border: 12px solid #533314;
+  border-radius: 20px;
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+/* 32 TILES PERIMETER (9x9 Grid layout) */
+.tiles-container {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 3px;
+  padding: 4px;
+}
+
+.tile-cube {
+  position: relative;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 2px;
+  color: #0f172a;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.tile-cube:hover {
+  transform: translateZ(6px);
+  filter: brightness(1.1);
+}
+
+/* Corner tiles */
+.tile-cube.corner-tile {
+  background: #ffffff;
+  border: 2px solid #f59e0b;
+}
+
+.tile-badge {
+  font-size: 8px;
+  font-weight: 800;
+  color: #ffffff;
+  background: #64748b;
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.tile-main-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tile-label-th {
+  font-size: 8.5px;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.tile-cost-tag {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #ffffff;
+  padding: 1px 2px;
+  border-radius: 2px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Tile Tokens Container */
+.tile-players-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* 3D Counter-Rotated Player Token (Stands upright!) */
+.board-token {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+  transform-style: preserve-3d;
+  transform: rotateZ(45deg) rotateX(-54deg) translateY(-8px);
+  animation: tokenHop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.board-token img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.board-token.has-aura {
+  box-shadow: 0 0 16px 4px #fbbf24;
+  border-color: #fef08a;
+}
+
+.board-token.is-jailed {
+  border-color: #ef4444;
+  filter: grayscale(0.5);
+}
+
+@keyframes tokenHop {
+  0% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-24px) scale(1.3); }
+  100% { transform: rotateZ(45deg) rotateX(-54deg) translateY(-8px) scale(1); }
+}
+
+/* =========================================
+   CENTER SUNKEN POND & WATER ARENA
+========================================= */
+.center-pond {
+  grid-column: 2 / 9;
+  grid-row: 2 / 9;
+  position: absolute;
+  inset: 72px;
+  background: radial-gradient(circle at 50% 50%, #1e4a66 0%, #0d273a 70%, #061522 100%);
+  border-radius: 14px;
+  border: 6px solid #4a2e12;
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.9), 0 6px 16px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+}
+
+/* Top Pond HUD */
+.pond-top-hud {
+  display: flex;
+  gap: 8px;
+  background: rgba(10, 20, 35, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.info-pill {
+  font-size: 11px;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+.info-pill.gold { color: #fbbf24; }
+
+/* Embossed Logo */
+.pond-logo {
+  text-align: center;
+  opacity: 0.85;
+}
+
+.pond-logo-text {
+  font-family: 'Kanit', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.4);
+  letter-spacing: 1px;
+}
+
+.pond-logo-sub {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 2px;
+}
+
+/* Big Glowing Pink Roll Button & Even/Odd */
+.pond-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-dice-opt {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #475569, #1e293b);
+  border: 2px solid #94a3b8;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-dice-opt:active { transform: scale(0.92); }
+
+.btn-big-roll {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, #f472b6, #db2777 60%, #9d174d 100%);
+  border: 4px solid #fbcfe8;
+  box-shadow: 0 0 25px rgba(244, 114, 182, 0.8), 0 8px 20px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-big-roll:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 35px rgba(244, 114, 182, 1);
+}
+
+.btn-big-roll:active {
+  transform: scale(0.94);
+}
+
+.roll-arrow {
+  color: #38bdf8;
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
+.roll-text {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* =========================================
+   DICE ROLLER SHOWCASE OVERLAY
+========================================= */
+.dice-showcase-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 15, 26, 0.95);
+  border: 2px solid #38bdf8;
+  border-radius: 20px;
+  padding: 16px 28px;
+  box-shadow: 0 0 45px rgba(56, 189, 248, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.roller-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.roller-chip img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+}
+
+.dice-pair {
+  display: flex;
+  gap: 14px;
+}
+
+.dice-cube-face {
+  font-size: 60px;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+  animation: tumble 0.5s infinite;
+}
+
+.dice-cube-face.gold {
+  color: #fbbf24;
+  text-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+}
+
+@keyframes tumble {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.15) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+.dice-summary-label {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+/* =========================================
+   POPUP EVENT CARD
+========================================= */
+.event-popup-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+  border: 2px solid #fbbf24;
+  border-radius: 20px;
+  padding: 20px 30px;
+  box-shadow: 0 0 50px rgba(251, 191, 36, 0.6);
+  text-align: center;
+  z-index: 55;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.popup-big-icon { font-size: 46px; margin-bottom: 6px; }
+.popup-title-text { font-family: 'Chakra Petch', sans-serif; font-size: 22px; font-weight: 900; color: #fbbf24; }
+.popup-desc-text { font-size: 13px; color: #e2e8f0; margin: 4px 0 10px 0; }
+.popup-user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #fbbf24; margin: 0 auto; }
+
+/* =========================================
+   FLOATING CHAT BUBBLES
+========================================= */
+.chat-bubble-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 30;
+}
+
+.chat-bubble-item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #38bdf8;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+  animation: bubbleFloat 4s forwards;
+}
+
+.chat-bubble-item img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+@keyframes bubbleFloat {
+  0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+  10% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 1; transform: translateY(-20px); }
+  100% { opacity: 0; transform: translateY(-40px); }
+}
+
+/* =========================================
+   BOTTOM INSTRUCTIONS FOOTER
+========================================= */
+.game-footer-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(6, 10, 20, 0.92);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 20;
+}
+
+.footer-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chip-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.chip-badge.free { background: #10b981; color: #ffffff; }
+.chip-badge.rose { background: #f59e0b; color: #000000; }
+.chip-badge.donut { background: #a855f7; color: #ffffff; }
+.chip-badge.warp { background: #ef4444; color: #ffffff; }
+
+/* Admin Sidebar Collapsed state */
+.sidebar-collapsed {
+  margin-right: -384px; /* hides the w-96 (24rem = 384px) sidebar */
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.hidden { display: none !important; }
