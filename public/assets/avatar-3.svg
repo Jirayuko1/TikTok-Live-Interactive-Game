@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bgGold" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bgGold)" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="60" cy="64" r="32" fill="#fed7aa"/>
+  <circle cx="42" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <circle cx="78" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <!-- Wink Eye -->
+  <path d="M43 62 Q49 57 55 62" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Open Eye -->
+  <ellipse cx="72" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+  <circle cx="74" cy="60" r="1.8" fill="#ffffff"/>
+  <!-- Smile with Tongue -->
+  <path d="M52 74 Q60 84 68 74" fill="#e11d48" stroke="#0f172a" stroke-width="2"/>
+  <!-- Golden Champion Headband -->
+  <path d="M28 50 Q60 36 92 50 L90 40 Q60 26 30 40 Z" fill="#ca8a04"/>
+  <polygon points="60,28 64,36 72,36 66,42 68,50 60,45 52,50 54,42 48,36 56,36" fill="#facc15" stroke="#854d0e" stroke-width="1"/>
+</svg>

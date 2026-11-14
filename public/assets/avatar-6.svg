@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bgPink" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bgPink)" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="60" cy="64" r="32" fill="#fed7aa"/>
+  <circle cx="42" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <circle cx="78" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <!-- Sparkly Anime Eyes -->
+  <ellipse cx="48" cy="62" rx="5" ry="6.5" fill="#831843"/>
+  <circle cx="47" cy="59" r="2" fill="#ffffff"/>
+  <circle cx="50" cy="64" r="1.2" fill="#ffffff"/>
+  <ellipse cx="72" cy="62" rx="5" ry="6.5" fill="#831843"/>
+  <circle cx="71" cy="59" r="2" fill="#ffffff"/>
+  <circle cx="74" cy="64" r="1.2" fill="#ffffff"/>
+  <path d="M54 75 Q60 81 66 75" fill="none" stroke="#831843" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Ribbon Hair Bow -->
+  <path d="M60 40 Q45 28 35 38 Q45 48 60 44 Q75 48 85 38 Q75 28 60 40 Z" fill="#f43f5e"/>
+  <circle cx="60" cy="42" r="4" fill="#fbcfe8"/>
+</svg>

@@ -1,3 +1,6 @@
+/* =========================================
+   ARENA LIVE: BATTLE ROYALE (มวยวัด) STYLES
+   ========================================= */
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +8,7 @@
 }
 
 body {
-  background-color: #030712;
+  background-color: #05070f;
   color: #f8fafc;
   font-family: 'Kanit', sans-serif;
   overflow: hidden;
@@ -24,20 +27,45 @@ body {
   background: #1e293b;
   border-radius: 9999px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
 
 /* =========================================
    VERTICAL 9:16 SCREEN BOX (TIKTOK LIVE)
-========================================= */
+   ========================================= */
 .arena-vertical-screen {
-  width: min(100%, 440px);
-  height: min(100%, 820px);
-  max-height: calc(100vh - 50px);
+  height: calc(100vh - 64px);
+  max-height: 920px;
   aspect-ratio: 9 / 16;
-  border-radius: 24px;
-  border: 4px solid #1e293b;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(245, 158, 11, 0.2);
-  background: radial-gradient(circle at 50% 30%, #171b38 0%, #0c0f24 50%, #050711 100%);
+  width: auto;
+  max-width: 100%;
+  border-radius: 20px;
+  border: 3px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(245, 158, 11, 0.18), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  background: radial-gradient(circle at 50% 25%, #181d38 0%, #0d1124 50%, #060814 100%);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* When in Fullscreen / OBS Mode */
+body.obs-mode header {
+  display: none !important;
+}
+body.obs-mode #adminSidebar {
+  display: none !important;
+}
+body.obs-mode #gameArenaWrapper {
+  padding: 0 !important;
+}
+body.obs-mode .arena-vertical-screen {
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 /* 1. Top HUD Header */
@@ -46,9 +74,22 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(10, 14, 26, 0.85);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 14, 26, 0.9);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
   z-index: 25;
+  backdrop-filter: blur(8px);
+}
+
+.arena-logo-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
 .arena-title {
@@ -56,14 +97,14 @@ body {
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444);
+  background: linear-gradient(135deg, #fef08a, #f59e0b, #f43f5e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
 }
 
 .arena-round-sub {
-  font-size: 9px;
+  font-size: 9.5px;
   color: #94a3b8;
   font-weight: 700;
 }
@@ -72,17 +113,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(245, 158, 11, 0.12);
+  background: rgba(245, 158, 11, 0.15);
   border: 1.5px solid #f59e0b;
   border-radius: 10px;
   padding: 2px 10px;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
 }
 
 .timer-sub-label {
   font-size: 8px;
   color: #fbbf24;
   font-weight: 800;
+  text-transform: uppercase;
 }
 
 .timer-num {
@@ -90,25 +132,26 @@ body {
   font-size: 16px;
   font-weight: 900;
   color: #ffffff;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
 }
 
-/* 2. Pink Join Banner */
+/* 2. Pink Join Banner (ตรงตามรูปภาพ) */
 .join-banner-bar {
-  background: linear-gradient(90deg, #db2777, #e11d48, #f43f5e);
-  padding: 5px 8px;
+  background: linear-gradient(90deg, #be185d, #e11d48, #f43f5e);
+  padding: 6px 10px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.45);
   z-index: 24;
 }
 
 .join-banner-content {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 7px;
+  font-size: 12.5px;
   font-weight: 800;
   color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .join-dot {
@@ -116,69 +159,92 @@ body {
   height: 8px;
   background: #ffffff;
   border-radius: 50%;
+  animation: pulseDot 1s infinite alternate;
 }
 
-/* 3. Gift Reward Guide Panel (ตรงตามรูปที่ 1) */
+@keyframes pulseDot {
+  from { transform: scale(0.8); opacity: 0.6; }
+  to { transform: scale(1.3); opacity: 1; box-shadow: 0 0 8px #ffffff; }
+}
+
+/* 3. Gift Reward Guide Panel (ตรงตามรูปที่ 1 เป๊ะ) */
 .reward-guide-panel {
-  background: rgba(8, 11, 22, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 5px 8px;
+  background: rgba(8, 11, 24, 0.94);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 8px;
   z-index: 22;
+  backdrop-filter: blur(6px);
 }
 
 .reward-tiers-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
+  gap: 3.5px;
   text-align: center;
   margin-bottom: 4px;
 }
 
 .tier-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 2px 1px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  padding: 3px 1px;
   font-size: 8.5px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.tier-item .icon {
+  font-size: 11px;
+  line-height: 1;
 }
 .tier-item .cost {
-  display: block;
   font-size: 7.5px;
   color: #fbbf24;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 800;
 }
 
 .reward-sub-actions {
   font-size: 8.5px;
   color: #cbd5e1;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.3;
+  padding-top: 1px;
+}
+.reward-sub-actions b {
+  color: #fbbf24;
 }
 
-/* 4. Champion Leaderboard (Top Right inside canvas) */
+/* 4. Champion Leaderboard (Top Right inside stream arena) */
 .champion-hud-card {
   position: absolute;
-  top: 96px;
+  top: 104px;
   right: 10px;
-  width: 145px;
-  background: rgba(10, 14, 26, 0.9);
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  width: 148px;
+  background: rgba(9, 13, 26, 0.88);
+  border: 1px solid rgba(251, 191, 36, 0.45);
   border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  padding: 6px 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
   z-index: 20;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
 }
 
 .champ-head {
   font-family: 'Chakra Petch', sans-serif;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 900;
   color: #fbbf24;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 3px;
   margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 
 .champ-row {
@@ -186,8 +252,14 @@ body {
   align-items: center;
   justify-content: space-between;
   font-size: 9px;
-  padding: 2px 0;
+  padding: 2.5px 0;
   color: #e2e8f0;
+}
+
+.champ-rank {
+  font-weight: 800;
+  color: #f59e0b;
+  margin-right: 4px;
 }
 
 .champ-name {
@@ -195,7 +267,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75px;
+  max-width: 78px;
 }
 
 .champ-score {
@@ -231,24 +303,48 @@ body {
   z-index: 10;
 }
 
-/* Cheering Crowd Silhouettes */
+/* Cheering Crowd Silhouettes with Lightsticks */
 .crowd-silhouettes {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 70px;
-  background: radial-gradient(circle at 50% 120%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+  height: 85px;
+  background: radial-gradient(circle at 50% 120%, rgba(2, 4, 10, 0.98) 0%, rgba(3, 7, 18, 0.75) 65%, transparent 100%);
   pointer-events: none;
   z-index: 12;
+  overflow: hidden;
+}
+
+.crowd-glowsticks {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 14px at 15% 75%, #38bdf8 50%, transparent 100%),
+    radial-gradient(2px 16px at 28% 70%, #ec4899 50%, transparent 100%),
+    radial-gradient(2px 14px at 45% 78%, #22c55e 50%, transparent 100%),
+    radial-gradient(2px 16px at 62% 72%, #eab308 50%, transparent 100%),
+    radial-gradient(2px 15px at 78% 76%, #a855f7 50%, transparent 100%),
+    radial-gradient(2px 14px at 90% 70%, #06b6d4 50%, transparent 100%);
+  opacity: 0.75;
+  animation: waveSticks 2s infinite ease-in-out alternate;
+}
+
+@keyframes waveSticks {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+  100% { transform: translateY(-6px) rotate(-1deg); }
 }
 
 /* 6. Victory Overlay Modal (ตรงตามรูปที่ 2) */
 .victory-modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5, 7, 18, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(3, 6, 16, 0.88);
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -261,12 +357,12 @@ body {
   background: rgba(15, 23, 42, 0.95);
   border: 2px solid #fbbf24;
   border-radius: 12px;
-  padding: 6px 18px;
+  padding: 6px 20px;
   font-size: 14px;
   font-weight: 800;
   color: #ffffff;
-  margin-bottom: 24px;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  margin-bottom: 20px;
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.45);
 }
 
 .victory-winner-card {
@@ -278,15 +374,15 @@ body {
 }
 
 .trophy-badge {
-  font-size: 56px;
+  font-size: 60px;
   line-height: 1;
-  filter: drop-shadow(0 0 20px #fbbf24);
+  filter: drop-shadow(0 0 25px #fbbf24);
   animation: bounceTrophy 1.5s infinite;
 }
 
 @keyframes bounceTrophy {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.08); }
 }
 
 .victory-winner-title {
@@ -298,77 +394,87 @@ body {
   font-size: 32px;
   font-weight: 900;
   color: #fbbf24;
-  text-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
-  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .winner-desc {
-  font-size: 15px;
-  font-weight: 800;
-  color: #ffffff;
+  font-size: 13px;
+  color: #f1f5f9;
+  font-weight: 700;
   margin-top: 4px;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .winner-avatar-wrap {
-  width: 72px;
-  height: 72px;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-top: 16px;
   border-radius: 50%;
-  border: 3px solid #fbbf24;
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
-  overflow: hidden;
+  border: 4px solid #fbbf24;
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+  background: #1e293b;
 }
 
 .winner-avatar-wrap img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
 }
 
-/* 7. Floating Chat Bubbles */
+.winner-crown {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px #fbbf24);
+  animation: floatCrown 2s infinite ease-in-out;
+}
+
+@keyframes floatCrown {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* 7. Floating Chat Bubbles Layer */
 .chat-bubble-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
   z-index: 30;
 }
 
-.fighter-chat-bubble {
+.chat-bubble {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(15, 23, 42, 0.92);
   border: 1.5px solid #fbbf24;
-  color: #ffffff;
+  border-radius: 12px;
+  padding: 4px 8px;
   font-size: 10px;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-  animation: bubbleFloat 3.5s forwards;
+  color: #ffffff;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  animation: floatBubble 3s forwards ease-out;
 }
 
-.fighter-chat-bubble img {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+@keyframes floatBubble {
+  0% { opacity: 0; transform: translate(-50%, -80%) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -110%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -150%) scale(0.9); }
 }
 
-@keyframes bubbleFloat {
-  0% { opacity: 0; transform: translateY(8px) scale(0.9); }
-  10% { opacity: 1; transform: translateY(0) scale(1); }
-  80% { opacity: 1; transform: translateY(-20px); }
-  100% { opacity: 0; transform: translateY(-40px); }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Sidebar Collapsed state */
-.sidebar-collapsed {
-  margin-right: -384px;
+@keyframes popIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-.hidden { display: none !important; }

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bgPurple" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7e22ce"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bgPurple)" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="60" cy="64" r="32" fill="#fed7aa"/>
+  <circle cx="42" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <circle cx="78" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <!-- Sharp Eyes -->
+  <polygon points="44,58 55,62 46,65" fill="#0f172a"/>
+  <polygon points="76,58 65,62 74,65" fill="#0f172a"/>
+  <!-- Smile -->
+  <path d="M54 75 Q60 80 66 75" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Ninja Mask / Bandana -->
+  <path d="M26 50 Q60 38 94 50 L92 40 Q60 28 28 40 Z" fill="#581c87"/>
+  <circle cx="60" cy="44" r="4" fill="#a855f7"/>
+</svg>

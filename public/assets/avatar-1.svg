@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bgRed" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </radialGradient>
+    <linearGradient id="headbandGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Disc -->
+  <circle cx="60" cy="60" r="56" fill="url(#bgRed)" stroke="#ffffff" stroke-width="4"/>
+  <!-- Chibi Face -->
+  <circle cx="60" cy="64" r="32" fill="#fed7aa"/>
+  <!-- Cheeks -->
+  <circle cx="42" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <circle cx="78" cy="72" r="5" fill="#f43f5e" opacity="0.6"/>
+  <!-- Eyes -->
+  <ellipse cx="48" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+  <circle cx="50" cy="60" r="1.8" fill="#ffffff"/>
+  <ellipse cx="72" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+  <circle cx="74" cy="60" r="1.8" fill="#ffffff"/>
+  <!-- Smile -->
+  <path d="M53 74 Q60 81 67 74" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Hair -->
+  <path d="M28 56 Q36 34 60 34 Q84 34 92 56 Q75 42 60 44 Q45 42 28 56 Z" fill="#1e293b"/>
+  <!-- Thai Mongkhon / Headband -->
+  <rect x="26" y="44" width="68" height="9" rx="4.5" fill="url(#headbandGrad)" stroke="#78350f" stroke-width="1.5"/>
+  <circle cx="60" cy="48.5" r="3" fill="#ffffff"/>
+</svg>

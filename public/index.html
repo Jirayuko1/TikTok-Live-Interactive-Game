@@ -8,53 +8,73 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800;900&family=Kanit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-['Kanit'] overflow-hidden selection:bg-amber-400 selection:text-slate-950">
+<body class="bg-[#05070f] text-slate-100 min-h-screen font-['Kanit'] overflow-hidden selection:bg-amber-400 selection:text-slate-950">
 
-  <!-- TOP HEADER / CONTROLS -->
-  <header class="h-11 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-4 z-50 relative select-none">
+  <!-- TOP HEADER / STREAM BAR -->
+  <header class="h-12 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-4 z-50 relative select-none">
     <div class="flex items-center gap-3">
-      <span class="text-xl">⚔️🥊</span>
-      <h1 class="font-extrabold text-sm font-['Chakra_Petch'] bg-gradient-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent">
-        ARENA LIVE : มวยวัด BATTLE ROYALE
-      </h1>
-      <span id="tiktokPill" class="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-        <span id="tiktokPillText">ออฟไลน์</span>
-      </span>
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-amber-400 flex items-center justify-center text-lg shadow-md shadow-rose-900/40">
+        ⚔️
+      </div>
+      <div>
+        <h1 class="font-black text-sm lg:text-base font-['Chakra_Petch'] tracking-wide bg-gradient-to-r from-amber-300 via-rose-400 to-sky-300 bg-clip-text text-transparent">
+          ARENA LIVE : มวยวัด BATTLE ROYALE
+        </h1>
+        <div class="flex items-center gap-2 text-[10px] text-slate-400">
+          <span>สตรีมสดแนวตั้ง 9:16 สไตล์ @amsmanoverse</span>
+          <span class="text-slate-600">•</span>
+          <span id="tiktokPill" class="px-2 py-0.2 rounded-full bg-rose-950/80 border border-rose-800/80 text-rose-300 font-semibold flex items-center gap-1.5 inline-flex">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+            <span id="tiktokPillText">ออฟไลน์</span>
+          </span>
+        </div>
+      </div>
     </div>
 
+    <!-- Quick Controls for Streamer -->
     <div class="flex items-center gap-2">
-      <!-- Toggle Admin Panel Button -->
-      <button id="toggleAdminBtn" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-amber-950/40">
-        <i class="fa-solid fa-sliders"></i>
-        <span id="toggleAdminText">ซ่อนเมนูแอดมิน</span>
+      <!-- Quick Bot Fill Button -->
+      <button onclick="simSpawnBots()" title="เติมบอททดสอบ 5 ตัวลงสังเวียน" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 text-xs font-bold transition active:scale-95">
+        <i class="fa-solid fa-robot"></i>
+        <span>เติมบอท 5 ตัว</span>
       </button>
 
-      <!-- Fullscreen Game (OBS Mode) -->
-      <button id="obsModeBtn" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-1.5 transition">
-        <i class="fa-solid fa-expand"></i>
-        <span>ขยายเต็มจอ (OBS)</span>
+      <!-- Audio Mute / Sound FX Toggle -->
+      <button id="sfxToggleBtn" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition">
+        <i id="sfxIcon" class="fa-solid fa-volume-high text-amber-400"></i>
+      </button>
+
+      <!-- Copy OBS URL -->
+      <button id="copyObsBtn" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition">
+        <i class="fa-solid fa-link text-sky-400"></i>
+        <span>คัดลอกลิงก์ OBS</span>
+      </button>
+
+      <!-- Toggle Admin Panel Button -->
+      <button id="toggleAdminBtn" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-amber-950/50">
+        <i class="fa-solid fa-sliders"></i>
+        <span id="toggleAdminText">ซ่อนเมนูแอดมิน</span>
       </button>
     </div>
   </header>
 
-  <!-- MAIN WRAPPER (Split Screen: Vertical Arena + Admin Sidebar) -->
-  <div class="flex h-[calc(100vh-44px)] w-full relative overflow-hidden bg-slate-950 justify-center">
+  <!-- MAIN WRAPPER (Arena Center + Admin Right) -->
+  <div class="flex h-[calc(100vh-48px)] w-full relative overflow-hidden bg-[#05070f] justify-center items-center">
 
     <!-- ================================================= -->
-    <!-- CENTER: TIKTOK LIVE VERTICAL 9:16 ARENA CANVAS -->
+    <!-- CENTER: TIKTOK LIVE VERTICAL 9:16 ARENA CONTAINER -->
     <!-- ================================================= -->
-    <div id="gameArenaWrapper" class="flex-1 flex items-center justify-center p-1 transition-all duration-300 overflow-hidden">
+    <main id="gameArenaWrapper" class="flex-1 h-full flex items-center justify-center p-2 lg:p-3 transition-all duration-300 overflow-hidden relative">
 
-      <div id="arenaBox" class="arena-vertical-screen relative flex flex-col justify-between overflow-hidden shadow-2xl select-none">
+      <div id="arenaBox" class="arena-vertical-screen relative flex flex-col overflow-hidden select-none">
 
-        <!-- 1. TOP HEADER HUD (ตรงตามรูปที่ 1) -->
+        <!-- 1. TOP HEADER HUD (ตรงตามรูปภาพ @amsmanoverse) -->
         <div class="arena-top-hud">
-          <div class="flex items-center gap-2">
-            <span class="text-xl">⚔️</span>
+          <div class="flex items-center gap-2.5">
+            <div class="arena-logo-badge">⚔️</div>
             <div>
               <div class="arena-title">ARENA LIVE</div>
               <div id="roundInfoText" class="arena-round-sub">รอบที่ 131 • เหลือ 0/0 คน</div>
@@ -68,15 +88,15 @@
           </div>
         </div>
 
-        <!-- 2. PINK JOIN BANNER (ตรงตามรูปที่ 1) -->
+        <!-- 2. PINK JOIN BANNER -->
         <div class="join-banner-bar">
           <div class="join-banner-content">
-            <span class="join-dot animate-ping"></span>
+            <span class="join-dot"></span>
             <span>💬 พิมพ์ <b>JOIN</b> หรือ <b>เข้า</b> เพื่อลงสนาม!</span>
           </div>
         </div>
 
-        <!-- 3. GIFT & INTERACTION REWARD GUIDE (ตรงตามรูปที่ 1) -->
+        <!-- 3. GIFT & REWARD CHEAT-SHEET GUIDE (ตรงตามต้นฉบับ 100%) -->
         <div class="reward-guide-panel">
           <div class="reward-tiers-grid">
             <div class="tier-item"><span class="icon">🩸</span> บัฟ <span class="cost">1-4💎</span></div>
@@ -93,28 +113,30 @@
 
         <!-- 4. LEADERBOARD CARD (Top-Right inside stream arena) -->
         <div class="champion-hud-card">
-          <div class="champ-head">🏆 แชมป์เปี้ยน</div>
+          <div class="champ-head">🏆 แชมเปียน</div>
           <div id="champList" class="champ-list">
-            <!-- Populated via app.js -->
+            <!-- Rendered via JS -->
           </div>
         </div>
 
         <!-- 5. TEMPLE FAIR BACKGROUND & MAIN COMBAT ARENA CANVAS -->
         <div class="arena-ring-viewport">
-          <!-- Background Temple Fair Canvas (Ferris wheel, pagoda, lights) -->
+          <!-- Background Temple Fair Canvas (Sky, moon, pagoda, ferris wheel, tents, spotlights) -->
           <canvas id="bgCanvas" class="bg-stage-canvas"></canvas>
 
           <!-- Main Fighters Physics & Combat Canvas -->
           <canvas id="arenaCanvas" class="combat-canvas"></canvas>
 
-          <!-- Cheering Crowd Silhouettes Overlay -->
-          <div class="crowd-silhouettes"></div>
+          <!-- Cheering Crowd Silhouettes Overlay with Lightsticks -->
+          <div class="crowd-silhouettes">
+            <div class="crowd-glowsticks"></div>
+          </div>
         </div>
 
         <!-- 6. ROUND WINNER VICTORY OVERLAY (ตรงตามรูปที่ 2) -->
         <div id="victoryOverlay" class="victory-modal-overlay hidden">
           <div class="next-round-counter">
-            รอบใหม่ใน <b id="nextRoundSec" class="text-amber-400">5</b>
+            รอบใหม่ใน <b id="nextRoundSec" class="text-amber-400 font-['Chakra_Petch'] text-lg">5</b>
           </div>
 
           <div class="victory-winner-card">
@@ -126,117 +148,141 @@
               ชนะรอบที่ 132 • น็อคไป 3 คน!
             </div>
             <div class="winner-avatar-wrap">
-              <img id="winnerAvatarImg" src="/assets/default-avatar-red.svg" alt="Champion">
+              <img id="winnerAvatarImg" src="/assets/avatar-1.svg" alt="Champion">
+              <div class="winner-crown">👑</div>
             </div>
           </div>
         </div>
 
         <!-- 7. FLOATING CHAT BUBBLES LAYER -->
-        <div id="chatBubbleLayer" class="chat-bubble-layer"></div>
+        <div id="chatBubbleLayer" class="chat-bubble-layer pointer-events-none"></div>
 
       </div>
-    </div>
+    </main>
 
     <!-- ================================================= -->
     <!-- RIGHT: UNIFIED ADMIN CONTROL SIDEBAR (หน้าหลังบ้าน) -->
     <!-- ================================================= -->
-    <aside id="adminSidebar" class="w-80 lg:w-96 bg-slate-900/95 border-l border-slate-800 flex flex-col justify-between overflow-y-auto p-4 space-y-4 shadow-2xl transition-all duration-300 select-none z-40 shrink-0">
+    <aside id="adminSidebar" class="w-80 lg:w-96 bg-slate-950/95 border-l border-slate-800 flex flex-col justify-between overflow-y-auto p-4 space-y-3.5 shadow-2xl transition-all duration-300 select-none z-40 shrink-0 h-full">
       
       <!-- Section 1: TikTok Live Connection -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 space-y-2.5 shadow-md">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white flex items-center gap-1.5">
-            <i class="fa-brands fa-tiktok text-pink-400"></i>
+            <i class="fa-brands fa-tiktok text-pink-400 text-sm"></i>
             <span>เชื่อมต่อ TikTok Live</span>
           </span>
-          <span id="sideConnStatus" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800">
+          <span id="sideConnStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950 text-rose-400 border border-rose-800">
             ออฟไลน์
           </span>
         </div>
 
         <div class="flex gap-2">
           <input type="text" id="sideUsernameInput" placeholder="@ชื่อช่อง เช่น somchai_live" 
-            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
-          <button id="sideConnectBtn" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 text-xs font-bold rounded-lg transition active:scale-95">
+            class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
+          <button id="sideConnectBtn" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 text-xs font-black rounded-xl transition active:scale-95 shadow-md">
             เชื่อม
           </button>
-          <button id="sideDisconnectBtn" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 text-xs font-bold rounded-lg border border-slate-700">
+          <button id="sideDisconnectBtn" class="hidden px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 text-xs font-bold rounded-xl border border-slate-700">
             ตัด
           </button>
         </div>
 
         <!-- Room Live Stats -->
         <div class="grid grid-cols-2 gap-2 text-center pt-1">
-          <div class="p-1.5 bg-slate-900/80 rounded-lg border border-slate-800/80">
-            <span class="text-[10px] text-slate-400 block">👁️ ผู้ชมในไลฟ์</span>
+          <div class="p-2 bg-slate-950/70 rounded-xl border border-slate-800/60">
+            <span class="text-[10px] text-slate-400 block font-medium">👁️ ผู้ชมในไลฟ์</span>
             <span id="sideViewerCount" class="text-sm font-black text-amber-300 font-['Chakra_Petch']">15</span>
           </div>
-          <div class="p-1.5 bg-slate-900/80 rounded-lg border border-slate-800/80">
-            <span class="text-[10px] text-slate-400 block">❤️ ยอดเคาะใจ</span>
+          <div class="p-2 bg-slate-950/70 rounded-xl border border-slate-800/60">
+            <span class="text-[10px] text-slate-400 block font-medium">❤️ ยอดเคาะใจ</span>
             <span id="sideLikeCount" class="text-sm font-black text-rose-400 font-['Chakra_Petch']">0</span>
           </div>
         </div>
       </div>
 
-      <!-- Section 2: Simulator Sandbox (ทดสอบกติกามวยวัดครบทุกปุ่ม) -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-          <i class="fa-solid fa-gamepad"></i>
-          <span>เครื่องจำลองมวยวัด (Simulator)</span>
-        </span>
-
-        <div class="grid grid-cols-2 gap-1.5 pt-1">
-          <button onclick="simJoin()" class="py-2 px-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold transition active:scale-95">
-            🥊 พิมพ์ "เข้า" (ลงเวที)
-          </button>
-          <button onclick="simLike()" class="py-2 px-2 rounded-lg bg-sky-600/20 hover:bg-sky-600/40 border border-sky-500/40 text-sky-300 text-[11px] font-bold transition active:scale-95">
-            ❤️ เคาะจอ x30 (+เลือด)
-          </button>
-          <button onclick="simRose()" class="py-2 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 border border-rose-500/40 text-rose-300 text-[11px] font-bold transition active:scale-95">
-            🌹 กุหลาบ (ฟื้นชีพ/บัฟ)
-          </button>
-          <button onclick="simWeapon()" class="py-2 px-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-300 text-[11px] font-bold transition active:scale-95">
-            ⚔️ เสกอาวุธ (ดาบ)
+      <!-- Section 2: Simulator Sandbox (ทดสอบมวยวัดครบเครื่อง) -->
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 space-y-2.5 shadow-md">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>เครื่องจำลองมวยวัด (Simulator)</span>
+          </span>
+          <button onclick="simSpawnBots()" class="text-[10px] px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40 border border-indigo-500/30 font-bold transition">
+            + เติมบอท 5 คน
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-1.5">
-          <button onclick="simShield()" class="py-1.5 px-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/40 text-blue-300 text-[10px] font-bold">
-            🛡️ เสกเกราะสะท้อน
-          </button>
-          <button onclick="simShockwave()" class="py-1.5 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
-            🔥 ระเบิดคลื่นผลัก
-          </button>
+        <!-- สายฟรี (Free Actions) -->
+        <div class="space-y-1">
+          <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">💬 สายฟรี (Free Players)</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="simJoin()" class="py-1.5 px-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>🥊</span> พิมพ์ "เข้า"
+            </button>
+            <button onclick="simLike()" class="py-1.5 px-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/35 border border-sky-500/30 text-sky-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>❤️</span> เคาะจอ x30
+            </button>
+            <button onclick="simFollow()" class="py-1.5 px-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/35 border border-blue-500/30 text-blue-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>➕</span> ติดตาม (โล่)
+            </button>
+            <button onclick="simShare()" class="py-1.5 px-2 rounded-xl bg-teal-600/20 hover:bg-teal-600/35 border border-teal-500/30 text-teal-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>🔗</span> แชร์ (สปีด)
+            </button>
+          </div>
         </div>
 
-        <button onclick="simUltimate()" class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-rose-600 via-amber-500 to-indigo-600 text-white text-[11px] font-extrabold shadow-md transition active:scale-95">
-          🚀 อัลติเมท! ทุบทั้งเวทีปลิว
+        <!-- สายเปย์ (Gifts & Monetization) -->
+        <div class="space-y-1 pt-1">
+          <span class="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">🎁 ส่งของขวัญ (Gifts)</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="simRose()" class="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 border border-rose-500/30 text-rose-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>🌹</span> กุหลาบ (ฟื้นชีพ/บัฟ)
+            </button>
+            <button onclick="simWeapon()" class="py-1.5 px-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/35 border border-purple-500/30 text-purple-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>⚔️</span> เสกดาบ (อาวุธ)
+            </button>
+            <button onclick="simShield()" class="py-1.5 px-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/35 border border-indigo-500/30 text-indigo-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>🛡️</span> เกราะสะท้อน
+            </button>
+            <button onclick="simShockwave()" class="py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/30 text-amber-300 text-[11px] font-bold transition active:scale-95 text-left flex items-center gap-1.5">
+              <span>💥</span> ระเบิดคลื่นผลัก
+            </button>
+          </div>
+        </div>
+
+        <!-- Ultimate Button -->
+        <button onclick="simUltimate()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-rose-600 via-amber-500 to-indigo-600 hover:opacity-95 text-white text-xs font-black shadow-lg shadow-rose-950/40 transition active:scale-95 flex items-center justify-center gap-1.5">
+          <span>🚀</span>
+          <span>อัลติเมท! ทุบทั้งเวทีปลิว</span>
         </button>
 
-        <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800">
-          <button onclick="simReset()" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold">
+        <!-- Round Management -->
+        <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800/80">
+          <button onclick="simReset()" class="py-1.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition">
             🔄 เริ่มรอบใหม่
           </button>
-          <button onclick="simForceWin()" class="py-1.5 px-2 rounded-lg bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
+          <button onclick="simForceWin()" class="py-1.5 px-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
             🏆 สั่งตัดสินแชมป์
           </button>
         </div>
       </div>
 
       <!-- Section 3: Active Fighters List -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 flex-1 flex flex-col min-h-[160px]">
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 space-y-2 flex-1 flex flex-col min-h-[160px] shadow-md">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white flex items-center gap-1.5">
             <i class="fa-solid fa-users text-sky-400"></i>
             <span>นักสู้บนเวที (<span id="sideFighterCount">0</span>)</span>
           </span>
+          <span class="text-[10px] text-slate-400">สถานะสด</span>
         </div>
 
         <div class="flex-1 overflow-y-auto max-h-[140px] pr-1">
           <table class="w-full text-[11px] text-left">
-            <tbody id="sideFighterTable" class="divide-y divide-slate-800/80">
+            <tbody id="sideFighterTable" class="divide-y divide-slate-800/60">
               <tr>
-                <td class="text-slate-500 italic text-center py-4">ยังไม่มีนักสู้ลงเวที... กดปุ่มจำลองได้เลย!</td>
+                <td class="text-slate-500 italic text-center py-4">ยังไม่มีนักสู้ลงเวที... กด "เติมบอท 5 คน" ได้เลย!</td>
               </tr>
             </tbody>
           </table>
@@ -244,17 +290,17 @@
       </div>
 
       <!-- Section 4: Live Event Log Feed -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 h-[140px] flex flex-col">
+      <div class="bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800 space-y-2 h-[130px] flex flex-col shadow-md">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white flex items-center gap-1.5">
             <i class="fa-solid fa-list-ul text-emerald-400"></i>
             <span>ฟีดเหตุการณ์สด</span>
           </span>
-          <button id="sideClearLogBtn" class="text-[10px] text-slate-500 hover:text-slate-300">ล้าง</button>
+          <button id="sideClearLogBtn" class="text-[10px] text-slate-400 hover:text-slate-200">ล้าง</button>
         </div>
 
         <div id="sideEventLog" class="flex-1 overflow-y-auto space-y-1.5 text-[10px] font-mono pr-1">
-          <div class="text-slate-500 italic text-center py-3">พร้อมรับเหตุการณ์...</div>
+          <div class="text-slate-500 italic text-center py-2">พร้อมรับเหตุการณ์...</div>
         </div>
       </div>
 

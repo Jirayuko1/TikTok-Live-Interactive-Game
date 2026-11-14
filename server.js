@@ -427,18 +427,52 @@ io.on('connection', socket => {
   });
 
   // Simulator Events for Testing
+  const botPresets = [
+    { nickname: 'พี่มารวยขายประกัน', avatar: '/assets/avatar-1.svg' },
+    { nickname: 'กฤษดา ประเสริฐสังข์', avatar: '/assets/avatar-2.svg' },
+    { nickname: 'KOJiji', avatar: '/assets/avatar-3.svg' },
+    { nickname: 'สิบสาม เมษา', avatar: '/assets/avatar-4.svg' },
+    { nickname: 'น้องแว่นสายบู๊', avatar: '/assets/avatar-5.svg' },
+    { nickname: 'จอมมารจี้จัง', avatar: '/assets/avatar-6.svg' }
+  ];
+
   socket.on('sim_join', (payload) => {
-    const testNames = ['พี่มารวยขายประกัน', 'กฤษดา ประเสริฐสังข์', 'KOJiji', 'สิบสาม เมษา', 'จอมมารจี้', 'น้องแว่นสายบู๊'];
-    const randName = payload?.nickname || testNames[Math.floor(Math.random() * testNames.length)];
-    const randId = payload?.username || 'user_' + Math.floor(Math.random() * 900 + 100);
-    const randAvatar = Math.random() > 0.5 ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg';
+    const preset = botPresets[Math.floor(Math.random() * botPresets.length)];
+    const randName = payload?.nickname || preset.nickname;
+    const randId = payload?.username || 'user_' + Math.floor(Math.random() * 9000 + 1000);
+    const randAvatar = payload?.avatar || preset.avatar;
     spawnFighter(randId, randName, randAvatar);
+  });
+
+  socket.on('sim_spawn_bots', () => {
+    botPresets.forEach((bot, idx) => {
+      setTimeout(() => {
+        const botId = 'bot_' + (idx + 1) + '_' + Math.floor(Math.random() * 100);
+        spawnFighter(botId, bot.nickname, bot.avatar);
+      }, idx * 180);
+    });
+  });
+
+  socket.on('sim_follow', () => {
+    const keys = Object.keys(gameState.fighters);
+    if (keys.length > 0) {
+      const randId = keys[Math.floor(Math.random() * keys.length)];
+      handleFollow({ uniqueId: randId, nickname: gameState.fighters[randId].nickname });
+    }
+  });
+
+  socket.on('sim_share', () => {
+    const keys = Object.keys(gameState.fighters);
+    if (keys.length > 0) {
+      const randId = keys[Math.floor(Math.random() * keys.length)];
+      handleShare({ uniqueId: randId, nickname: gameState.fighters[randId].nickname });
+    }
   });
 
   socket.on('sim_gift', (payload) => {
     const keys = Object.keys(gameState.fighters);
     const targetId = keys.length > 0 ? keys[Math.floor(Math.random() * keys.length)] : 'fighter_test';
-    const target = gameState.fighters[targetId] || { nickname: 'นักมวยสายเปย์', avatar: '/assets/default-avatar-red.svg' };
+    const target = gameState.fighters[targetId] || { nickname: 'นักมวยสายเปย์', avatar: '/assets/avatar-1.svg' };
 
     handleGift({
       uniqueId: targetId,
