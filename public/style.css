@@ -54,22 +54,42 @@ body {
   transition: all 0.3s ease;
 }
 
-/* When in Fullscreen / OBS Mode */
-body.obs-mode header {
+/* When in Fullscreen / OBS / Overlay Mode (สำหรับไลฟ์สดใน TikTok / OBS Studio) */
+body.obs-mode,
+body.overlay-mode {
+  background-color: #030611 !important;
+  overflow: hidden !important;
+}
+
+body.obs-mode header,
+body.overlay-mode header {
   display: none !important;
 }
-body.obs-mode #adminSidebar {
+
+body.obs-mode #adminSidebar,
+body.overlay-mode #adminSidebar {
   display: none !important;
 }
-body.obs-mode #gameArenaWrapper {
+
+body.obs-mode #gameArenaWrapper,
+body.overlay-mode #gameArenaWrapper {
   padding: 0 !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
 }
-body.obs-mode .arena-vertical-screen {
-  height: 100vh;
-  max-height: 100vh;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
+
+body.obs-mode .arena-vertical-screen,
+body.overlay-mode .arena-vertical-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  aspect-ratio: auto !important;
 }
 
 /* 1. Top HUD Header */

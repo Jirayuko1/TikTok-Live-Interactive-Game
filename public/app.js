@@ -31,11 +31,14 @@ const tiktokPillText = document.getElementById('tiktokPillText');
 const toggleAdminBtn = document.getElementById('toggleAdminBtn');
 const toggleAdminText = document.getElementById('toggleAdminText');
 const copyObsBtn = document.getElementById('copyObsBtn');
+const popoutOverlayBtn = document.getElementById('popoutOverlayBtn');
 const sfxToggleBtn = document.getElementById('sfxToggleBtn');
 const sfxIcon = document.getElementById('sfxIcon');
 
 // Admin Sidebar
 const adminSidebar = document.getElementById('adminSidebar');
+const sidePopoutBtn = document.getElementById('sidePopoutBtn');
+const sideCopyUrlBtn = document.getElementById('sideCopyUrlBtn');
 const sideConnStatus = document.getElementById('sideConnStatus');
 const sideUsernameInput = document.getElementById('sideUsernameInput');
 const sideConnectBtn = document.getElementById('sideConnectBtn');
@@ -1283,17 +1286,46 @@ toggleAdminBtn.addEventListener('click', () => {
   resizeCanvases();
 });
 
-copyObsBtn.addEventListener('click', () => {
-  const url = `${window.location.origin}/?mode=obs`;
-  navigator.clipboard.writeText(url).then(() => {
-    const orig = copyObsBtn.innerHTML;
-    copyObsBtn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span>คัดลอกแล้ว!</span>`;
-    setTimeout(() => { copyObsBtn.innerHTML = orig; }, 2000);
-  });
-});
+// ========================================================
+// OVERLAY & OBS STREAM POP-OUT HANDLERS
+// ========================================================
+function openPopoutOverlay() {
+  const url = `${window.location.origin}/overlay`;
+  const popW = 540;
+  const popH = 960;
+  const left = Math.max(0, Math.floor((window.screen.width - popW) / 2));
+  const top = Math.max(0, Math.floor((window.screen.height - popH) / 2));
+  window.open(
+    url, 
+    'TikTokLiveOverlay', 
+    `width=${popW},height=${popH},top=${top},left=${left},resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no,location=no`
+  );
+}
 
-if (new URLSearchParams(window.location.search).get('mode') === 'obs') {
+if (popoutOverlayBtn) popoutOverlayBtn.addEventListener('click', openPopoutOverlay);
+if (sidePopoutBtn) sidePopoutBtn.addEventListener('click', openPopoutOverlay);
+
+function copyOverlayUrl(btnElement) {
+  const url = `${window.location.origin}/overlay`;
+  navigator.clipboard.writeText(url).then(() => {
+    const origHtml = btnElement.innerHTML;
+    btnElement.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span>คัดลอกสำเร็จ!</span>`;
+    setTimeout(() => { btnElement.innerHTML = origHtml; }, 2500);
+  });
+}
+
+if (copyObsBtn) copyObsBtn.addEventListener('click', () => copyOverlayUrl(copyObsBtn));
+if (sideCopyUrlBtn) sideCopyUrlBtn.addEventListener('click', () => copyOverlayUrl(sideCopyUrlBtn));
+
+// Check if loaded in Overlay / OBS Mode (Direct /overlay or ?mode=obs or ?mode=overlay)
+const isOverlayRoute = window.location.pathname === '/overlay' || 
+                       window.location.pathname.startsWith('/overlay') || 
+                       new URLSearchParams(window.location.search).get('mode') === 'obs' ||
+                       new URLSearchParams(window.location.search).get('mode') === 'overlay';
+
+if (isOverlayRoute) {
   document.body.classList.add('obs-mode');
+  document.body.classList.add('overlay-mode');
   resizeCanvases();
 }
 
