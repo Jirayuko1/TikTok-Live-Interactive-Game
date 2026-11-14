@@ -418,7 +418,7 @@ io.on('connection', socket => {
     const victim = gameState.fighters[payload.victimId];
     if (victim) {
       victim.alive = false;
-      logEvent('game', `💀 ${victim.nickname} โดนซัดตกเวที ตกรอบ! (ส่งกุหลาบเพื่อฟื้นชีพ)`, { avatar: victim.avatar });
+      logEvent('game', `💀 ${victim.nickname} เลือดหมด โดน K.O.! (ส่งกุหลาบเพื่อฟื้นชีพ)`, { avatar: victim.avatar });
     }
 
     if (payload.attackerId && gameState.fighters[payload.attackerId]) {

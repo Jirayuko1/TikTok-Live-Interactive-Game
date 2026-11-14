@@ -366,6 +366,7 @@ class SpecialProjectile {
           this.alive = false;
 
           other.hp -= 35;
+          other.lastAttackerId = this.ownerId;
           other.state = 'hurt';
           other.animTicks = 0;
 
@@ -431,6 +432,7 @@ class ClientFighter {
     this.speedBoost = data.speedBoost || 1;
     this.kills = 0;
     this.isBoss = false;
+    this.lastAttackerId = null;
 
     this.x = ring.cx + Math.cos(spawnAngle) * dist;
     this.y = ring.cy + Math.sin(spawnAngle) * (dist * (ring.ry / ring.rx));
@@ -461,15 +463,42 @@ class ClientFighter {
       this.facingLeft = this.vx < 0;
     }
 
-    // Check Ring-Out (Falls off the skyscraper rooftop!)
+    // Laser Barrier Boundary Physics (Strictly NO falling off the stage)
+    // Fighters bounce off the holographic boundary wall with sparks and remain inside the arena.
     const dx = (this.x - ring.cx) / ring.rx;
     const dy = (this.y - ring.cy) / ring.ry;
     const distRatio = Math.sqrt(dx * dx + dy * dy);
 
-    if (distRatio > 1.05 || this.hp <= 0) {
+    if (distRatio >= 0.98) {
+      const angle = Math.atan2(dy, dx);
+      // Clamp inside the arena boundary
+      const clampRatio = 0.96;
+      this.x = ring.cx + Math.cos(angle) * (ring.rx * clampRatio);
+      this.y = ring.cy + Math.sin(angle) * (ring.ry * clampRatio);
+
+      // Normal vector of the boundary ellipse
+      const normX = Math.cos(angle);
+      const normY = Math.sin(angle);
+      const dot = this.vx * normX + this.vy * normY;
+
+      // Elastic rebound off the laser forcefield
+      if (dot > 0) {
+        this.vx -= 1.6 * dot * normX;
+        this.vy -= 1.6 * dot * normY;
+      } else {
+        this.vx += -normX * 1.5;
+        this.vy += -normY * 1.5;
+      }
+
+      // Barrier sparks impact effect
+      spawnPixelHitSparks(this.x, this.y, true);
+    }
+
+    // Knockout Check: Fighters ONLY die when HP drops to 0 or below (Strictly NO ring-out deaths)
+    if (this.hp <= 0) {
       this.alive = false;
       spawnPixelGhost(this.x, this.y, this.palette);
-      socket.emit('fighter_knocked_out', { victimId: this.id });
+      socket.emit('fighter_knocked_out', { victimId: this.id, attackerId: this.lastAttackerId });
       return;
     }
 
@@ -513,6 +542,7 @@ class ClientFighter {
 
         const damage = this.isBoss ? 45 : (this.weapon === 'sword' ? 28 : 18);
         closest.hp -= damage;
+        closest.lastAttackerId = this.id;
         closest.state = 'hurt';
         closest.animTicks = 0;
 
@@ -970,24 +1000,29 @@ function drawCyberpunkBackground() {
   bgCtx.fillRect(w * 0.89, h * 0.66 + crowdBob, 3, 1.5);
   bgCtx.fillRect(w * 0.93, h * 0.64 - crowdBob, 3, 1.5);
 
-  // 10. High-Tech Holographic Arena Floor Boundary
+  // 10. High-Tech Holographic Laser Barrier Boundary (Safety Forcefield)
   const ring = getRing();
   bgCtx.save();
-  bgCtx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-  bgCtx.lineWidth = 1.5;
-  bgCtx.setLineDash([6, 6]);
+  const pulse = 0.45 + 0.15 * Math.sin(time * 3);
+  bgCtx.strokeStyle = `rgba(56, 189, 248, ${pulse})`;
+  bgCtx.shadowColor = '#00f0ff';
+  bgCtx.shadowBlur = 8;
+  bgCtx.lineWidth = 2;
+  bgCtx.setLineDash([8, 6]);
   bgCtx.beginPath();
   bgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
   bgCtx.stroke();
   bgCtx.setLineDash([]);
 
-  // Corner holographic laser nodes
+  // Corner holographic laser emitters
   [-1, 1].forEach(sideX => {
     [-1, 1].forEach(sideY => {
       const px = ring.cx + sideX * (ring.rx * 0.85);
       const py = ring.cy + sideY * (ring.ry * 0.85);
-      bgCtx.fillStyle = '#38bdf8';
-      bgCtx.fillRect(px - 2, py - 2, 4, 4);
+      bgCtx.fillStyle = '#00f0ff';
+      bgCtx.fillRect(px - 2.5, py - 2.5, 5, 5);
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.fillRect(px - 1, py - 1, 2, 2);
     });
   });
   bgCtx.restore();
