@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <circle cx="50" cy="50" r="48" fill="#e11d48" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="50" cy="38" r="20" fill="#fecdd3"/>
+  <path d="M22 84 C22 62 35 56 50 56 C65 56 78 62 78 84 Z" fill="#9f1239"/>
+  <!-- Helmet Visor -->
+  <path d="M35 34 Q50 28 65 34 Q62 44 50 44 Q38 44 35 34 Z" fill="#1e293b"/>
+  <text x="50" y="94" font-size="10" font-family="sans-serif" font-weight="bold" fill="#ffffff" text-anchor="middle">TEAM RED</text>
+</svg>

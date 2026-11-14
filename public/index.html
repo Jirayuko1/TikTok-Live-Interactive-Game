@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เกมเศรษฐี TikTok Live Interactive Board Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800;900&family=Chakra+Petch:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-['Kanit'] selection:bg-amber-500 selection:text-slate-950 flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur py-4 px-6">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🎲👑</span>
+        <span class="font-extrabold text-xl font-['Chakra_Petch'] bg-gradient-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent">
+          TIKTOK TYCOON BOARD GAME
+        </span>
+      </div>
+      <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        🟢 ระบบพร้อมทำงาน
+      </span>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="max-w-4xl mx-auto px-6 py-12 text-center space-y-10 flex-1 flex flex-col justify-center">
+    <div class="space-y-4">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-semibold">
+        <span>🎲 เกมเศรษฐีไต่เต้าเจ้าสัว (Interactive Monopoly Board Game)</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight">
+        เปลี่ยนแชทและของขวัญ TikTok Live<br>
+        <span class="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-400 bg-clip-text text-transparent">
+          เป็นเกมเศรษฐีเดินกระดานบนจอไลฟ์!
+        </span>
+      </h1>
+      <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
+        คนดูพิมพ์ "เล่น" เพื่อเสกตัวหมาก, พิมพ์ "ทอย" เพื่อทอยลูกเต๋าเดินตามช่อง 24 ช่อง, ติดคุกต้องส่งกุหลาบประกันตัว, ส่งโดนัทได้ลูกเต๋าทองคำ x2, หรือส่งของขวัญใหญ่เพื่อวาร์ป 15 ช่อง!
+      </p>
+    </div>
+
+    <!-- Quick Navigation Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto w-full">
+      <!-- Admin Card -->
+      <a href="/admin" class="group p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 hover:border-amber-500/60 transition shadow-xl hover:shadow-amber-950/30 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white group-hover:text-amber-400 transition">เว็บหลังบ้าน (Admin Panel)</h2>
+          <p class="text-xs text-slate-400 mt-2">
+            ควบคุมรอบการแข่ง, จัดการผู้เล่นบนกระดาน, ปล่อยตัวจากคุก, และมีเครื่องจำลอง (Simulator) สำหรับกดทดสอบกติกาครบทุกรูปแบบ
+          </p>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-amber-400 text-sm font-bold">
+          <span>เข้าสู่หน้าควบคุม</span>
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+      <!-- Overlay Card -->
+      <a href="/overlay" target="_blank" class="group p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 hover:border-indigo-500/60 transition shadow-xl hover:shadow-indigo-950/30 flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+            <i class="fa-solid fa-desktop"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">หน้าจอเกม (OBS Overlay)</h2>
+          <p class="text-xs text-slate-400 mt-2">
+            กระดานสี่เหลี่ยม 24 ช่องรอบจอ ตรงกลางโชว์การทอยลูกเต๋า 3D, การ์ดดวง Chance, Leaderboard และลูกเต๋าทองคำ
+          </p>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-indigo-400 text-sm font-bold">
+          <span>เปิดหน้าจอเกม</span>
+          <i class="fa-solid fa-arrow-up-right-from-square group-hover:translate-x-1 group-hover:-translate-y-1 transition"></i>
+        </div>
+      </a>
+    </div>
+
+    <!-- Quick OBS Setup Guide -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 text-left max-w-2xl mx-auto w-full space-y-3">
+      <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-amber-400"></i>
+        <span>วิธีนำไปขึ้นไลฟ์สดด้วย OBS / TikTok Live Studio</span>
+      </h3>
+      <ol class="text-xs text-slate-400 space-y-2 list-decimal list-inside">
+        <li>ในโปรแกรม OBS กดเพิ่ม Source เลือก <b>Browser</b> (เบราว์เซอร์)</li>
+        <li>ใส่ URL: <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono">http://localhost:3000/overlay</code></li>
+        <li>ตั้งค่าความละเอียดเป็น <b>1080 x 1920</b> (แนวตั้งสำหรับ TikTok) หรือ <b>1920 x 1080</b> (แนวนอน)</li>
+        <li>เปิดหน้า <a href="/admin" class="text-amber-400 underline font-semibold">/admin</a> บนคอมหรือมือถือเพื่อควบคุมและเริ่มเกม</li>
+      </ol>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+    TikTok Live Interactive Monopoly Board Game System &copy; 2026
+  </footer>
+
+</body>
+</html>

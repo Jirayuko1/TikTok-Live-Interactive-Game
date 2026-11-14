@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Live Monopoly Board Game Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&family=Kanit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="board-screen-container">
+
+    <!-- THE 24 PERIMETER TILES (Grid surrounding the center) -->
+    <div id="boardPerimeter" class="board-perimeter">
+      <!-- 24 Tiles generated dynamically via game.js -->
+    </div>
+
+    <!-- CENTER ARENA (เว้นพื้นที่ตรงกลางไว้โชว์อันดับ/แชท/การทอยลูกเต๋า) -->
+    <div class="center-arena">
+
+      <!-- TOP INFO BAR -->
+      <div class="center-top-bar">
+        <div class="game-logo">
+          <span class="dice-icon">🎲</span>
+          <div>
+            <h1 class="game-title">เกมเศรษฐีไต่เต้าเจ้าสัว</h1>
+            <span class="game-subtitle">TIKTOK INTERACTIVE BOARD GAME</span>
+          </div>
+        </div>
+
+        <div class="round-timer-box">
+          <span class="timer-label" id="roundLabel">รอบที่ 1</span>
+          <span class="timer-val" id="roundTimerVal">30:00</span>
+        </div>
+      </div>
+
+      <!-- MIDDLE DYNAMIC STAGE: Dice Rolls & Event Popups -->
+      <div class="center-stage">
+
+        <!-- DICE ROLLER SHOWCASE (Shows when someone rolls) -->
+        <div id="diceShowcase" class="dice-showcase hidden">
+          <div class="roller-profile">
+            <img id="rollerAvatar" src="/assets/default-avatar-red.svg" alt="Roller">
+            <div id="rollerNick" class="roller-name">ผู้เล่นกำลังทอย...</div>
+          </div>
+          <div class="dice-box">
+            <div id="diceCube1" class="dice-cube">⚄</div>
+            <div id="diceCube2" class="dice-cube gold hidden">⚅</div>
+          </div>
+          <div id="diceResultText" class="dice-result-text">ทอยได้ 5 แต้ม!</div>
+        </div>
+
+        <!-- POPUP EVENT BANNER (Chance, Jail, Warp, Star) -->
+        <div id="eventPopup" class="event-popup hidden">
+          <div id="popupIcon" class="popup-icon">❓</div>
+          <h2 id="popupTitle" class="popup-title">การ์ดดวง!</h2>
+          <p id="popupDesc" class="popup-desc">คำอธิบายเหตุการณ์</p>
+          <div class="popup-avatar-row">
+            <img id="popupAvatar" src="/assets/default-avatar-red.svg" alt="Event Target">
+          </div>
+        </div>
+
+        <!-- HALL OF FAME / PREVIOUS ROUND CHAMPIONS -->
+        <div id="hallOfFameBox" class="hall-of-fame-box hidden">
+          <div class="hof-header">🏆 ทำเนียบแชมป์เศรษฐี (Hall of Fame)</div>
+          <div id="hofList" class="hof-list">
+            <!-- Top 3 winners populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CENTER BOTTOM: LIVE LEADERBOARD (Top 5 Rich Players) -->
+      <div class="center-bottom-hud">
+        <div class="leaderboard-panel">
+          <div class="lb-header">
+            <span>👑 อันดับมหาเศรษฐีประจำรอบ</span>
+            <span class="online-count">👥 ในกระดาน: <b id="playerCountVal">0</b> คน</span>
+          </div>
+          <div id="leaderboardList" class="lb-list">
+            <div class="lb-empty">พิมพ์ "เล่น" หรือ "เข้าเกม" เพื่อเริ่มก้าวสู่ความมั่งคั่ง!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INSTRUCTION / CTA FOOTER -->
+      <div class="instructions-footer">
+        <div class="rule-pill free">
+          <span class="tag green">ฟรี</span>
+          <span>พิมพ์ <b>เล่น</b> เข้ากระดาน | พิมพ์ <b>ทอย</b> หรือเคาะใจ 50 ครั้ง</span>
+        </div>
+        <div class="rule-pill gift">
+          <span class="tag gold">🌹 กุหลาบ</span>
+          <span>ทอยทันที / <b>ประกันตัวจากคุก!</b></span>
+        </div>
+        <div class="rule-pill donut">
+          <span class="tag purple">🍩 โดนัท</span>
+          <span><b>ลูกเต๋าทองคำ</b> เดินเบิ้ล x2!</span>
+        </div>
+        <div class="rule-pill big">
+          <span class="tag red">🚀 100+ เหรียญ</span>
+          <span><b>วาร์ป 15 ช่อง</b> ชนคนอื่นกระเด็น!</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FLOATING CHAT BUBBLES LAYER -->
+    <div id="bubbleLayer" class="bubble-layer"></div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
