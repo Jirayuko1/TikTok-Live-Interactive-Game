@@ -1,5 +1,5 @@
 /* =========================================
-   ARENA LIVE: BATTLE ROYALE (มวยวัด) STYLES
+   ARENA LIVE: FIGHTER BLAZE (16-BIT PIXEL EDITION)
    ========================================= */
 * {
   margin: 0;
@@ -8,7 +8,7 @@
 }
 
 body {
-  background-color: #05070f;
+  background-color: #030611;
   color: #f8fafc;
   font-family: 'Kanit', sans-serif;
   overflow: hidden;
@@ -21,11 +21,11 @@ body {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #080c18;
 }
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 9999px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
@@ -40,10 +40,14 @@ body {
   aspect-ratio: 9 / 16;
   width: auto;
   max-width: 100%;
-  border-radius: 20px;
-  border: 3px solid rgba(251, 191, 36, 0.35);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(245, 158, 11, 0.18), inset 0 0 20px rgba(0, 0, 0, 0.8);
-  background: radial-gradient(circle at 50% 25%, #181d38 0%, #0d1124 50%, #060814 100%);
+  border-radius: 12px;
+  border: 4px solid #f59e0b;
+  box-shadow: 
+    0 0 0 2px #0f172a,
+    0 0 40px rgba(0, 0, 0, 0.95),
+    0 0 25px rgba(245, 158, 11, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.9);
+  background: #080d1e;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -74,33 +78,33 @@ body.obs-mode .arena-vertical-screen {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(10, 14, 26, 0.9);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 12, 26, 0.96);
+  border-bottom: 2px solid #f59e0b;
   z-index: 25;
-  backdrop-filter: blur(8px);
 }
 
 .arena-logo-badge {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  border: 2px solid #fef08a;
+  box-shadow: 2px 2px 0 #000;
 }
 
 .arena-title {
-  font-family: 'Chakra Petch', sans-serif;
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, #fef08a, #f59e0b, #f43f5e);
+  background: linear-gradient(135deg, #fef08a, #f59e0b, #38bdf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
 }
 
 .arena-round-sub {
@@ -113,34 +117,33 @@ body.obs-mode .arena-vertical-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1.5px solid #f59e0b;
-  border-radius: 10px;
-  padding: 2px 10px;
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+  background: #0f172a;
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  padding: 3px 8px;
+  box-shadow: 2px 2px 0 #000, 0 0 10px rgba(245, 158, 11, 0.4);
 }
 
 .timer-sub-label {
-  font-size: 8px;
+  font-size: 7px;
   color: #fbbf24;
-  font-weight: 800;
-  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .timer-num {
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 12px;
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px #f59e0b;
 }
 
-/* 2. Pink Join Banner (ตรงตามรูปภาพ) */
+/* 2. Pink Join Banner (Retro Marquee) */
 .join-banner-bar {
-  background: linear-gradient(90deg, #be185d, #e11d48, #f43f5e);
-  padding: 6px 10px;
+  background: linear-gradient(90deg, #be185d, #e11d48, #be185d);
+  padding: 5px 8px;
   text-align: center;
-  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.45);
+  border-bottom: 2px solid #fda4af;
+  box-shadow: 0 3px 10px rgba(225, 29, 72, 0.5);
   z-index: 24;
 }
 
@@ -148,55 +151,54 @@ body.obs-mode .arena-vertical-screen {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 800;
   color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 0 #881337;
 }
 
 .join-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background: #ffffff;
-  border-radius: 50%;
-  animation: pulseDot 1s infinite alternate;
+  border-radius: 1px;
+  animation: pulsePixel 0.8s infinite steps(2);
 }
 
-@keyframes pulseDot {
-  from { transform: scale(0.8); opacity: 0.6; }
-  to { transform: scale(1.3); opacity: 1; box-shadow: 0 0 8px #ffffff; }
+@keyframes pulsePixel {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
 }
 
-/* 3. Gift Reward Guide Panel (ตรงตามรูปที่ 1 เป๊ะ) */
+/* 3. Gift Reward Guide Panel (Retro Pixel Cards) */
 .reward-guide-panel {
-  background: rgba(8, 11, 24, 0.94);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
-  padding: 6px 8px;
+  background: rgba(6, 9, 20, 0.96);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 8px;
   z-index: 22;
-  backdrop-filter: blur(6px);
 }
 
 .reward-tiers-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 3.5px;
+  gap: 3px;
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .tier-item {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 7px;
-  padding: 3px 1px;
-  font-size: 8.5px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 2.5px 1px;
+  font-size: 8px;
   font-weight: 800;
   color: #f8fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
+  box-shadow: 1px 1px 0 #000;
 }
 .tier-item .icon {
   font-size: 11px;
@@ -204,46 +206,42 @@ body.obs-mode .arena-vertical-screen {
 }
 .tier-item .cost {
   font-size: 7.5px;
-  color: #fbbf24;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 800;
+  color: #facc15;
+  font-family: 'Silkscreen', monospace;
 }
 
 .reward-sub-actions {
-  font-size: 8.5px;
+  font-size: 8px;
   color: #cbd5e1;
   text-align: center;
-  line-height: 1.3;
-  padding-top: 1px;
+  line-height: 1.25;
 }
 .reward-sub-actions b {
-  color: #fbbf24;
+  color: #facc15;
 }
 
-/* 4. Champion Leaderboard (Top Right inside stream arena) */
+/* 4. Champion Leaderboard (Retro Pixel Arcade HUD) */
 .champion-hud-card {
   position: absolute;
-  top: 104px;
-  right: 10px;
-  width: 148px;
-  background: rgba(9, 13, 26, 0.88);
-  border: 1px solid rgba(251, 191, 36, 0.45);
-  border-radius: 12px;
-  padding: 6px 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+  top: 98px;
+  right: 8px;
+  width: 145px;
+  background: rgba(8, 12, 26, 0.94);
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  padding: 5px 7px;
+  box-shadow: 2px 2px 0 #000, 0 4px 15px rgba(0, 0, 0, 0.8);
   z-index: 20;
-  backdrop-filter: blur(8px);
 }
 
 .champ-head {
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 900;
   color: #fbbf24;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 3px;
-  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  padding-bottom: 2px;
+  margin-bottom: 3px;
   letter-spacing: 0.5px;
 }
 
@@ -251,15 +249,15 @@ body.obs-mode .arena-vertical-screen {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 9px;
-  padding: 2.5px 0;
+  font-size: 8.5px;
+  padding: 2px 0;
   color: #e2e8f0;
 }
 
 .champ-rank {
   font-weight: 800;
   color: #f59e0b;
-  margin-right: 4px;
+  font-family: 'Silkscreen', monospace;
 }
 
 .champ-name {
@@ -267,13 +265,14 @@ body.obs-mode .arena-vertical-screen {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 78px;
+  max-width: 75px;
 }
 
 .champ-score {
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 800;
+  font-family: 'Silkscreen', monospace;
+  font-weight: 700;
   color: #fbbf24;
+  font-size: 8px;
 }
 
 /* 5. Main Combat Ring Viewport */
@@ -285,6 +284,7 @@ body.obs-mode .arena-vertical-screen {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #000;
 }
 
 .bg-stage-canvas {
@@ -293,6 +293,8 @@ body.obs-mode .arena-vertical-screen {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .combat-canvas {
@@ -301,16 +303,18 @@ body.obs-mode .arena-vertical-screen {
   width: 100%;
   height: 100%;
   z-index: 10;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
-/* Cheering Crowd Silhouettes with Lightsticks */
+/* Cheering Crowd Silhouettes with Pixel Lightsticks */
 .crowd-silhouettes {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 85px;
-  background: radial-gradient(circle at 50% 120%, rgba(2, 4, 10, 0.98) 0%, rgba(3, 7, 18, 0.75) 65%, transparent 100%);
+  height: 80px;
+  background: radial-gradient(circle at 50% 120%, rgba(2, 4, 10, 0.98) 0%, rgba(3, 7, 18, 0.8) 60%, transparent 100%);
   pointer-events: none;
   z-index: 12;
   overflow: hidden;
@@ -323,46 +327,59 @@ body.obs-mode .arena-vertical-screen {
   width: 100%;
   height: 100%;
   background-image: 
-    radial-gradient(2px 14px at 15% 75%, #38bdf8 50%, transparent 100%),
-    radial-gradient(2px 16px at 28% 70%, #ec4899 50%, transparent 100%),
-    radial-gradient(2px 14px at 45% 78%, #22c55e 50%, transparent 100%),
-    radial-gradient(2px 16px at 62% 72%, #eab308 50%, transparent 100%),
-    radial-gradient(2px 15px at 78% 76%, #a855f7 50%, transparent 100%),
-    radial-gradient(2px 14px at 90% 70%, #06b6d4 50%, transparent 100%);
-  opacity: 0.75;
-  animation: waveSticks 2s infinite ease-in-out alternate;
+    radial-gradient(3px 14px at 15% 75%, #38bdf8 60%, transparent 100%),
+    radial-gradient(3px 16px at 28% 70%, #ec4899 60%, transparent 100%),
+    radial-gradient(3px 14px at 45% 78%, #22c55e 60%, transparent 100%),
+    radial-gradient(3px 16px at 62% 72%, #eab308 60%, transparent 100%),
+    radial-gradient(3px 15px at 78% 76%, #a855f7 60%, transparent 100%),
+    radial-gradient(3px 14px at 90% 70%, #06b6d4 60%, transparent 100%);
+  opacity: 0.85;
+  animation: waveSticksPixel 1.6s infinite steps(4) alternate;
 }
 
-@keyframes waveSticks {
-  0% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-3px) rotate(1deg); }
-  100% { transform: translateY(-6px) rotate(-1deg); }
+@keyframes waveSticksPixel {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(-8px); }
 }
 
-/* 6. Victory Overlay Modal (ตรงตามรูปที่ 2) */
+/* CRT Scanline Overlay */
+.crt-scanlines {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 15;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* 6. Victory Overlay Modal */
 .victory-modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(3, 6, 16, 0.88);
-  backdrop-filter: blur(10px);
+  background: rgba(3, 5, 14, 0.92);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 40;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .next-round-counter {
-  background: rgba(15, 23, 42, 0.95);
+  background: #0f172a;
   border: 2px solid #fbbf24;
-  border-radius: 12px;
-  padding: 6px 20px;
-  font-size: 14px;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 12px;
   font-weight: 800;
   color: #ffffff;
   margin-bottom: 20px;
-  box-shadow: 0 0 24px rgba(251, 191, 36, 0.45);
+  box-shadow: 2px 2px 0 #000, 0 0 15px rgba(251, 191, 36, 0.5);
 }
 
 .victory-winner-card {
@@ -370,19 +387,18 @@ body.obs-mode .arena-vertical-screen {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .trophy-badge {
-  font-size: 60px;
+  font-size: 56px;
   line-height: 1;
-  filter: drop-shadow(0 0 25px #fbbf24);
-  animation: bounceTrophy 1.5s infinite;
+  filter: drop-shadow(0 0 20px #fbbf24);
+  animation: bounceTrophyPixel 1s infinite steps(2);
 }
 
-@keyframes bounceTrophy {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-10px) scale(1.08); }
+@keyframes bounceTrophyPixel {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .victory-winner-title {
@@ -390,11 +406,10 @@ body.obs-mode .arena-vertical-screen {
 }
 
 .winner-name {
-  font-family: 'Chakra Petch', sans-serif;
-  font-size: 32px;
+  font-size: 30px;
   font-weight: 900;
   color: #fbbf24;
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 0 #000, 0 0 15px rgba(251, 191, 36, 0.8);
 }
 
 .winner-desc {
@@ -402,43 +417,44 @@ body.obs-mode .arena-vertical-screen {
   color: #f1f5f9;
   font-weight: 700;
   margin-top: 4px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  text-shadow: 1px 1px 0 #000;
 }
 
 .winner-avatar-wrap {
   position: relative;
   width: 80px;
-  height: 80px;
+  height: 90px;
   margin-top: 16px;
-  border-radius: 50%;
-  border: 4px solid #fbbf24;
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
-  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 #000, 0 0 20px rgba(251, 191, 36, 0.5);
 }
 
 .winner-avatar-wrap img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+  max-width: 90%;
+  max-height: 90%;
+  image-rendering: pixelated;
 }
 
 .winner-crown {
   position: absolute;
-  top: -24px;
+  top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 32px;
-  filter: drop-shadow(0 0 10px #fbbf24);
-  animation: floatCrown 2s infinite ease-in-out;
+  font-size: 28px;
+  animation: floatCrownPixel 1.2s infinite steps(2);
 }
 
-@keyframes floatCrown {
+@keyframes floatCrownPixel {
   0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-5px); }
+  50% { transform: translateX(-50%) translateY(-6px); }
 }
 
-/* 7. Floating Chat Bubbles Layer */
+/* 7. Floating Chat Bubbles */
 .chat-bubble-layer {
   position: absolute;
   inset: 0;
@@ -448,33 +464,28 @@ body.obs-mode .arena-vertical-screen {
 
 .chat-bubble {
   position: absolute;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1.5px solid #fbbf24;
-  border-radius: 12px;
-  padding: 4px 8px;
-  font-size: 10px;
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #ffffff;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 2px 2px 0 #000;
   pointer-events: none;
   transform: translate(-50%, -100%);
-  animation: floatBubble 3s forwards ease-out;
+  animation: floatBubblePixel 3s forwards steps(15);
 }
 
-@keyframes floatBubble {
-  0% { opacity: 0; transform: translate(-50%, -80%) scale(0.7); }
-  15% { opacity: 1; transform: translate(-50%, -110%) scale(1); }
-  75% { opacity: 1; transform: translate(-50%, -130%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -150%) scale(0.9); }
+@keyframes floatBubblePixel {
+  0% { opacity: 0; transform: translate(-50%, -70%); }
+  10% { opacity: 1; transform: translate(-50%, -100%); }
+  80% { opacity: 1; transform: translate(-50%, -120%); }
+  100% { opacity: 0; transform: translate(-50%, -140%); }
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes popIn {
-  0% { transform: scale(0.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
 }

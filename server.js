@@ -169,15 +169,17 @@ function spawnFighter(uniqueId, nickname, avatar, forceRevive = false) {
 
   // Choose team/color based on count
   const colors = ['#f43f5e', '#38bdf8', '#fbbf24', '#a855f7', '#10b981', '#f97316'];
-  const assignedColor = colors[Object.keys(gameState.fighters).length % colors.length];
+  const paletteIdx = Object.keys(gameState.fighters).length % colors.length;
+  const assignedColor = colors[paletteIdx];
 
   const fighter = {
     id: uniqueId,
     nickname: nickname || uniqueId,
-    avatar: avatar || '/assets/default-avatar-red.svg',
+    avatar: avatar || '/assets/avatar-1.svg',
     hp: 100,
     maxHp: 100,
     color: assignedColor,
+    palette: paletteIdx, // 0 to 5 for Fighter: Blaze pixel sprite palettes
     weapon: 'none',       // 'none', 'sword', 'club', 'giant_glove'
     hasShield: false,
     speedBoost: 1,
