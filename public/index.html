@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE เกมเศรษฐี TikTok Live Interactive Game</title>
+  <title>LINE เกมเศรษฐี TikTok Live Interactive 3D (9:16 Mobile Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
     <div class="flex items-center gap-3">
       <span class="text-2xl">🎲👑</span>
       <h1 class="font-extrabold text-sm font-['Chakra_Petch'] bg-gradient-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent">
-        LINE เกมเศรษฐี LIVE INTERACTIVE
+        LINE เกมเศรษฐี LIVE (TIKTOK 9:16)
       </h1>
       <span id="tiktokPill" class="text-[11px] px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-rose-500"></span>
@@ -27,6 +27,12 @@
     </div>
 
     <div class="flex items-center gap-2">
+      <!-- Toggle Mobile Vertical Mode (TikTok 9:16) -->
+      <button id="viewModeToggleBtn" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition active:scale-95">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span id="viewModeToggleText">โหมดมือถือแนวตั้ง (TikTok 9:16)</span>
+      </button>
+
       <!-- Toggle Admin Panel Button -->
       <button id="toggleAdminBtn" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-amber-950/40">
         <i class="fa-solid fa-sliders"></i>
@@ -41,166 +47,169 @@
     </div>
   </header>
 
-  <!-- MAIN WRAPPER (Split Screen: Board Area + Admin Sidebar) -->
-  <div class="flex h-[calc(100vh-48px)] w-full relative overflow-hidden">
+  <!-- MAIN WRAPPER (Split Screen: Phone Canvas + Admin Sidebar) -->
+  <div class="flex h-[calc(100vh-48px)] w-full relative overflow-hidden bg-slate-950 justify-center">
 
     <!-- ================================================= -->
-    <!-- LEFT: LINE LET'S GET RICH 3D ISOMETRIC GAME ARENA -->
+    <!-- CENTER: TIKTOK LIVE VERTICAL 9:16 MOBILE CANVAS -->
     <!-- ================================================= -->
-    <div id="gameArena" class="flex-1 relative flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#41622b] via-[#334e21] to-[#253918]">
+    <div id="gameArenaWrapper" class="flex-1 flex items-center justify-center p-2 transition-all duration-300 overflow-hidden">
 
-      <!-- 4 PLAYER CORNERS HUD (สไตล์ LINE เกมเศรษฐี) -->
+      <div id="gameArena" class="vertical-screen-box relative flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300">
 
-      <!-- Top-Left: Player 3 (ทีมน้ำเงิน) -->
-      <div id="hudP3" class="player-hud-box top-left">
-        <div class="rank-circle rank-3">ที่ 3</div>
-        <div class="hud-avatar-box blue-border">
-          <img id="p3Avatar" src="/assets/default-avatar-blue.svg" alt="P3">
-          <span class="team-badge blue">ทีมน้ำเงิน</span>
-        </div>
-        <div class="hud-details">
-          <div id="p3Nick" class="hud-name">รอผู้เล่น...</div>
-          <div class="hud-marbles">มาร์เบิล: <b id="p3Marbles" class="text-sky-300">200M</b></div>
-          <div class="hud-stars">⭐ <span id="p3Stars">0</span></div>
-        </div>
-      </div>
-
-      <!-- Top-Right: Player 4 (ทีมแดง) -->
-      <div id="hudP4" class="player-hud-box top-right">
-        <div class="rank-circle rank-4">ที่ 4</div>
-        <div class="hud-avatar-box red-border">
-          <img id="p4Avatar" src="/assets/default-avatar-red.svg" alt="P4">
-          <span class="team-badge red">ทีมแดง</span>
-        </div>
-        <div class="hud-details text-right">
-          <div id="p4Nick" class="hud-name">รอผู้เล่น...</div>
-          <div class="hud-marbles">มาร์เบิล: <b id="p4Marbles" class="text-rose-300">200M</b></div>
-          <div class="hud-stars">⭐ <span id="p4Stars">0</span></div>
-        </div>
-      </div>
-
-      <!-- Bottom-Left: Player 2 (ทีมแดง) -->
-      <div id="hudP2" class="player-hud-box bottom-left">
-        <div class="rank-circle rank-2">ที่ 2</div>
-        <div class="hud-avatar-box red-border">
-          <img id="p2Avatar" src="/assets/default-avatar-red.svg" alt="P2">
-          <span class="team-badge red">ทีมแดง</span>
-        </div>
-        <div class="hud-details">
-          <div id="p2Nick" class="hud-name">รอผู้เล่น...</div>
-          <div class="hud-marbles">มาร์เบิล: <b id="p2Marbles" class="text-rose-300">200M</b></div>
-          <div class="hud-stars">⭐ <span id="p2Stars">0</span></div>
-        </div>
-      </div>
-
-      <!-- Bottom-Right: Player 1 (ทีมน้ำเงิน) -->
-      <div id="hudP1" class="player-hud-box bottom-right">
-        <div class="rank-circle rank-1">ที่ 1</div>
-        <div class="hud-avatar-box blue-border">
-          <img id="p1Avatar" src="/assets/default-avatar-blue.svg" alt="P1">
-          <span class="team-badge blue">ทีมน้ำเงิน</span>
-        </div>
-        <div class="hud-details text-right">
-          <div id="p1Nick" class="hud-name">รอผู้เล่น...</div>
-          <div class="hud-marbles">มาร์เบิล: <b id="p1Marbles" class="text-sky-300">200M</b></div>
-          <div class="hud-stars">⭐ <span id="p1Stars">0</span></div>
-        </div>
-      </div>
-
-      <!-- 4 CORNER CASH MONEY STACKS (มัดเงินสดมุมกระดาน) -->
-      <div class="money-stack stack-tl">💵💵💵</div>
-      <div class="money-stack stack-tr">💵💵💵</div>
-      <div class="money-stack stack-bl">💵💵💵</div>
-      <div class="money-stack stack-br">💵💵💵</div>
-
-      <!-- ISOMETRIC 3D BOARD CONTAINER -->
-      <div class="isometric-viewport">
-        <div id="isoBoard" class="iso-board">
-
-          <!-- 32 TILES GRID (8 TILES PER SIDE) -->
-          <div id="tilesContainer" class="tiles-container">
-            <!-- Dynamically populated via app.js -->
-          </div>
-
-          <!-- CENTER SUNKEN POND & WATER ARENA -->
-          <div class="center-pond">
-            <!-- Center Top Game Info Bar -->
-            <div class="pond-top-hud">
-              <span class="info-pill">⏱️ เวลา <b id="roundTimerText">30:00</b></span>
-              <span class="info-pill">รอบที่ <b id="roundNumText">1</b></span>
-              <span class="info-pill gold">🪙 กองกลาง <b id="jackpotPoolText">8M</b></span>
-            </div>
-
-            <!-- Logo Water Lily Emboss -->
-            <div class="pond-logo">
-              <div class="pond-logo-text">LINE เกมเศรษฐี</div>
-              <div class="pond-logo-sub">TIKTOK LIVE EDITION</div>
-            </div>
-
-            <!-- Dice Control Arena (Even/Odd + Big Pink Roll Button) -->
-            <div class="pond-controls">
-              <button class="btn-dice-opt">คู่</button>
-              <button id="centerRollBtn" class="btn-big-roll">
-                <span class="roll-arrow">▼</span>
-                <span class="roll-text">ทอย</span>
-              </button>
-              <button class="btn-dice-opt">คี่</button>
+        <!-- TOP BAR: Match Header & Time -->
+        <div class="mobile-top-bar">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🎲</span>
+            <div>
+              <div class="font-extrabold text-sm leading-tight bg-gradient-to-r from-amber-300 to-rose-400 bg-clip-text text-transparent">
+                LINE เกมเศรษฐี
+              </div>
+              <div class="text-[9px] text-sky-400 font-bold tracking-wider">TIKTOK LIVE EDITION</div>
             </div>
           </div>
 
+          <div class="flex items-center gap-2">
+            <span class="top-pill">⏱️ <b id="roundTimerText">30:00</b></span>
+            <span class="top-pill">รอบ <b id="roundNumText">1</b></span>
+            <span class="top-pill gold">🪙 <b id="jackpotPoolText">8M</b></span>
+          </div>
         </div>
+
+        <!-- TOP PLAYERS HUD: Rank 1 & Rank 2 -->
+        <div class="players-top-row">
+          <!-- Rank 1: Blue -->
+          <div id="hudP1" class="mini-player-hud blue">
+            <div class="mini-rank rank-1">ที่ 1</div>
+            <img id="p1Avatar" src="/assets/default-avatar-blue.svg" class="mini-avatar">
+            <div class="mini-info">
+              <div id="p1Nick" class="mini-name">รอผู้เล่น...</div>
+              <div class="mini-stats"><b id="p1Marbles">200M</b> | ⭐<span id="p1Stars">0</span></div>
+            </div>
+          </div>
+
+          <!-- Rank 2: Red -->
+          <div id="hudP2" class="mini-player-hud red">
+            <div class="mini-rank rank-2">ที่ 2</div>
+            <img id="p2Avatar" src="/assets/default-avatar-red.svg" class="mini-avatar">
+            <div class="mini-info text-right">
+              <div id="p2Nick" class="mini-name">รอผู้เล่น...</div>
+              <div class="mini-stats"><b id="p2Marbles">200M</b> | ⭐<span id="p2Stars">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 CORNER CASH MONEY STACKS -->
+        <div class="money-stack stack-tl">💵💵</div>
+        <div class="money-stack stack-tr">💵💵</div>
+        <div class="money-stack stack-bl">💵💵</div>
+        <div class="money-stack stack-br">💵💵</div>
+
+        <!-- ISOMETRIC 3D BOARD CONTAINER -->
+        <div class="isometric-viewport">
+          <div id="isoBoard" class="iso-board">
+
+            <!-- 32 TILES GRID (8 TILES PER SIDE) -->
+            <div id="tilesContainer" class="tiles-container">
+              <!-- Dynamically populated via app.js -->
+            </div>
+
+            <!-- CENTER SUNKEN POND & WATER ARENA -->
+            <div class="center-pond">
+              <!-- Logo Water Lily Emboss -->
+              <div class="pond-logo">
+                <div class="pond-logo-text">LINE เกมเศรษฐี</div>
+                <div class="pond-logo-sub">LIVE BOARD</div>
+              </div>
+
+              <!-- Dice Control Arena (Even/Odd + Big Pink Roll Button) -->
+              <div class="pond-controls">
+                <button class="btn-dice-opt">คู่</button>
+                <button id="centerRollBtn" class="btn-big-roll">
+                  <span class="roll-arrow">▼</span>
+                  <span class="roll-text">ทอย</span>
+                </button>
+                <button class="btn-dice-opt">คี่</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- BOTTOM PLAYERS HUD: Rank 3 & Rank 4 -->
+        <div class="players-bottom-row">
+          <!-- Rank 3: Blue -->
+          <div id="hudP3" class="mini-player-hud blue">
+            <div class="mini-rank rank-3">ที่ 3</div>
+            <img id="p3Avatar" src="/assets/default-avatar-blue.svg" class="mini-avatar">
+            <div class="mini-info">
+              <div id="p3Nick" class="mini-name">รอผู้เล่น...</div>
+              <div class="mini-stats"><b id="p3Marbles">200M</b> | ⭐<span id="p3Stars">0</span></div>
+            </div>
+          </div>
+
+          <!-- Rank 4: Red -->
+          <div id="hudP4" class="mini-player-hud red">
+            <div class="mini-rank rank-4">ที่ 4</div>
+            <img id="p4Avatar" src="/assets/default-avatar-red.svg" class="mini-avatar">
+            <div class="mini-info text-right">
+              <div id="p4Nick" class="mini-name">รอผู้เล่น...</div>
+              <div class="mini-stats"><b id="p4Marbles">200M</b> | ⭐<span id="p4Stars">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER ANIMATED DICE ROLLER OVERLAY -->
+        <div id="diceShowcase" class="dice-showcase-overlay hidden">
+          <div class="roller-chip">
+            <img id="rollerImg" src="/assets/default-avatar-red.svg" alt="Roller">
+            <span id="rollerName">ผู้เล่นกำลังทอย...</span>
+          </div>
+          <div class="dice-pair">
+            <div id="dice1" class="dice-cube-face">⚄</div>
+            <div id="dice2" class="dice-cube-face gold hidden">⚅</div>
+          </div>
+          <div id="diceSummary" class="dice-summary-label">ทอยได้เลข 5!</div>
+        </div>
+
+        <!-- CENTER POPUP EVENT BANNER (Chance, Jail, Expo, Warp) -->
+        <div id="eventPopup" class="event-popup-card hidden">
+          <div id="popupIcon" class="popup-big-icon">❓</div>
+          <h2 id="popupTitle" class="popup-title-text">การ์ดดวง!</h2>
+          <p id="popupDesc" class="popup-desc-text">คำอธิบายเหตุการณ์</p>
+          <img id="popupAvatar" class="popup-user-avatar" src="/assets/default-avatar-red.svg" alt="User">
+        </div>
+
+        <!-- FLOATING CHAT BUBBLES LAYER -->
+        <div id="chatBubbleLayer" class="chat-bubble-layer"></div>
+
+        <!-- INSTRUCTIONS BOTTOM BAR (ขนาดแนวตั้งมือถือ) -->
+        <footer class="game-footer-bar">
+          <div class="footer-chip">
+            <span class="chip-badge free">ฟรี</span>
+            <span>พิมพ์ <b>เล่น</b> เข้าเกม | <b>ทอย</b> / ไลก์ 50</span>
+          </div>
+          <div class="footer-chip">
+            <span class="chip-badge rose">🌹 กุหลาบ</span>
+            <span>ทอยทันที / <b>ประกันตัว!</b></span>
+          </div>
+          <div class="footer-chip">
+            <span class="chip-badge donut">🍩 โดนัท</span>
+            <span><b>เต๋าทอง</b> x2!</span>
+          </div>
+          <div class="footer-chip">
+            <span class="chip-badge warp">🚀 100+</span>
+            <span><b>วาร์ป 15 ช่อง</b></span>
+          </div>
+        </footer>
+
       </div>
-
-      <!-- CENTER ANIMATED DICE ROLLER OVERLAY -->
-      <div id="diceShowcase" class="dice-showcase-overlay hidden">
-        <div class="roller-chip">
-          <img id="rollerImg" src="/assets/default-avatar-red.svg" alt="Roller">
-          <span id="rollerName">ผู้เล่นกำลังทอย...</span>
-        </div>
-        <div class="dice-pair">
-          <div id="dice1" class="dice-cube-face">⚄</div>
-          <div id="dice2" class="dice-cube-face gold hidden">⚅</div>
-        </div>
-        <div id="diceSummary" class="dice-summary-label">ทอยได้เลข 5!</div>
-      </div>
-
-      <!-- CENTER POPUP EVENT BANNER (Chance, Jail, Expo, Warp) -->
-      <div id="eventPopup" class="event-popup-card hidden">
-        <div id="popupIcon" class="popup-big-icon">❓</div>
-        <h2 id="popupTitle" class="popup-title-text">การ์ดดวง!</h2>
-        <p id="popupDesc" class="popup-desc-text">คำอธิบายเหตุการณ์</p>
-        <img id="popupAvatar" class="popup-user-avatar" src="/assets/default-avatar-red.svg" alt="User">
-      </div>
-
-      <!-- FLOATING CHAT BUBBLES LAYER -->
-      <div id="chatBubbleLayer" class="chat-bubble-layer"></div>
-
-      <!-- INSTRUCTIONS BOTTOM BAR -->
-      <footer class="game-footer-bar">
-        <div class="footer-chip">
-          <span class="chip-badge free">ฟรี</span>
-          <span>พิมพ์ <b>เล่น</b> เข้าเกม | พิมพ์ <b>ทอย</b> หรือเคาะใจ 50 ครั้ง</span>
-        </div>
-        <div class="footer-chip">
-          <span class="chip-badge rose">🌹 กุหลาบ</span>
-          <span>ทอยทันที / <b>ประกันตัวจากเกาะร้าง!</b></span>
-        </div>
-        <div class="footer-chip">
-          <span class="chip-badge donut">🍩 โดนัท</span>
-          <span><b>ลูกเต๋าทองคำ</b> เดินเบิ้ล x2!</span>
-        </div>
-        <div class="footer-chip">
-          <span class="chip-badge warp">🚀 100+ เหรียญ</span>
-          <span><b>วาร์ป 15 ช่อง</b> ชนคนอื่นกระเด็น!</span>
-        </div>
-      </footer>
-
     </div>
 
     <!-- ================================================= -->
     <!-- RIGHT: UNIFIED ADMIN CONTROL SIDEBAR (หน้าหลังบ้าน) -->
     <!-- ================================================= -->
-    <aside id="adminSidebar" class="w-96 bg-slate-900/95 border-l border-slate-800 flex flex-col justify-between overflow-y-auto p-4 space-y-4 shadow-2xl transition-all duration-300 select-none z-40">
+    <aside id="adminSidebar" class="w-80 lg:w-96 bg-slate-900/95 border-l border-slate-800 flex flex-col justify-between overflow-y-auto p-4 space-y-4 shadow-2xl transition-all duration-300 select-none z-40 shrink-0">
       
       <!-- Section 1: TikTok Live Connection -->
       <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
@@ -296,7 +305,7 @@
       </div>
 
       <!-- Section 4: Live Event Log Feed -->
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 h-[150px] flex flex-col">
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 h-[140px] flex flex-col">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-white flex items-center gap-1.5">
             <i class="fa-solid fa-list-ul text-emerald-400"></i>

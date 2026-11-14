@@ -31,11 +31,14 @@ const popupAvatar = document.getElementById('popupAvatar');
 const chatBubbleLayer = document.getElementById('chatBubbleLayer');
 const tilesContainer = document.getElementById('tilesContainer');
 
-// Sidebar Elements
+// Sidebar & Layout Controls
 const adminSidebar = document.getElementById('adminSidebar');
 const toggleAdminBtn = document.getElementById('toggleAdminBtn');
 const toggleAdminText = document.getElementById('toggleAdminText');
 const obsModeBtn = document.getElementById('obsModeBtn');
+const viewModeToggleBtn = document.getElementById('viewModeToggleBtn');
+const viewModeToggleText = document.getElementById('viewModeToggleText');
+const gameArenaWrapper = document.getElementById('gameArenaWrapper');
 
 const sideUsernameInput = document.getElementById('sideUsernameInput');
 const sideConnectBtn = document.getElementById('sideConnectBtn');
@@ -156,7 +159,6 @@ window.addEventListener('click', () => sfx.ensure(), { once: true });
 // ==========================================
 // 32 TILES GRID COORDINATE GENERATOR (9x9)
 // ==========================================
-// 4 corners + 4 sides of 7 tiles = 32 tiles!
 const TILE_COORDS = [
   // Side 1 (Start -> Train): 8 tiles (row 9, col 9) -> (row 1, col 9)
   { row: 9, col: 9 }, // 0: Start
@@ -196,7 +198,7 @@ const TILE_COORDS = [
   { row: 9, col: 6 }, // 28: เกาะช้าง
   { row: 9, col: 7 }, // 29: นครปฐม
   { row: 9, col: 8 }, // 30: ห้องเกม
-  { row: 9, col: 8.5 } // 31: ลพบุรี (mapped neatly)
+  { row: 9, col: 8.5 } // 31: ลพบุรี
 ];
 
 let tileElements = [];
@@ -252,7 +254,7 @@ socket.on('state_update', (state) => {
   // Render 4 Corner HUDs
   renderCornerHUDs(state.players);
 
-  // Render Tokens on 32 Tiles
+  // Render 3D Chibi Tokens on 32 Tiles
   renderTokensOnBoard(state.players);
 
   // Render Sidebar
@@ -281,6 +283,9 @@ function renderCornerHUDs(players) {
   }
 }
 
+// ==========================================
+// ✨ RENDER 3D CHIBI FIGURINES ON TILES
+// ==========================================
 function renderTokensOnBoard(players) {
   for (let i = 0; i < 32; i++) {
     const box = document.getElementById(`tile_box_${i}`);
@@ -291,21 +296,50 @@ function renderTokensOnBoard(players) {
     const box = document.getElementById(`tile_box_${p.position}`);
     if (!box) return;
 
-    const token = document.createElement('div');
-    token.className = `board-token ${p.hasAura ? 'has-aura' : ''} ${p.isJailed ? 'is-jailed' : ''}`;
-    token.id = `token_${p.id}`;
-    token.title = `${p.nickname} (${p.marbles}M | ⭐${p.stars})`;
+    const chibi = document.createElement('div');
+    chibi.className = `chibi-char ${p.hasAura ? 'has-aura' : ''} ${p.isJailed ? 'is-jailed' : ''}`;
+    chibi.id = `token_${p.id}`;
+    chibi.title = `${p.nickname} (${p.marbles}M | ⭐${p.stars})`;
 
-    token.innerHTML = `
-      <img src="${p.avatar || (p.team === 'red' ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg')}">
+    const teamClass = p.team || (p.position % 2 === 0 ? 'red' : 'blue');
+    const avatarUrl = p.avatar || (teamClass === 'red' ? '/assets/default-avatar-red.svg' : '/assets/default-avatar-blue.svg');
+
+    chibi.innerHTML = `
+      <!-- Soft Ground Shadow -->
+      <div class="chibi-shadow"></div>
+
+      <!-- Floating Name Tag -->
+      <div class="chibi-nametag ${teamClass}">
+        ${p.stars > 0 ? `<span>⭐${p.stars}</span>` : ''}
+        <span>${escapeHtml(p.nickname)}</span>
+      </div>
+
+      <!-- 3D Chibi Head with Avatar Face -->
+      <div class="chibi-head ${teamClass}">
+        <img src="${avatarUrl}" class="chibi-face" alt="${p.nickname}">
+      </div>
+
+      <!-- Cute Chibi Torso (Jacket) with Arms -->
+      <div class="chibi-torso ${teamClass}">
+        <div class="chibi-arm left"></div>
+        <div class="chibi-arm right"></div>
+      </div>
+
+      <!-- Chibi Legs & Sneakers -->
+      <div class="chibi-legs">
+        <div class="chibi-foot"></div>
+        <div class="chibi-foot"></div>
+      </div>
+
+      <!-- Jail State Chain (if jailed) -->
+      ${p.isJailed ? '<div class="chibi-jail-chain">⛓️</div>' : ''}
     `;
 
-    box.appendChild(token);
+    box.appendChild(chibi);
   });
 }
 
 function renderSidebar(state) {
-  // TikTok status
   if (state.tiktok.isConnected) {
     sideConnStatus.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
     sideConnStatus.innerText = "เชื่อมต่อสด";
@@ -359,6 +393,10 @@ socket.on('dice_roll', (data) => {
   rollerImg.src = data.player.avatar || '/assets/default-avatar-red.svg';
   rollerName.innerText = `${data.player.nickname} กำลังทอย...`;
 
+  // Animate chibi jumping
+  const activeToken = document.getElementById(`token_${data.player.id}`);
+  if (activeToken) activeToken.classList.add('jumping');
+
   dice1.innerText = '🎲';
   if (data.isGolden) {
     dice2.classList.remove('hidden');
@@ -379,6 +417,8 @@ socket.on('dice_roll', (data) => {
     } else {
       diceSummary.innerText = `🎲 ได้เลข ${data.totalSteps} ช่อง!`;
     }
+
+    if (activeToken) activeToken.classList.remove('jumping');
 
     diceTimeout = setTimeout(() => {
       diceShowcase.classList.add('hidden');
@@ -435,15 +475,14 @@ socket.on('chat_bubble', (data) => {
     <span><b>${escapeHtml(data.nickname)}:</b> ${escapeHtml(data.comment)}</span>
   `;
 
-  // Position over player token or center
   const token = document.getElementById(`token_${data.username}`);
   if (token) {
     const rect = token.getBoundingClientRect();
     bubble.style.left = `${rect.left}px`;
     bubble.style.top = `${rect.top - 35}px`;
   } else {
-    bubble.style.left = `${window.innerWidth * 0.35 + (Math.random() - 0.5) * 120}px`;
-    bubble.style.top = `${window.innerHeight * 0.45 + (Math.random() - 0.5) * 100}px`;
+    bubble.style.left = `${window.innerWidth * 0.35 + (Math.random() - 0.5) * 80}px`;
+    bubble.style.top = `${window.innerHeight * 0.45 + (Math.random() - 0.5) * 60}px`;
   }
 
   chatBubbleLayer.appendChild(bubble);
@@ -493,6 +532,16 @@ toggleAdminBtn.addEventListener('click', () => {
   adminSidebar.classList.toggle('sidebar-collapsed');
   const isCollapsed = adminSidebar.classList.contains('sidebar-collapsed');
   toggleAdminText.innerText = isCollapsed ? 'เปิดเมนูแอดมิน' : 'ซ่อนเมนูแอดมิน';
+});
+
+// Toggle Vertical Mobile (TikTok 9:16) vs Widescreen
+viewModeToggleBtn.addEventListener('click', () => {
+  gameArenaWrapper.classList.toggle('widescreen-mode');
+  const isWide = gameArenaWrapper.classList.contains('widescreen-mode');
+  viewModeToggleText.innerText = isWide ? 'โหมดแนวนอน (Desktop)' : 'โหมดมือถือแนวตั้ง (TikTok 9:16)';
+  viewModeToggleBtn.className = isWide 
+    ? 'px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5 transition'
+    : 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition';
 });
 
 // OBS Fullscreen Mode
