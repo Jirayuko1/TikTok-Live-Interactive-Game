@@ -307,42 +307,6 @@ body.obs-mode .arena-vertical-screen {
   image-rendering: crisp-edges;
 }
 
-/* Cheering Crowd Silhouettes with Pixel Lightsticks */
-.crowd-silhouettes {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  background: radial-gradient(circle at 50% 120%, rgba(2, 4, 10, 0.98) 0%, rgba(3, 7, 18, 0.8) 60%, transparent 100%);
-  pointer-events: none;
-  z-index: 12;
-  overflow: hidden;
-}
-
-.crowd-glowsticks {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(3px 14px at 15% 75%, #38bdf8 60%, transparent 100%),
-    radial-gradient(3px 16px at 28% 70%, #ec4899 60%, transparent 100%),
-    radial-gradient(3px 14px at 45% 78%, #22c55e 60%, transparent 100%),
-    radial-gradient(3px 16px at 62% 72%, #eab308 60%, transparent 100%),
-    radial-gradient(3px 15px at 78% 76%, #a855f7 60%, transparent 100%),
-    radial-gradient(3px 14px at 90% 70%, #06b6d4 60%, transparent 100%);
-  opacity: 0.85;
-  animation: waveSticksPixel 1.6s infinite steps(4) alternate;
-}
-
-@keyframes waveSticksPixel {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-  100% { transform: translateY(-8px); }
-}
-
 /* CRT Scanline Overlay */
 .crt-scanlines {
   position: absolute;
