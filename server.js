@@ -6,9 +6,14 @@ const cors = require('cors');
 
 let WebcastPushConnection = null;
 try {
-  WebcastPushConnection = require('tiktok-live-connector').WebcastPushConnection;
+  WebcastPushConnection = require('tiktok-live-connector/legacy').WebcastPushConnection;
 } catch (err) {
-  console.log('TikTok Live Connector ready.');
+  try {
+    const mod = require('tiktok-live-connector');
+    WebcastPushConnection = mod.WebcastPushConnection || mod.TikTokLiveConnection;
+  } catch (e) {
+    console.log('TikTok Live Connector ready.');
+  }
 }
 
 const app = express();
@@ -62,11 +67,16 @@ let tiktokLiveConnection = null;
 function connectToTikTok(targetUsername) {
   if (!WebcastPushConnection) {
     try {
-      WebcastPushConnection = require('tiktok-live-connector').WebcastPushConnection;
-    } catch (e) {
-      gameState.tiktok.lastError = 'ไม่พบไลบรารี tiktok-live-connector';
-      broadcastState();
-      return;
+      WebcastPushConnection = require('tiktok-live-connector/legacy').WebcastPushConnection;
+    } catch (e1) {
+      try {
+        const mod = require('tiktok-live-connector');
+        WebcastPushConnection = mod.WebcastPushConnection || mod.TikTokLiveConnection;
+      } catch (e2) {
+        gameState.tiktok.lastError = 'ไม่พบไลบรารี tiktok-live-connector';
+        broadcastState();
+        return;
+      }
     }
   }
 
@@ -204,15 +214,28 @@ function spawnFighter(uniqueId, nickname, avatar, forceRevive = false) {
   return fighter;
 }
 
+// Helper: Extract user data safely across different connector payload shapes
+function extractTikTokUser(data) {
+  const username = data.uniqueId || (data.user && (data.user.uniqueId || data.user.secUid)) || 'viewer';
+  const nickname = data.nickname || (data.user && data.user.nickname) || username;
+  let avatar = data.profilePictureUrl || '';
+  if (!avatar && data.user) {
+    if (typeof data.user.profilePictureUrl === 'string') {
+      avatar = data.user.profilePictureUrl;
+    } else if (data.user.avatarThumb && Array.isArray(data.user.avatarThumb.urlList)) {
+      avatar = data.user.avatarThumb.urlList[0] || '';
+    }
+  }
+  return { username, nickname, avatar };
+}
+
 // 1. Handle Chat ("เข้า" หรือ "JOIN")
 function handleChat(data) {
+  const { username, nickname, avatar } = extractTikTokUser(data);
   const comment = (data.comment || '').trim();
   const commentLower = comment.toLowerCase();
-  const username = data.uniqueId || 'viewer';
-  const nickname = data.nickname || username;
-  const avatar = data.profilePictureUrl || '';
 
-  if (commentLower === 'เข้า' || commentLower === 'join' || commentLower === 'ลงสนาม' || commentLower === 'สู้') {
+  if (commentLower === 'เข้า' || commentLower === 'join' || commentLower === 'ลงสนาม' || commentLower === 'สู้' || commentLower === '1') {
     spawnFighter(username, nickname, avatar);
     return;
   }
@@ -227,7 +250,7 @@ function handleLike(data) {
   const count = data.likeCount || 1;
   gameState.tiktok.likeCount += count;
 
-  const username = data.uniqueId;
+  const { username } = extractTikTokUser(data);
   if (username && gameState.fighters[username]) {
     const fighter = gameState.fighters[username];
     if (fighter.alive) {
@@ -241,11 +264,10 @@ function handleLike(data) {
 
 // 3. Handle Gifts (หัวใจหลักของระบบมวยวัด)
 function handleGift(data) {
-  const giftName = data.giftName || 'Gift';
-  const diamondCount = (data.diamondCount || 1) * (data.repeatCount || 1);
-  const username = data.uniqueId || 'supporter';
-  const nickname = data.nickname || username;
-  const avatar = data.profilePictureUrl || '';
+  const { username, nickname, avatar } = extractTikTokUser(data);
+  const giftName = data.giftName || (data.extendedGiftInfo && data.extendedGiftInfo.name) || 'Gift';
+  const rawDiamonds = data.diamondCount || (data.extendedGiftInfo && data.extendedGiftInfo.diamond_count) || 1;
+  const diamondCount = rawDiamonds * (data.repeatCount || 1);
 
   let fighter = gameState.fighters[username];
 
@@ -299,20 +321,20 @@ function handleGift(data) {
 
 // 4. Handle Follow & Share
 function handleFollow(data) {
-  const username = data.uniqueId;
+  const { username, nickname } = extractTikTokUser(data);
   if (username && gameState.fighters[username]) {
     gameState.fighters[username].hasShield = true;
     io.emit('fighter_shield', { id: username });
-    logEvent('game', `➕ ${data.nickname || username} กดติดตามช่อง ได้รับโล่ป้องกัน!`);
+    logEvent('game', `➕ ${nickname} กดติดตามช่อง ได้รับโล่ป้องกัน!`);
   }
 }
 
 function handleShare(data) {
-  const username = data.uniqueId;
+  const { username, nickname } = extractTikTokUser(data);
   if (username && gameState.fighters[username]) {
     gameState.fighters[username].speedBoost = 1.6;
     io.emit('fighter_speed', { id: username, speed: 1.6 });
-    logEvent('game', `🔗 ${data.nickname || username} แชร์ไลฟ์สด ได้รับบัฟวิ่งไวติดสปีด!`);
+    logEvent('game', `🔗 ${nickname} แชร์ไลฟ์สด ได้รับบัฟวิ่งไวติดสปีด!`);
   }
 }
 
