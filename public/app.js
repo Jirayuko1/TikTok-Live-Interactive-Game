@@ -129,6 +129,41 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
+  playMegaLaser() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // 1. Deep Sub-bass Impact Rumble
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'sawtooth';
+      sub.frequency.setValueAtTime(160, now);
+      sub.frequency.exponentialRampToValueAtTime(32, now + 1.2);
+      subGain.gain.setValueAtTime(0.4, now);
+      subGain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(now);
+      sub.stop(now + 1.2);
+
+      // 2. High-energy Plasma Laser Scream
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(920, now);
+      osc.frequency.linearRampToValueAtTime(280, now + 0.35);
+      osc.frequency.linearRampToValueAtTime(620, now + 0.85);
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.95);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.95);
+    } catch(e) {}
+  }
+
   playBlock() {
     if (this.muted) return;
     this.ensure();
@@ -287,6 +322,8 @@ let hitParticles = [];
 let damageFloats = [];
 let ghosts = [];
 let activeProjectiles = [];
+let activeUltimates = [];
+let screenShake = 0;
 
 // Rotating Moon HUD angle & Searchlight angles
 let moonHudAngle = 0;
@@ -414,6 +451,309 @@ class SpecialProjectile {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-4, -4, 8, 8);
     }
+    ctx.restore();
+  }
+}
+
+// ========================================================
+// MEGA ULTIMATE PLASMA CANNON (อัลติเมทมหาเวทย์พลาสมา 4 ทิศทาง)
+// ========================================================
+class MegaUltimatePlasma {
+  constructor(casterId, casterName) {
+    this.casterId = casterId;
+    this.casterName = casterName || 'HERO';
+    this.alive = true;
+    this.age = 0;
+    this.duration = 180; // ~3.0 วินาทีแห่งการกวาดล้าง
+    this.angle = 0;
+    this.rotSpeed = 0.038; // หมุนกวาดล้าง 360 องศาทั่วทั้งเวที
+    this.beamLength = Math.max(viewW, viewH) * 1.35;
+    this.hitCooldowns = {};
+    this.shockwaves = [];
+    this.lightningArcs = [];
+
+    const ring = getRing();
+    this.x = ring.cx;
+    this.y = ring.cy;
+
+    // แรงสั่นสะเทือนเวทีระดับมหากาพย์
+    screenShake = 18;
+    sfx.playMegaLaser();
+
+    spawnFloatingText(ring.cx, ring.cy - ring.ry * 0.75, '🚀 OMEGA PLASMA CANNON!!', '#f43f5e');
+  }
+
+  update(allFighters) {
+    this.age++;
+    if (this.age > this.duration) {
+      this.alive = false;
+      return;
+    }
+
+    // สั่นหน้าจอสะเทือนเวทีต่อเนื่อง
+    if (this.age > 10 && this.age < this.duration - 20) {
+      screenShake = Math.max(screenShake, 7);
+    }
+
+    // ล็อคเป้าตามตัวละครผู้ร่าย หรืออยู่กลางสังเวียน
+    const ring = getRing();
+    const caster = allFighters.find(f => f.id === this.casterId && f.alive);
+    if (caster) {
+      this.x = caster.x;
+      this.y = caster.y;
+      caster.hasShield = true;
+      caster.state = 'special';
+    } else {
+      this.x = ring.cx;
+      this.y = ring.cy;
+    }
+
+    // หมุนลำแสง 4 ทิศทาง
+    this.angle += this.rotSpeed;
+
+    // ปล่อยคลื่น Shockwave ขยายตัวเป็นระลอก
+    if (this.age % 16 === 0) {
+      this.shockwaves.push({
+        r: 12,
+        maxR: ring.rx * 1.35,
+        alpha: 0.95,
+        color: (this.age % 32 === 0) ? '#00f0ff' : '#f59e0b'
+      });
+    }
+
+    for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+      const sw = this.shockwaves[i];
+      sw.r += 11;
+      sw.alpha -= 0.028;
+      if (sw.alpha <= 0) this.shockwaves.splice(i, 1);
+    }
+
+    // สร้างประกายสายฟ้าฟาดซิกแซกตามลำแสง
+    if (Math.random() > 0.25) {
+      const dirAngles = [this.angle, this.angle + Math.PI / 2, this.angle + Math.PI, this.angle + Math.PI * 1.5];
+      dirAngles.forEach(ang => {
+        const segs = 7;
+        let lx = this.x;
+        let ly = this.y;
+        const pts = [{ x: lx, y: ly }];
+        const step = this.beamLength / segs;
+        for (let s = 1; s <= segs; s++) {
+          const perp = (Math.random() - 0.5) * 32;
+          const targetX = this.x + Math.cos(ang) * (s * step) + Math.cos(ang + Math.PI / 2) * perp;
+          const targetY = this.y + Math.sin(ang) * (s * step) + Math.sin(ang + Math.PI / 2) * perp;
+          pts.push({ x: targetX, y: targetY });
+        }
+        this.lightningArcs.push({ pts, life: 0.25, color: Math.random() > 0.5 ? '#00f0ff' : '#fef08a' });
+      });
+    }
+
+    for (let i = this.lightningArcs.length - 1; i >= 0; i--) {
+      this.lightningArcs[i].life -= 0.05;
+      if (this.lightningArcs[i].life <= 0) this.lightningArcs.splice(i, 1);
+    }
+
+    // ประกายไฟรอบแกนพลังงาน
+    for (let k = 0; k < 3; k++) {
+      hitParticles.push({
+        x: this.x + (Math.random() - 0.5) * 25,
+        y: this.y + (Math.random() - 0.5) * 25,
+        vx: (Math.random() - 0.5) * 9,
+        vy: (Math.random() - 0.5) * 9,
+        size: Math.floor(Math.random() * 3 + 2),
+        life: 0.6,
+        color: Math.random() > 0.4 ? '#00f0ff' : '#f43f5e'
+      });
+    }
+
+    // ระบบดาเมจสุดโกง: ศัตรูทุกคนที่โดนลำแสง 4 ทิศทางจะโดนกวาดล้างต่อเนื่อง
+    const dirAngles = [this.angle, this.angle + Math.PI / 2, this.angle + Math.PI, this.angle + Math.PI * 1.5];
+    const beamRadius = 32;
+
+    allFighters.forEach(other => {
+      if (other.id === this.casterId || !other.alive) return;
+
+      for (const ang of dirAngles) {
+        const dx = other.x - this.x;
+        const dy = other.y - this.y;
+        const cos = Math.cos(ang);
+        const sin = Math.sin(ang);
+        const proj = dx * cos + dy * sin;
+
+        if (proj > 0 && proj < this.beamLength) {
+          const perpDist = Math.abs(-dx * sin + dy * cos);
+          if (perpDist < beamRadius + 18) {
+            const lastHit = this.hitCooldowns[other.id] || 0;
+            if (this.age - lastHit >= 18) {
+              this.hitCooldowns[other.id] = this.age;
+
+              // ดาเมจมหาศาล 38 HP ต่อฮิต โดน 2-3 ทีร่วง K.O. ทันที!
+              const dmg = 38;
+              other.hp -= dmg;
+              other.lastAttackerId = this.casterId;
+              other.state = 'hurt';
+              other.animTicks = 0;
+
+              // ซัดกระเด็นติดขอบสนามด้วยแรงระเบิด
+              const knockAng = Math.atan2(dy, dx);
+              other.vx = Math.cos(knockAng) * 24;
+              other.vy = Math.sin(knockAng) * 24;
+
+              spawnPixelHitSparks(other.x, other.y, true);
+              spawnPixelDamage(other.x, other.y, dmg);
+              sfx.playPunch();
+              screenShake = Math.max(screenShake, 14);
+            }
+          }
+        }
+      }
+    });
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+
+    ctx.save();
+
+    // 1. คลื่น Shockwave ขยายตัว
+    this.shockwaves.forEach(sw => {
+      ctx.save();
+      ctx.strokeStyle = sw.color;
+      ctx.shadowColor = sw.color;
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = Math.max(0, sw.alpha);
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y, sw.r, sw.r * 0.45, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 2. สายฟ้าฟาดแลบตามลำแสง
+    this.lightningArcs.forEach(arc => {
+      ctx.save();
+      ctx.strokeStyle = arc.color;
+      ctx.shadowColor = arc.color;
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = Math.max(0, arc.life * 4);
+      ctx.beginPath();
+      arc.pts.forEach((pt, idx) => {
+        if (idx === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 3. ลำแสงไฮเปอร์พลาสมาขนาดยักษ์ 4 ทิศทาง (3 ชั้นสี)
+    const dirAngles = [this.angle, this.angle + Math.PI / 2, this.angle + Math.PI, this.angle + Math.PI * 1.5];
+    const beamPulse = Math.sin(this.age * 0.45);
+    const beamWidth = 36 + beamPulse * 8;
+
+    dirAngles.forEach(ang => {
+      const endX = this.x + Math.cos(ang) * this.beamLength;
+      const endY = this.y + Math.sin(ang) * this.beamLength;
+
+      // ชั้นที่ 1: ออร่าสีมาเจนต้า/ม่วงเรืองแสงรอบนอกสุด
+      ctx.save();
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.45)';
+      ctx.lineWidth = beamWidth * 1.9;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.restore();
+
+      // ชั้นที่ 2: ลำแสงพลาสมาสีฟ้าไซแอนเรืองรอง (Plasma Cyan Core)
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.9)';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 24;
+      ctx.lineWidth = beamWidth;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.restore();
+
+      // ชั้นที่ 3: ลำแสงเลเซอร์แกนกลางสีขาวบริสุทธิ์ (Hyper White Laser)
+      ctx.save();
+      ctx.strokeStyle = '#ffffff';
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = beamWidth * 0.38;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 4. บอลพลังงานใจกลางลำแสง (High-Voltage Core Sphere)
+    const coreR = 26 + beamPulse * 5;
+    ctx.save();
+    const coreGrad = ctx.createRadialGradient(this.x, this.y, 4, this.x, this.y, coreR * 1.9);
+    coreGrad.addColorStop(0, '#ffffff');
+    coreGrad.addColorStop(0.3, '#00f0ff');
+    coreGrad.addColorStop(0.7, 'rgba(236, 72, 153, 0.65)');
+    coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, coreR * 1.9, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 22;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, coreR * 0.65, 0, Math.PI * 2);
+    ctx.fill();
+
+    // หนามพลังงานหมุนวนรอบแกน
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 2.5;
+    for (let s = 0; s < 6; s++) {
+      const sa = -this.angle * 2.2 + s * (Math.PI / 3);
+      ctx.beginPath();
+      ctx.moveTo(this.x + Math.cos(sa) * (coreR * 0.7), this.y + Math.sin(sa) * (coreR * 0.7));
+      ctx.lineTo(this.x + Math.cos(sa) * (coreR * 1.5), this.y + Math.sin(sa) * (coreR * 1.5));
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 5. ป้ายประกาศสกิลอลังการระดับอาร์เคดย้อนยุค (Cinematic Arcade Banner)
+    if (this.age < 130) {
+      const ring = getRing();
+      const bannerY = ring.cy - ring.ry - 32;
+      const bannerAlpha = Math.min(1, (130 - this.age) / 20);
+
+      ctx.save();
+      ctx.globalAlpha = bannerAlpha;
+      ctx.fillStyle = 'rgba(6, 9, 20, 0.9)';
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 12;
+      const bW = 270;
+      const bH = 36;
+      ctx.fillRect(ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+      ctx.strokeRect(ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+
+      ctx.font = 'bold 11px "Chakra Petch", sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`🚀 OMEGA PLASMA CANNON! 🚀`, ring.cx, bannerY - 6);
+
+      ctx.font = 'bold 9px "Kanit", sans-serif';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`⚡ ${this.casterName} ปลดปล่อยอัลติเมทกวาดล้าง!`, ring.cx, bannerY + 8);
+      ctx.restore();
+    }
+
     ctx.restore();
   }
 }
@@ -656,6 +996,11 @@ class ClientFighter {
     const scale = this.isBoss ? 1.4 : 0.72;
     ctx.scale(scale, scale);
 
+    const isCastingUlt = activeUltimates.some(u => u.casterId === this.id && u.alive);
+    if (isCastingUlt) {
+      ctx.translate(0, -14 + Math.sin(Date.now() * 0.01) * 4);
+    }
+
     // Realistic Drop Shadow on Wet Rooftop Floor
     ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     ctx.fillRect(-18, 12, 36, 6);
@@ -697,8 +1042,33 @@ class ClientFighter {
       ctx.scale(-1, 1);
     }
 
+    // Glowing Golden/Cyan Barrier Shield for Ultimate Caster
+    if (isCastingUlt) {
+      ctx.save();
+      ctx.strokeStyle = '#facc15';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, -25, 42, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#00f0ff';
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(0, -25, 48, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
     // Status Badges & Crown for Kill Leader
     ctx.textAlign = 'center';
+    if (isCastingUlt) {
+      ctx.font = 'bold 12px "Chakra Petch", sans-serif';
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillText('⚡ OMEGA ⚡', 0, -96);
+    }
     if (this.isBoss) {
       ctx.font = 'bold 12px sans-serif';
       ctx.fillText('👹 BOSS', 0, -84);
@@ -1339,11 +1709,27 @@ function drawCyberpunkBackground() {
 function gameLoop() {
   requestAnimationFrame(gameLoop);
 
+  // 0. Screen Shake Impact (กล้องสั่นสะเทือนเวทีเมื่อมีอัลติเมทหรือระเบิด)
+  let shakeX = 0;
+  let shakeY = 0;
+  if (screenShake > 0) {
+    shakeX = (Math.random() - 0.5) * screenShake;
+    shakeY = (Math.random() - 0.5) * screenShake;
+    screenShake *= 0.91;
+    if (screenShake < 0.5) screenShake = 0;
+  }
+
   // 1. Draw Living Animated Cyberpunk Scene
+  bgCtx.save();
+  if (shakeX !== 0 || shakeY !== 0) bgCtx.translate(shakeX, shakeY);
   drawCyberpunkBackground();
+  bgCtx.restore();
 
   // 2. Clear Fighter Canvas
   ctx.clearRect(0, 0, viewW, viewH);
+
+  ctx.save();
+  if (shakeX !== 0 || shakeY !== 0) ctx.translate(shakeX, shakeY);
 
   // 3. Update & Draw Projectiles (Special Plasma Blast)
   for (let i = activeProjectiles.length - 1; i >= 0; i--) {
@@ -1351,6 +1737,14 @@ function gameLoop() {
     proj.update(clientFighters);
     proj.draw(ctx);
     if (!proj.alive) activeProjectiles.splice(i, 1);
+  }
+
+  // 3.5 Update & Draw Mega Ultimates (ลำแสงมหาประลัย 4 ทิศทาง)
+  for (let i = activeUltimates.length - 1; i >= 0; i--) {
+    const ult = activeUltimates[i];
+    ult.update(clientFighters);
+    ult.draw(ctx);
+    if (!ult.alive) activeUltimates.splice(i, 1);
   }
 
   // 4. Update & Draw Fighters (Sorted by Y for isometric depth)
@@ -1413,6 +1807,9 @@ function gameLoop() {
 
     if (g.life <= 0) ghosts.splice(i, 1);
   }
+
+  // Restore screen shake on fighter canvas
+  ctx.restore();
 }
 requestAnimationFrame(gameLoop);
 
@@ -1483,7 +1880,10 @@ socket.on('spawn_fighter', (fighterData) => {
 });
 
 socket.on('round_winner', () => sfx.playVictory());
-socket.on('new_round_started', () => sfx.playBell());
+socket.on('new_round_started', () => {
+  sfx.playBell();
+  activeUltimates = [];
+});
 
 socket.on('fighter_shockwave', (payload) => {
   const fighter = clientFighters.find(f => f.id === payload.id);
@@ -1580,16 +1980,17 @@ socket.on('like_burst', (payload) => {
 });
 
 socket.on('fighter_ultimate', (payload) => {
-  const ring = getRing();
-  sfx.playSpecial();
-
-  [0, Math.PI / 2, Math.PI, Math.PI * 1.5].forEach(ang => {
-    activeProjectiles.push(new SpecialProjectile(
-      ring.cx, ring.cy, Math.cos(ang) * 9, Math.sin(ang) * 9, payload.id, 0
-    ));
-  });
-
-  spawnPixelHitSparks(ring.cx, ring.cy, true);
+  const caster = clientFighters.find(f => f.id === payload.id);
+  const casterName = payload.nickname || (caster ? caster.nickname : 'FIGHTER');
+  if (caster) {
+    caster.hasShield = true;
+    caster.hp = Math.max(caster.hp, caster.maxHp);
+    caster.animTicks = 0;
+  }
+  activeUltimates.push(new MegaUltimatePlasma(payload.id, casterName));
+  const cx = caster ? caster.x : viewW / 2;
+  const cy = caster ? caster.y : viewH / 2;
+  spawnPixelHitSparks(cx, cy, true);
 });
 
 socket.on('fighter_shield', (payload) => {

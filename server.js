@@ -352,8 +352,12 @@ function handleGift(data) {
   }
   // Tier 5: อัลติเมท ฟ้าผ่า/ทุบทั้งสนาม (300-999 💎)
   else if (diamondCount >= 300 && diamondCount < 1000) {
-    io.emit('fighter_ultimate', { id: username });
-    logEvent('gift', `🚀 ${nickname} ส่ง ${giftName} ปล่อยท่าไม้ตายอัลติเมททุบทั้งเวที!`, { avatar });
+    fighter.maxHp = Math.max(fighter.maxHp, 160);
+    fighter.hp = fighter.maxHp; // ฟื้นเลือดเต็มหลอดทันที
+    fighter.hasShield = true;   // ได้รับโล่พลังงานอมตะชั่วคราว
+    fighter.buffLevel += 2;
+    io.emit('fighter_ultimate', { id: username, nickname, avatar });
+    logEvent('gift', `🚀 ${nickname} ส่ง ${giftName} ปลดปล่อยอัลติเมทมหาเวทย์พลาสมา 4 ทิศทางกวาดล้างทั้งเวที!`, { avatar });
   }
   // Tier 6: มหาบอส (1000+ 💎)
   else if (diamondCount >= 1000) {
