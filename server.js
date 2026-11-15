@@ -359,13 +359,15 @@ function handleGift(data) {
     io.emit('fighter_ultimate', { id: username, nickname, avatar });
     logEvent('gift', `🚀 ${nickname} ส่ง ${giftName} ปลดปล่อยอัลติเมทมหาเวทย์พลาสมา 4 ทิศทางกวาดล้างทั้งเวที!`, { avatar });
   }
-  // Tier 6: มหาบอส (1000+ 💎)
+  // Tier 6: มหาบอสยักษ์ไททัน (1000+ 💎)
   else if (diamondCount >= 1000) {
-    fighter.maxHp += 300;
-    fighter.hp = fighter.maxHp;
+    fighter.maxHp = 999;
+    fighter.hp = 999;
     fighter.weapon = 'giant_glove';
-    io.emit('fighter_boss', { id: username });
-    logEvent('gift', `🐍 ${nickname} ส่ง ${giftName} แปลงร่างเป็นบอสยักษ์ครองเวที!`, { avatar });
+    fighter.hasShield = true;
+    fighter.buffLevel += 5;
+    io.emit('fighter_boss', { id: username, nickname, avatar });
+    logEvent('gift', `👹 ${nickname} ส่ง ${giftName} (1000+💎) แปลงร่างเป็น จอมราชันย์ยักษ์ไททัน BOSS TITAN สั่นสะเทือนทั้งเวที!`, { avatar });
   }
 
   broadcastState();

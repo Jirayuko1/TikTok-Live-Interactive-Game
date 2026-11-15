@@ -164,6 +164,76 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
+  playTitanAwaken() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // 1. Deep Sub-bass earthquake roar (65Hz -> 22Hz)
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'sawtooth';
+      sub.frequency.setValueAtTime(65, now);
+      sub.frequency.exponentialRampToValueAtTime(22, now + 1.8);
+      subGain.gain.setValueAtTime(0.5, now);
+      subGain.gain.exponentialRampToValueAtTime(0.01, now + 1.8);
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(now);
+      sub.stop(now + 1.8);
+
+      // 2. Apocalyptic doom chord (Diminished Triad)
+      [110, 130.81, 155.56, 220].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+        osc.frequency.linearRampToValueAtTime(freq * 0.7, now + 1.6);
+        gain.gain.setValueAtTime(0.22, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + 1.6);
+      });
+    } catch(e) {}
+  }
+
+  playBlackHole() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // 1. Gravitational Warping Sweep (750Hz -> 38Hz vortex sweep)
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(750, now);
+      osc.frequency.exponentialRampToValueAtTime(38, now + 2.2);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 2.2);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 2.2);
+
+      // 2. Pulsing LFO Singularity Crunch
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.type = 'sawtooth';
+      lfo.frequency.setValueAtTime(14, now);
+      lfo.frequency.linearRampToValueAtTime(45, now + 2.0);
+      lfoGain.gain.setValueAtTime(0.28, now);
+      lfoGain.gain.exponentialRampToValueAtTime(0.01, now + 2.2);
+      lfo.connect(lfoGain);
+      lfoGain.connect(this.ctx.destination);
+      lfo.start(now);
+      lfo.stop(now + 2.2);
+    } catch(e) {}
+  }
+
   playBlock() {
     if (this.muted) return;
     this.ensure();
@@ -323,6 +393,8 @@ let damageFloats = [];
 let ghosts = [];
 let activeProjectiles = [];
 let activeUltimates = [];
+let activeTitanEffects = [];
+let activeBlackHoles = [];
 let screenShake = 0;
 
 // Rotating Moon HUD angle & Searchlight angles
@@ -759,6 +831,521 @@ class MegaUltimatePlasma {
 }
 
 // ========================================================
+// TITAN AWAKENING EFFECT (พิธีกรรมอัญเชิญมหาบอสยักษ์ไททัน)
+// ========================================================
+class TitanAwakeningEffect {
+  constructor(bossId, bossName, avatar) {
+    this.bossId = bossId;
+    this.bossName = bossName || 'จอมราชันย์ยักษ์ไททัน';
+    this.avatar = avatar;
+    this.alive = true;
+    this.age = 0;
+    this.duration = 180; // 3 วินาทีแห่งการจุติ
+    this.lightningBolts = [];
+    this.fissures = [];
+    this.ring = getRing();
+    this.x = this.ring.cx;
+    this.y = this.ring.cy;
+
+    // แผ่นดินไหวสะเทือนสังเวียน
+    screenShake = 26;
+    sfx.playTitanAwaken();
+
+    // สร้างรอยแยกหินลาวาแตกกระจายบนเวทีประลอง
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const length = (this.ring.rx * 0.7) * (0.6 + Math.random() * 0.4);
+      this.fissures.push({ angle, length, branch: Math.random() > 0.5 });
+    }
+
+    spawnFloatingText(this.x, this.y - this.ring.ry * 0.8, '👹 APOCALYPTIC BOSS TITAN!', '#ef4444');
+  }
+
+  update(allFighters) {
+    this.age++;
+    if (this.age > this.duration) {
+      this.alive = false;
+      return;
+    }
+
+    // ล็อคพิกัดตามตัวบอส
+    const boss = allFighters.find(f => f.id === this.bossId && f.alive);
+    if (boss) {
+      this.x = boss.x;
+      this.y = boss.y;
+      boss.hasShield = true;
+      boss.state = 'special';
+    }
+
+    // สั่นหน้าจอต่อเนื่องในช่วง 90 เฟรมแรก
+    if (this.age < 90 && this.age % 4 === 0) {
+      screenShake = Math.max(screenShake, 12);
+    }
+
+    // เสาสายฟ้ามหายักษ์ผ่าลงมาจากฟากฟ้า
+    if (this.age % 14 === 0 && this.age < 140) {
+      const offsetX = (Math.random() - 0.5) * 60;
+      const targetX = this.x + offsetX;
+      const targetY = this.y + (Math.random() - 0.5) * 20;
+
+      const pts = [{ x: targetX, y: 0 }];
+      const segs = 8;
+      const stepY = targetY / segs;
+      for (let s = 1; s < segs; s++) {
+        pts.push({
+          x: targetX + (Math.random() - 0.5) * 38,
+          y: s * stepY
+        });
+      }
+      pts.push({ x: targetX, y: targetY });
+
+      this.lightningBolts.push({
+        pts,
+        life: 0.35,
+        color: Math.random() > 0.4 ? '#ef4444' : '#fbbf24'
+      });
+
+      // ประกายไฟระเบิดรอบจุดผ่า
+      spawnPixelHitSparks(targetX, targetY, true);
+    }
+
+    for (let i = this.lightningBolts.length - 1; i >= 0; i--) {
+      this.lightningBolts[i].life -= 0.05;
+      if (this.lightningBolts[i].life <= 0) this.lightningBolts.splice(i, 1);
+    }
+
+    // ประกายเพลิงนรกพวยพุ่งขึ้นสู่อากาศ
+    if (Math.random() > 0.2) {
+      hitParticles.push({
+        x: this.x + (Math.random() - 0.5) * 80,
+        y: this.y + (Math.random() - 0.5) * 30,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -Math.random() * 5 - 2,
+        size: Math.floor(Math.random() * 4 + 2),
+        life: 0.7,
+        color: Math.random() > 0.5 ? '#ef4444' : '#f59e0b'
+      });
+    }
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+    const ring = getRing();
+
+    ctx.save();
+
+    // 1. วงแหวนเวทย์อักขระรูนโบราณบนพื้นเวที (Runic Summoning Seal on Stage Floor)
+    const sealAlpha = Math.min(1, Math.sin((this.age / this.duration) * Math.PI));
+    const rot = this.age * 0.03;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.globalAlpha = sealAlpha * 0.85;
+
+    // รอยแยกเพลิงนรกใต้พิภพ (Magma Fissures)
+    ctx.strokeStyle = '#f97316';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 15;
+    this.fissures.forEach(f => {
+      const ex = Math.cos(f.angle) * f.length;
+      const ey = Math.sin(f.angle) * (f.length * 0.45);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(ex * 0.4 + (Math.sin(f.angle * 3) * 6), ey * 0.4);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+    });
+
+    // วงแหวนรูนชั้นนอก
+    ctx.strokeStyle = '#ef4444';
+    ctx.shadowColor = '#dc2626';
+    ctx.shadowBlur = 20;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, ring.rx * 0.82, ring.ry * 0.82, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // วงแหวนรูนประจุทองชั้นใน
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, ring.rx * 0.6, ring.ry * 0.6, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // ดาวแปดแฉก/เรขาคณิตมนตราไซเบอร์
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const a = rot + (k * Math.PI / 4);
+      const px = Math.cos(a) * (ring.rx * 0.72);
+      const py = Math.sin(a) * (ring.ry * 0.72);
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    // สัญลักษณ์อักขระรูน 8 ตำแหน่งรอบวง
+    ctx.font = 'bold 10px monospace';
+    ctx.fillStyle = '#fef08a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let k = 0; k < 8; k++) {
+      const a = -rot + (k * Math.PI / 4);
+      const rxPos = Math.cos(a) * (ring.rx * 0.72);
+      const ryPos = Math.sin(a) * (ring.ry * 0.72);
+      ctx.fillText('⚡', rxPos, ryPos);
+    }
+
+    ctx.restore();
+
+    // 2. เสาสายฟ้ามหาประลัยผ่าลงมา
+    this.lightningBolts.forEach(bolt => {
+      ctx.save();
+      ctx.strokeStyle = bolt.color;
+      ctx.shadowColor = bolt.color;
+      ctx.shadowBlur = 22;
+      ctx.lineWidth = 3.5;
+      ctx.globalAlpha = Math.max(0, bolt.life * 3);
+      ctx.beginPath();
+      bolt.pts.forEach((pt, idx) => {
+        if (idx === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 3. ป้ายเตือนมหาภัยพิบัติระดับโลก (Apocalyptic Calamity Siren Banner)
+    if (this.age < 140) {
+      const bannerY = ring.cy - ring.ry - 38;
+      const bAlpha = Math.min(1, (140 - this.age) / 20);
+
+      ctx.save();
+      ctx.globalAlpha = bAlpha;
+      const bW = 310;
+      const bH = 46;
+
+      // Dark Crimson Box with Gold Hazard Border
+      ctx.fillStyle = 'rgba(15, 6, 12, 0.94)';
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#ef4444';
+      ctx.shadowBlur = 18;
+      ctx.fillRect(ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+      ctx.strokeRect(ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+
+      // Hazard Lines on sides
+      ctx.fillStyle = '#fbbf24';
+      for (let h = -bW / 2 + 6; h < -bW / 2 + 28; h += 7) {
+        ctx.fillRect(ring.cx + h, bannerY - bH / 2 + 4, 3, bH - 8);
+      }
+      for (let h = bW / 2 - 28; h < bW / 2 - 6; h += 7) {
+        ctx.fillRect(ring.cx + h, bannerY - bH / 2 + 4, 3, bH - 8);
+      }
+
+      ctx.font = 'bold 11px "Chakra Petch", sans-serif';
+      ctx.fillStyle = '#ef4444';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⚠️ WARNING: APOCALYPTIC BOSS TITAN! ⚠️', ring.cx, bannerY - 8);
+
+      ctx.font = 'bold 9px "Kanit", sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(`👹 ${this.bossName} จอมราชันย์ยักษ์ตื่นขึ้นแล้ว!`, ring.cx, bannerY + 10);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+}
+
+// ========================================================
+// TITAN BLACK HOLE EFFECT (มหาหลุมดำแรงโน้มถ่วงล้างสังเวียน)
+// ========================================================
+class TitanBlackHoleEffect {
+  constructor(bossId, bossName) {
+    this.bossId = bossId;
+    this.bossName = bossName || 'BOSS TITAN';
+    this.alive = true;
+    this.age = 0;
+    this.duration = 240; // 4.0 วินาทีแห่งการดูดกลืนและระเบิด
+    this.ring = getRing();
+    this.x = this.ring.cx;
+    this.y = this.ring.cy;
+    this.swirlAngle = 0;
+    this.particles = [];
+    this.hitCooldowns = {};
+    this.shockwaves = [];
+
+    screenShake = 18;
+    sfx.playBlackHole();
+
+    spawnFloatingText(this.x, this.y - this.ring.ry * 0.7, '🌌 GRAVITATIONAL SINGULARITY!', '#a855f7');
+  }
+
+  update(allFighters) {
+    this.age++;
+    if (this.age > this.duration) {
+      this.detonate(allFighters);
+      this.alive = false;
+      return;
+    }
+
+    // หมุนวนอานุภาพหลุมดำ
+    this.swirlAngle += 0.08;
+
+    // สั่นหน้าจอเป็นจังหวะแรงโน้มถ่วงบิดเบือนมิติ
+    if (this.age % 18 === 0) {
+      screenShake = Math.max(screenShake, 8);
+    }
+
+    // สร้างละอองสสารดวงดาวถูกดูดเข้าสู่หลุมดำ (Infalling Matter Particles)
+    for (let k = 0; k < 4; k++) {
+      const spawnAngle = Math.random() * Math.PI * 2;
+      const spawnDist = this.ring.rx * (0.6 + Math.random() * 0.7);
+      this.particles.push({
+        x: this.x + Math.cos(spawnAngle) * spawnDist,
+        y: this.y + Math.sin(spawnAngle) * (spawnDist * (this.ring.ry / this.ring.rx)),
+        angle: spawnAngle,
+        dist: spawnDist,
+        speed: 3 + Math.random() * 4,
+        size: Math.floor(Math.random() * 3 + 2),
+        color: ['#ff0055', '#a855f7', '#fbbf24', '#ffffff'][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.dist -= p.speed;
+      p.angle += 0.09;
+      p.x = this.x + Math.cos(p.angle) * p.dist;
+      p.y = this.y + Math.sin(p.angle) * (p.dist * (this.ring.ry / this.ring.rx));
+
+      if (p.dist <= 8) {
+        this.particles.splice(i, 1);
+      }
+    }
+
+    // วงคลื่นแรงโน้มถ่วงขยายตัวเป็นระลอก
+    if (this.age % 28 === 0) {
+      this.shockwaves.push({
+        r: 10,
+        maxR: this.ring.rx * 1.25,
+        alpha: 0.9,
+        color: this.age % 56 === 0 ? '#ff0055' : '#a855f7'
+      });
+    }
+
+    for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+      const sw = this.shockwaves[i];
+      sw.r += 6;
+      sw.alpha -= 0.02;
+      if (sw.alpha <= 0) this.shockwaves.splice(i, 1);
+    }
+
+    // 🌟 ระบบสกิลโคตรโกง: พลังดึงดูดแรงโน้มถ่วงลากศัตรูทั้งจอเข้าสู่ใจกลางหลุมดำ!
+    const boss = allFighters.find(f => f.id === this.bossId && f.alive);
+
+    allFighters.forEach(other => {
+      if (other.id === this.bossId || !other.alive) return;
+
+      const dx = this.x - other.x;
+      const dy = this.y - other.y;
+      const d = Math.hypot(dx, dy);
+
+      if (d > 12) {
+        // แรงดึงดูดมหาศาล ยิ่งใกล้ ยิ่งดูดแรง ไม่มีทางหนีพ้น!
+        const pull = Math.min(10, 110 / Math.max(18, d)) + 2.4;
+        const angle = Math.atan2(dy, dx);
+        other.vx += Math.cos(angle) * pull;
+        other.vy += Math.sin(angle) * pull;
+      }
+
+      // ดาเมจฉีกกระชากขอบขอบฟ้าเหตุการณ์ (Event Horizon Grinding Shred)
+      if (d < 115) {
+        const lastHit = this.hitCooldowns[other.id] || 0;
+        if (this.age - lastHit >= 14) {
+          this.hitCooldowns[other.id] = this.age;
+          const shredDmg = 12;
+          other.hp -= shredDmg;
+          other.lastAttackerId = this.bossId;
+          other.state = 'hurt';
+          other.animTicks = 0;
+
+          spawnPixelHitSparks(other.x, other.y);
+          spawnPixelDamage(other.x, other.y, shredDmg);
+
+          // ดูดเลือดฟื้นฟูให้บอส (Vampiric Singularity Drain)
+          if (boss && boss.hp < boss.maxHp) {
+            boss.hp = Math.min(boss.maxHp, boss.hp + 6);
+            spawnPixelDamage(boss.x, boss.y - 20, '+6 HP');
+          }
+        }
+      }
+    });
+  }
+
+  // ระเบิดซูเปอร์โนวาทำลายล้างครั้งสุดท้ายเมื่อหลุมดำยุบตัว (Cataclysmic Supernova Detonation)
+  detonate(allFighters) {
+    screenShake = 28;
+    sfx.playPunch();
+
+    spawnFloatingText(this.x, this.y - 20, '💥 SUPERNOVA COLLAPSE!', '#ff0055');
+
+    // ระเบิดซัดกระจายศัตรูทุกคนในสังเวียน พร้อมดาเมจกวาดล้าง 75 HP!
+    allFighters.forEach(other => {
+      if (other.id === this.bossId || !other.alive) return;
+
+      const dx = other.x - this.x;
+      const dy = other.y - this.y;
+      const angle = Math.atan2(dy, dx);
+      const knockForce = 28;
+
+      const blastDmg = 75;
+      other.hp -= blastDmg;
+      other.lastAttackerId = this.bossId;
+      other.vx = Math.cos(angle) * knockForce;
+      other.vy = Math.sin(angle) * knockForce;
+      other.state = 'hurt';
+      other.animTicks = 0;
+
+      spawnPixelHitSparks(other.x, other.y, true);
+      spawnPixelDamage(other.x, other.y, blastDmg);
+    });
+
+    // ละอองระเบิดเปลวเพลิงกระจายทั่วจอ
+    for (let k = 0; k < 35; k++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = Math.random() * 12 + 4;
+      hitParticles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        size: Math.floor(Math.random() * 4 + 2),
+        life: 0.9,
+        color: ['#ff0055', '#fbbf24', '#ffffff', '#a855f7'][Math.floor(Math.random() * 4)]
+      });
+    }
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+
+    ctx.save();
+
+    // 1. ระลอกคลื่นความโน้มถ่วงบิดเบี้ยว (Gravitational Ripples)
+    this.shockwaves.forEach(sw => {
+      ctx.save();
+      ctx.strokeStyle = sw.color;
+      ctx.shadowColor = sw.color;
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = Math.max(0, sw.alpha);
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y, sw.r, sw.r * (this.ring.ry / this.ring.rx), 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 2. สสารดวงดาวหมุนวนพุ่งเข้าสู่หลุมดำ (Infalling Star Dust)
+    this.particles.forEach(p => {
+      ctx.save();
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      ctx.restore();
+    });
+
+    // 3. จานพอกพูนมวลเรืองแสงวนรอบหลุมดำ (Accretion Disk Vortex)
+    const diskR = 48 + Math.sin(this.age * 0.2) * 5;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.swirlAngle);
+
+    // วงแหวนพลังงานแสงสีเพลิง-ม่วงมาเจนต้า
+    const diskGrad = ctx.createRadialGradient(0, 0, 12, 0, 0, diskR * 1.5);
+    diskGrad.addColorStop(0, '#ffffff');
+    diskGrad.addColorStop(0.2, '#ff0055');
+    diskGrad.addColorStop(0.6, 'rgba(168, 85, 247, 0.7)');
+    diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+    ctx.fillStyle = diskGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, diskR * 1.5, diskR * 0.75, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // หนวดรังสีพลาสม่าหมุนวน 4 แฉก
+    ctx.strokeStyle = '#fbbf24';
+    ctx.shadowColor = '#ff0055';
+    ctx.shadowBlur = 15;
+    ctx.lineWidth = 3;
+    for (let s = 0; s < 4; s++) {
+      const armAng = s * (Math.PI / 2);
+      ctx.beginPath();
+      ctx.arc(0, 0, diskR * 0.9, armAng, armAng + Math.PI * 0.4);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 4. ขอบฟ้าเหตุการณ์แกนกลางมืดสนิท (Pitch Black Singularity Core)
+    const coreR = 24 + Math.sin(this.age * 0.25) * 3;
+    ctx.save();
+    // วงแหวนโฟตอนเรืองแสงสีขาวรอบขอบฟ้าเหตุการณ์
+    ctx.strokeStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 20;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, coreR * 1.15, coreR * 0.65, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // แกนมืดมิดสมบูรณ์แบบ
+    ctx.fillStyle = '#050208';
+    ctx.shadowColor = '#ff0055';
+    ctx.shadowBlur = 25;
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, coreR, coreR * 0.55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 5. ป้ายแจ้งเตือนหลุมดำกำลังดูดกลืนทั้งสังเวียน
+    if (this.age < 110) {
+      const bannerY = this.ring.cy - this.ring.ry - 32;
+      const bAlpha = Math.min(1, (110 - this.age) / 18);
+      ctx.save();
+      ctx.globalAlpha = bAlpha;
+      ctx.fillStyle = 'rgba(10, 4, 18, 0.92)';
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 12;
+      const bW = 280;
+      const bH = 34;
+      ctx.fillRect(this.ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+      ctx.strokeRect(this.ring.cx - bW / 2, bannerY - bH / 2, bW, bH);
+
+      ctx.font = 'bold 11px "Chakra Petch", sans-serif';
+      ctx.fillStyle = '#d8b4fe';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🌌 GRAVITATIONAL SINGULARITY 🌌', this.ring.cx, bannerY - 6);
+
+      ctx.font = 'bold 9px "Kanit", sans-serif';
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillText(`⚡ หลุมดำกำลังดูดกลืนและฉีกกระชากทั้งสังเวียน!`, this.ring.cx, bannerY + 8);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+}
+
+// ========================================================
 // CLIENT FIGHTER (FIGHTER: BLAZE ANIMATION ENGINE)
 // ========================================================
 let clientFighters = [];
@@ -782,6 +1369,8 @@ class ClientFighter {
     this.speedBoost = data.speedBoost || 1;
     this.kills = 0;
     this.isBoss = false;
+    this.blackHoleTimer = 0;
+    this.titanAuraTick = 0;
     this.lastAttackerId = null;
 
     this.x = ring.cx + Math.cos(spawnAngle) * dist;
@@ -809,8 +1398,58 @@ class ClientFighter {
     this.vx *= 0.86;
     this.vy *= 0.86;
 
+    if (this.isBoss) {
+      // Super Armor: ต้านทานแรงกระเด็น และไม่มีวันชะงัก (Unstoppable Titan)
+      this.vx *= 0.5;
+      this.vy *= 0.5;
+      if (this.state === 'hurt') {
+        this.state = 'idle';
+      }
+    }
+
     if (Math.abs(this.vx) > 0.2) {
       this.facingLeft = this.vx < 0;
+    }
+
+    // ==========================================
+    // TITAN BOSS OVERPOWERED PASSIVES & SKILLS
+    // ==========================================
+    if (this.isBoss && this.alive) {
+      // 1. Aura of Obliteration (ออร่าเพลิงนรกเผาผลาญ + ดูดเลือดฟื้นฟูต่อเนื่อง)
+      this.titanAuraTick = (this.titanAuraTick || 0) + 1;
+      if (this.titanAuraTick >= 22) {
+        this.titanAuraTick = 0;
+        allFighters.forEach(other => {
+          if (other.id !== this.id && other.alive) {
+            const d = Math.hypot(other.x - this.x, other.y - this.y);
+            if (d < 130) {
+              const burnDmg = 14;
+              other.hp -= burnDmg;
+              other.lastAttackerId = this.id;
+              other.speedBoost = 0.5; // สโลว์ศัตรู
+              spawnPixelDamage(other.x, other.y, burnDmg);
+              spawnPixelHitSparks(other.x, other.y);
+
+              // บอสดูดเลือดฟื้นฟูตนเอง (Life Steal)
+              if (this.hp < this.maxHp) {
+                this.hp = Math.min(this.maxHp, this.hp + 10);
+                spawnPixelDamage(this.x, this.y - 30, '+10 HP');
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Periodic Black Hole Summoning (เรียกหลุมดำมหาประลัยเป็นระยะในการต่อสู้)
+      this.blackHoleTimer = (this.blackHoleTimer || 0) + 1;
+      if (this.blackHoleTimer >= 360) {
+        this.blackHoleTimer = 0;
+        const hasAliveEnemies = allFighters.some(f => f.id !== this.id && f.alive);
+        if (hasAliveEnemies && activeBlackHoles.length === 0) {
+          activeBlackHoles.push(new TitanBlackHoleEffect(this.id, this.nickname));
+          spawnFloatingText(this.x, this.y - 45, '🌌 GRAVITATIONAL SINGULARITY!', '#a855f7');
+        }
+      }
     }
 
     // Laser Barrier Boundary Physics (Strictly NO falling off the stage)
@@ -890,19 +1529,41 @@ class ClientFighter {
         this.animTicks = 0;
         this.attackType = Math.floor(Math.random() * 4);
 
-        const damage = this.isBoss ? 45 : (this.weapon === 'sword' ? 28 : 18);
+        const damage = this.isBoss ? 65 : (this.weapon === 'sword' ? 28 : 18);
         closest.hp -= damage;
         closest.lastAttackerId = this.id;
         closest.state = 'hurt';
         closest.animTicks = 0;
 
-        spawnPixelHitSparks(closest.x, closest.y);
+        spawnPixelHitSparks(closest.x, closest.y, this.isBoss);
         spawnPixelDamage(closest.x, closest.y, damage);
         sfx.playPunch();
 
-        const knockForce = this.isBoss ? 14 : 7;
+        const knockForce = this.isBoss ? 22 : (this.weapon === 'sword' ? 10 : 7);
         closest.vx += Math.cos(angle) * knockForce;
         closest.vy += Math.sin(angle) * knockForce;
+
+        // บอสปล่อยคลื่นกระแทกแผ่นดินไหวซัดศัตรูรอบตัวแตกกระเจิง (Titan Quake Slam)
+        if (this.isBoss) {
+          screenShake = Math.max(screenShake, 16);
+          allFighters.forEach(other => {
+            if (other.id !== this.id && other.id !== closest.id && other.alive) {
+              const d = Math.hypot(other.x - this.x, other.y - this.y);
+              if (d < 110) {
+                const splashDmg = 35;
+                other.hp -= splashDmg;
+                other.lastAttackerId = this.id;
+                other.state = 'hurt';
+                other.animTicks = 0;
+                const splashAng = Math.atan2(other.y - this.y, other.x - this.x);
+                other.vx += Math.cos(splashAng) * 16;
+                other.vy += Math.sin(splashAng) * 16;
+                spawnPixelHitSparks(other.x, other.y);
+                spawnPixelDamage(other.x, other.y, splashDmg);
+              }
+            }
+          });
+        }
 
         if (closest.hp <= 0 && closest.alive) {
           this.kills += 1;
@@ -929,7 +1590,18 @@ class ClientFighter {
         this.animTicks = 0;
         this.frameIndex = (this.frameIndex + 1) % 4;
 
-        if (Math.random() > 0.4) {
+        if (this.isBoss) {
+          screenShake = Math.max(screenShake, 3.5);
+          hitParticles.push({
+            x: this.x + (this.facingLeft ? 12 : -12),
+            y: this.y + 14,
+            vx: (this.facingLeft ? 2 : -2) * (Math.random() * 2 + 1),
+            vy: -Math.random() * 1.5,
+            size: 3,
+            life: 0.5,
+            color: '#ef4444'
+          });
+        } else if (Math.random() > 0.4) {
           hitParticles.push({
             x: this.x + (this.facingLeft ? 8 : -8),
             y: this.y + 12,
@@ -993,7 +1665,7 @@ class ClientFighter {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    const scale = this.isBoss ? 1.4 : 0.72;
+    const scale = this.isBoss ? 2.1 : 0.72;
     ctx.scale(scale, scale);
 
     const isCastingUlt = activeUltimates.some(u => u.casterId === this.id && u.alive);
@@ -1042,6 +1714,29 @@ class ClientFighter {
       ctx.scale(-1, 1);
     }
 
+    // Demonic Hellfire Aura & Glowing Eyes for Boss Titan
+    if (this.isBoss) {
+      ctx.save();
+      const auraPulse = Math.sin(Date.now() * 0.008) * 4;
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.55)';
+      ctx.shadowColor = '#ef4444';
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, -25, 42 + auraPulse, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // ตาปีศาจเรืองแสงสีแดงเพลิง
+      const eyeDir = this.facingLeft ? -1 : 1;
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#ff0055';
+      ctx.shadowBlur = 14;
+      ctx.fillRect(eyeDir * 4, -42, 5, 3);
+      ctx.fillStyle = '#ff0055';
+      ctx.fillRect(eyeDir * 8, -41, 7, 2);
+      ctx.restore();
+    }
+
     // Glowing Golden/Cyan Barrier Shield for Ultimate Caster
     if (isCastingUlt) {
       ctx.save();
@@ -1062,17 +1757,55 @@ class ClientFighter {
       ctx.restore();
     }
 
-    // Status Badges & Crown for Kill Leader
+    // Status Badges & HP Bar
     ctx.textAlign = 'center';
-    if (isCastingUlt) {
-      ctx.font = 'bold 12px "Chakra Petch", sans-serif';
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillText('⚡ OMEGA ⚡', 0, -96);
-    }
     if (this.isBoss) {
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('👹 BOSS', 0, -84);
+      // Gilded Boss Overhead Health Bar & Status
+      const bossHpW = 68;
+      const bossHpH = 7;
+      const bossHpY = -86;
+      const hpRatio = Math.max(0, this.hp / this.maxHp);
+
+      // Gold ornate frame
+      ctx.fillStyle = 'rgba(10, 4, 12, 0.92)';
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 8;
+      ctx.fillRect(-bossHpW / 2 - 2, bossHpY - 2, bossHpW + 4, bossHpH + 4);
+      ctx.strokeRect(-bossHpW / 2 - 2, bossHpY - 2, bossHpW + 4, bossHpH + 4);
+
+      // Red damage background
+      ctx.fillStyle = '#450a0a';
+      ctx.fillRect(-bossHpW / 2, bossHpY, bossHpW, bossHpH);
+
+      // Crimson-to-gold health fill
+      const hpGrad = ctx.createLinearGradient(-bossHpW / 2, 0, bossHpW / 2, 0);
+      hpGrad.addColorStop(0, '#ef4444');
+      hpGrad.addColorStop(1, '#fbbf24');
+      ctx.fillStyle = hpGrad;
+      ctx.fillRect(-bossHpW / 2, bossHpY, Math.floor(bossHpW * hpRatio), bossHpH);
+
+      // Title & HP Numbers
+      ctx.font = 'bold 8px "Chakra Petch", sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.textAlign = 'center';
+      ctx.fillText(`👹 BOSS [${this.hp}/${this.maxHp}]`, 0, bossHpY - 5);
+
+      // Player Nickname
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(-35, bossHpY - 18, 70, 11);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px "Chakra Petch", monospace';
+      ctx.textAlign = 'center';
+      const displayName = this.nickname.length > 9 ? this.nickname.substring(0, 8) + '…' : this.nickname;
+      ctx.fillText(displayName, 0, bossHpY - 9);
     } else {
+      if (isCastingUlt) {
+        ctx.font = 'bold 12px "Chakra Petch", sans-serif';
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('⚡ OMEGA ⚡', 0, -96);
+      }
       if (this.kills >= 2) {
         ctx.font = '16px sans-serif';
         ctx.fillText('👑', 0, -84);
@@ -1089,31 +1822,31 @@ class ClientFighter {
         ctx.font = '12px sans-serif';
         ctx.fillText('⚡', 0, -72);
       }
+
+      // Retro 16-Bit Arcade HP Bar
+      const hpW = 42;
+      const hpH = 5;
+      const hpY = -68;
+      const hpRatio = Math.max(0, this.hp / this.maxHp);
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(-hpW / 2 - 2, hpY - 2, hpW + 4, hpH + 4);
+
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(-hpW / 2, hpY, hpW, hpH);
+
+      ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : (hpRatio > 0.25 ? '#eab308' : '#ef4444');
+      ctx.fillRect(-hpW / 2, hpY, Math.floor(hpW * hpRatio), hpH);
+
+      // Player Nickname
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(-35, hpY - 14, 70, 11);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px "Chakra Petch", monospace';
+      ctx.textAlign = 'center';
+      const displayName = this.nickname.length > 9 ? this.nickname.substring(0, 8) + '…' : this.nickname;
+      ctx.fillText(displayName, 0, hpY - 5);
     }
-
-    // Retro 16-Bit Arcade HP Bar
-    const hpW = 42;
-    const hpH = 5;
-    const hpY = -68;
-    const hpRatio = Math.max(0, this.hp / this.maxHp);
-
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(-hpW / 2 - 2, hpY - 2, hpW + 4, hpH + 4);
-
-    ctx.fillStyle = '#7f1d1d';
-    ctx.fillRect(-hpW / 2, hpY, hpW, hpH);
-
-    ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : (hpRatio > 0.25 ? '#eab308' : '#ef4444');
-    ctx.fillRect(-hpW / 2, hpY, Math.floor(hpW * hpRatio), hpH);
-
-    // Player Nickname
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(-35, hpY - 14, 70, 11);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 9px "Chakra Petch", monospace';
-    ctx.textAlign = 'center';
-    const displayName = this.nickname.length > 9 ? this.nickname.substring(0, 8) + '…' : this.nickname;
-    ctx.fillText(displayName, 0, hpY - 5);
 
     ctx.restore();
   }
@@ -1747,6 +2480,22 @@ function gameLoop() {
     if (!ult.alive) activeUltimates.splice(i, 1);
   }
 
+  // 3.6 Update & Draw Titan Awakening Effects (พิธีกรรมอัญเชิญมหาบอสยักษ์ไททัน)
+  for (let i = activeTitanEffects.length - 1; i >= 0; i--) {
+    const effect = activeTitanEffects[i];
+    effect.update(clientFighters);
+    effect.draw(ctx);
+    if (!effect.alive) activeTitanEffects.splice(i, 1);
+  }
+
+  // 3.7 Update & Draw Titan Black Holes (มหาหลุมดำแรงโน้มถ่วงล้างสังเวียน)
+  for (let i = activeBlackHoles.length - 1; i >= 0; i--) {
+    const bh = activeBlackHoles[i];
+    bh.update(clientFighters);
+    bh.draw(ctx);
+    if (!bh.alive) activeBlackHoles.splice(i, 1);
+  }
+
   // 4. Update & Draw Fighters (Sorted by Y for isometric depth)
   clientFighters.sort((a, b) => a.y - b.y);
 
@@ -1883,6 +2632,8 @@ socket.on('round_winner', () => sfx.playVictory());
 socket.on('new_round_started', () => {
   sfx.playBell();
   activeUltimates = [];
+  activeTitanEffects = [];
+  activeBlackHoles = [];
 });
 
 socket.on('fighter_shockwave', (payload) => {
@@ -1944,15 +2695,29 @@ socket.on('fighter_weapon', (payload) => {
 
 socket.on('fighter_boss', (payload) => {
   const fighter = clientFighters.find(f => f.id === payload.id);
+  const bossName = payload.nickname || (fighter ? fighter.nickname : 'จอมราชันย์ยักษ์');
+  const avatar = payload.avatar || (fighter ? fighter.avatar : '/assets/avatar-1.svg');
+
   if (fighter) {
     fighter.isBoss = true;
     fighter.weapon = 'giant_glove';
-    fighter.maxHp += 300;
-    fighter.hp = fighter.maxHp;
-    spawnFloatingText(fighter.x, fighter.y, '👹 TITAN BOSS!', '#f43f5e');
-    sfx.playSpecial();
-    spawnPixelHitSparks(fighter.x, fighter.y, true);
+    fighter.maxHp = 999;
+    fighter.hp = 999;
+    fighter.hasShield = true;
+    fighter.buffLevel = (fighter.buffLevel || 0) + 5;
+    fighter.animTicks = 0;
+    fighter.blackHoleTimer = 0;
   }
+
+  // ปลดปล่อยเอฟเฟกต์พิธีกรรมอัญเชิญมหาบอสยักษ์ไททัน (Titan Awakening Effect)
+  activeTitanEffects.push(new TitanAwakeningEffect(payload.id, bossName, avatar));
+
+  // ปลดปล่อยหลุมดำแรงโน้มถ่วงล้างสังเวียนทันที! (Titan Black Hole Singularity)
+  activeBlackHoles.push(new TitanBlackHoleEffect(payload.id, bossName));
+
+  const cx = fighter ? fighter.x : viewW / 2;
+  const cy = fighter ? fighter.y : viewH / 2;
+  spawnPixelHitSparks(cx, cy, true);
 });
 
 socket.on('fighter_speed', (payload) => {
@@ -2194,7 +2959,12 @@ window.simShield = function() { socket.emit('sim_gift', { giftName: 'Shield', di
 window.simSpecial = function() { socket.emit('sim_gift', { giftName: 'SpecialBeam', diamonds: 150 }); };
 window.simUltimate = function() { socket.emit('sim_gift', { giftName: 'UltimateBlast', diamonds: 500 }); };
 window.simBoss = function() { socket.emit('sim_gift', { giftName: 'TitanBoss', diamonds: 1000 }); };
-window.simReset = function() { socket.emit('sim_reset_round'); };
+window.simReset = function() {
+  activeUltimates = [];
+  activeTitanEffects = [];
+  activeBlackHoles = [];
+  socket.emit('sim_reset_round');
+};
 window.simForceWin = function() { socket.emit('sim_force_win'); };
 
 function escapeHtml(text) {
