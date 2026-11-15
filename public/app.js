@@ -234,6 +234,96 @@ class RetroSoundFX {
     } catch(e) {}
   }
 
+  playKatanaUnsheathe() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // High-pitch sharp blade metallic draw (1400Hz -> 3200Hz -> ring out)
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(3200, now + 0.12);
+      osc.frequency.exponentialRampToValueAtTime(2400, now + 0.35);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+
+      // Metallic shimmer overtone
+      const over = this.ctx.createOscillator();
+      const overGain = this.ctx.createGain();
+      over.type = 'triangle';
+      over.frequency.setValueAtTime(4200, now + 0.05);
+      over.frequency.linearRampToValueAtTime(3800, now + 0.3);
+      overGain.gain.setValueAtTime(0.15, now + 0.05);
+      overGain.gain.exponentialRampToValueAtTime(0.005, now + 0.35);
+      over.connect(overGain);
+      overGain.connect(this.ctx.destination);
+      over.start(now + 0.05);
+      over.stop(now + 0.35);
+    } catch(e) {}
+  }
+
+  playShieldDeploy() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Resonant cyber forcefield hum (280Hz -> 880Hz rising chime)
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.22);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } catch(e) {}
+  }
+
+  playShockwaveBlast() {
+    if (this.muted) return;
+    this.ensure();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Heavy low-frequency explosive sub-bass
+      const sub = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      sub.type = 'sawtooth';
+      sub.frequency.setValueAtTime(140, now);
+      sub.frequency.exponentialRampToValueAtTime(30, now + 0.45);
+      subGain.gain.setValueAtTime(0.45, now);
+      subGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      sub.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      sub.start(now);
+      sub.stop(now + 0.5);
+
+      // Kinetic air pressure blast noise burst
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } catch(e) {}
+  }
+
   playBlock() {
     if (this.muted) return;
     this.ensure();
@@ -395,6 +485,8 @@ let activeProjectiles = [];
 let activeUltimates = [];
 let activeTitanEffects = [];
 let activeBlackHoles = [];
+let activeShockwaves = [];
+let activeSlashes = [];
 let screenShake = 0;
 
 // Rotating Moon HUD angle & Searchlight angles
@@ -1346,6 +1438,234 @@ class TitanBlackHoleEffect {
 }
 
 // ========================================================
+// KATANA SLASH EFFECT (วิถีดาบคลื่นพลังฟันวงจันทร์ 5-29 💎)
+// ========================================================
+class KatanaSlashEffect {
+  constructor(x, y, facingLeft, angle) {
+    this.x = x;
+    this.y = y;
+    this.facingLeft = facingLeft;
+    this.angle = angle || 0;
+    this.alive = true;
+    this.age = 0;
+    this.duration = 14; // ~0.23 วินาที เฉียบคมฉับไว
+    this.radius = 44;
+
+    // ประกายดาบเฉียบคมแตกกระจาย
+    for (let i = 0; i < 7; i++) {
+      const spd = Math.random() * 5 + 3;
+      const spdAng = (this.facingLeft ? Math.PI : 0) + (Math.random() - 0.5) * 1.4;
+      hitParticles.push({
+        x: this.x + (this.facingLeft ? -15 : 15),
+        y: this.y - 12 + (Math.random() - 0.5) * 12,
+        vx: Math.cos(spdAng) * spd,
+        vy: Math.sin(spdAng) * spd,
+        size: Math.floor(Math.random() * 3 + 1),
+        life: 0.35,
+        color: Math.random() > 0.3 ? '#00f0ff' : '#ffffff'
+      });
+    }
+  }
+
+  update() {
+    this.age++;
+    if (this.age >= this.duration) {
+      this.alive = false;
+    }
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+    const progress = this.age / this.duration;
+    const alpha = Math.max(0, 1 - progress);
+
+    ctx.save();
+    ctx.translate(this.x, this.y - 10);
+    if (this.facingLeft) {
+      ctx.scale(-1, 1);
+    }
+
+    const startAng = -Math.PI * 0.46;
+    const endAng = Math.PI * 0.46;
+    const currentEnd = startAng + (endAng - startAng) * Math.min(1, progress * 1.6);
+
+    // 1. ออร่าแสงสีฟ้าไซแอนเรืองแสงรอบรอยฟัน
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.9)';
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 18;
+    ctx.lineWidth = 7 * (1 - progress * 0.6);
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, startAng, currentEnd);
+    ctx.stroke();
+    ctx.restore();
+
+    // 2. คมดาบเลเซอร์สีขาวบริสุทธิ์ (Pure White Laser Edge)
+    ctx.save();
+    ctx.strokeStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2.8 * (1 - progress * 0.5);
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, startAng + 0.08, currentEnd);
+    ctx.stroke();
+    ctx.restore();
+
+    // 3. ประกายแสงดาวตัดประกายที่ปลายคมดาบ
+    if (progress < 0.65) {
+      const tipX = Math.cos(currentEnd) * this.radius;
+      const tipY = Math.sin(currentEnd) * this.radius;
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+      ctx.fillRect(tipX - 2, tipY - 6, 4, 12);
+      ctx.fillRect(tipX - 6, tipY - 2, 12, 4);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+}
+
+// ========================================================
+// SHOCKWAVE BLAST EFFECT (คลื่นระเบิดพลังรอบทิศทาง 100-299 💎)
+// ========================================================
+class ShockwaveBlastEffect {
+  constructor(x, y, casterId, casterName) {
+    this.x = x;
+    this.y = y;
+    this.casterId = casterId;
+    this.casterName = casterName || 'FIGHTER';
+    this.alive = true;
+    this.age = 0;
+    this.duration = 45; // ~0.75 วินาที
+    this.maxR = 175; // ขยายครอบคลุมรัศมีรอบตัว
+    this.spikes = [];
+
+    const ring = getRing();
+    this.ryRatio = ring.ry / ring.rx;
+
+    // สั่นสะเทือนหน้าจอ
+    screenShake = 14;
+    sfx.playShockwaveBlast();
+
+    // ประกายสายฟ้า/หนามคลื่น 12 แฉก
+    for (let i = 0; i < 12; i++) {
+      const ang = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
+      this.spikes.push({
+        angle: ang,
+        length: this.maxR * (0.8 + Math.random() * 0.35)
+      });
+    }
+
+    // ระเบิดสะเก็ดไฟกระจาย 24 ทิศทาง
+    for (let i = 0; i < 24; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = Math.random() * 7 + 3;
+      hitParticles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * (spd * this.ryRatio),
+        size: Math.floor(Math.random() * 3 + 2),
+        life: 0.65,
+        color: ['#f97316', '#fbbf24', '#ef4444', '#ffffff'][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    spawnFloatingText(this.x, this.y - 30, '💥 KINETIC SHOCKWAVE!', '#f97316');
+  }
+
+  update() {
+    this.age++;
+    if (this.age > this.duration) {
+      this.alive = false;
+    }
+  }
+
+  draw(ctx) {
+    if (!this.alive) return;
+    const progress = this.age / this.duration;
+    const currentR = this.maxR * Math.sin(progress * (Math.PI / 2));
+    const alpha = Math.max(0, 1 - progress);
+
+    ctx.save();
+
+    // 1. ระลอกคลื่นพื้นดินเวที (Kinetic Ground Shockwave Ripples)
+    // วงที่ 1: เปลวเพลิงสีส้มแดงสด
+    ctx.save();
+    ctx.strokeStyle = '#f97316';
+    ctx.shadowColor = '#ea580c';
+    ctx.shadowBlur = 18;
+    ctx.lineWidth = 4 * (1 - progress * 0.7);
+    ctx.globalAlpha = alpha * 0.95;
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, currentR, currentR * this.ryRatio, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // วงที่ 2: วงพลังงานประกายสีทอง/แอมเบอร์ชั้นใน
+    const innerR = currentR * 0.72;
+    ctx.save();
+    ctx.strokeStyle = '#fbbf24';
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 2.5;
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, innerR, innerR * this.ryRatio, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // วงที่ 3: แสงวาบสีขาวใจกลางคลื่นระเบิด (Core Flash)
+    if (progress < 0.35) {
+      const flashAlpha = (0.35 - progress) / 0.35;
+      ctx.save();
+      const flashGrad = ctx.createRadialGradient(this.x, this.y, 4, this.x, this.y, 45);
+      flashGrad.addColorStop(0, '#ffffff');
+      flashGrad.addColorStop(0.4, 'rgba(251, 191, 36, 0.8)');
+      flashGrad.addColorStop(1, 'rgba(249, 115, 22, 0)');
+      ctx.fillStyle = flashGrad;
+      ctx.globalAlpha = flashAlpha;
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y, 45, 45 * this.ryRatio, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 2. หนามพลังงานแสงพุ่งทะลวงรอบทิศทาง (Radial Force Spikes)
+    ctx.save();
+    ctx.strokeStyle = '#fbbf24';
+    ctx.shadowColor = '#f97316';
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = alpha * 0.75;
+    this.spikes.forEach(s => {
+      const rStart = currentR * 0.65;
+      const rEnd = currentR * 0.98;
+      ctx.beginPath();
+      ctx.moveTo(
+        this.x + Math.cos(s.angle) * rStart,
+        this.y + Math.sin(s.angle) * (rStart * this.ryRatio)
+      );
+      ctx.lineTo(
+        this.x + Math.cos(s.angle) * rEnd,
+        this.y + Math.sin(s.angle) * (rEnd * this.ryRatio)
+      );
+      ctx.stroke();
+    });
+    ctx.restore();
+
+    ctx.restore();
+  }
+}
+
+// ========================================================
 // CLIENT FIGHTER (FIGHTER: BLAZE ANIMATION ENGINE)
 // ========================================================
 let clientFighters = [];
@@ -1539,6 +1859,10 @@ class ClientFighter {
         spawnPixelDamage(closest.x, closest.y, damage);
         sfx.playPunch();
 
+        if (this.weapon === 'sword') {
+          activeSlashes.push(new KatanaSlashEffect(closest.x, closest.y, this.facingLeft, angle));
+        }
+
         const knockForce = this.isBoss ? 22 : (this.weapon === 'sword' ? 10 : 7);
         closest.vx += Math.cos(angle) * knockForce;
         closest.vy += Math.sin(angle) * knockForce;
@@ -1710,8 +2034,145 @@ class ClientFighter {
       ctx.fillRect(-12, -40, 24, 52);
     }
 
+    // ⚔️ Draw High-Tech Cyber Katana (ถือดาบคาตานะแสงเลเซอร์ 5-29 💎)
+    if (this.weapon === 'sword') {
+      ctx.save();
+      let swordAngle = -0.45;
+      let swordX = 14;
+      let swordY = -12;
+
+      if (this.state === 'attack') {
+        const swingProgress = this.frameIndex / 5;
+        swordAngle = -0.9 + swingProgress * 1.8;
+        swordX = 16 + Math.cos(swordAngle) * 10;
+        swordY = -14 + Math.sin(swordAngle) * 10;
+      } else if (this.state === 'run') {
+        swordAngle = -0.3 + Math.sin(Date.now() * 0.015) * 0.25;
+      }
+
+      ctx.translate(swordX, swordY);
+      ctx.rotate(swordAngle);
+
+      // ด้ามดาบ (Tsuka) สีดำ-ทอง
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(-2, 0, 4, 11);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(-3, 10, 6, 3); // Pommel
+
+      // กระบังดาบ (Tsuba) สีทองเรืองแสง
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 6;
+      ctx.fillRect(-6, -2, 12, 3);
+
+      // ใบดาบเลเซอร์ไซเบอร์ (Cyber Laser Katana Blade)
+      const bladeLength = 34;
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.75)';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.lineTo(2, -bladeLength);
+      ctx.stroke();
+
+      // คมดาบแกนกลางสีขาวบริสุทธิ์
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(0, -2);
+      ctx.lineTo(2, -bladeLength);
+      ctx.stroke();
+
+      // ประกายไฟที่ปลายดาบ
+      if (Math.random() > 0.6) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(1, -bladeLength - 2, 2, 2);
+      }
+
+      ctx.restore();
+    }
+
     if (this.facingLeft) {
       ctx.scale(-1, 1);
+    }
+
+    // 🛡️ Draw Hexagonal Cyber Forcefield Dome (เกราะสะท้อนพลังงานไซเบอร์ 30-99 💎)
+    if (this.hasShield && !isCastingUlt) {
+      ctx.save();
+      const shieldTime = Date.now() * 0.003;
+      const pulse = Math.sin(shieldTime * 2) * 2;
+      const shieldRx = 26 + pulse;
+      const shieldRy = 34 + pulse;
+      const shieldCenterY = -18;
+
+      // 1. โดมพลังงานโปร่งแสงสีฟ้าไซแอน/เทอร์ควอยซ์
+      const shieldGrad = ctx.createRadialGradient(0, shieldCenterY, 6, 0, shieldCenterY, shieldRy);
+      shieldGrad.addColorStop(0, 'rgba(6, 182, 212, 0.08)');
+      shieldGrad.addColorStop(0.7, 'rgba(6, 182, 212, 0.22)');
+      shieldGrad.addColorStop(1, 'rgba(56, 189, 248, 0.45)');
+      ctx.fillStyle = shieldGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, shieldCenterY, shieldRx, shieldRy, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. ขอบเส้นแรงโน้มถ่วงนีออนเรืองแสง
+      ctx.strokeStyle = '#06b6d4';
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.ellipse(0, shieldCenterY, shieldRx, shieldRy, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 3. วงแหวนรหัสเมทริกซ์หมุนวนรอบโดม (Rotating Matrix Grid)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5, 4]);
+      ctx.lineDashOffset = -shieldTime * 12;
+      ctx.beginPath();
+      ctx.ellipse(0, shieldCenterY, shieldRx * 1.12, shieldRy * 1.08, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 4. ลายเส้นรวงผึ้งเฮกซากอน 6 ทิศทางบนโดม (Hexagonal Cyber Grid Nodes)
+      for (let h = 0; h < 6; h++) {
+        const hexAng = (h / 6) * Math.PI * 2 + (shieldTime * 0.5);
+        const hx = Math.cos(hexAng) * (shieldRx * 0.85);
+        const hy = shieldCenterY + Math.sin(hexAng) * (shieldRy * 0.85);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 8;
+        ctx.fillRect(hx - 2, hy - 2, 4, 4);
+      }
+
+      // 5. โดรนคริสตัลป้องกันโคจรรอบตัว 2 จุด (Orbiting Defense Prisms)
+      for (let p = 0; p < 2; p++) {
+        const pAng = shieldTime * 1.5 + (p * Math.PI);
+        const px = Math.cos(pAng) * (shieldRx * 1.35);
+        const py = shieldCenterY + Math.sin(pAng) * (shieldRy * 0.6);
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(pAng * 2);
+        ctx.fillStyle = '#fbbf24';
+        ctx.strokeStyle = '#ffffff';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -5);
+        ctx.lineTo(4, 0);
+        ctx.lineTo(0, 5);
+        ctx.lineTo(-4, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.restore();
     }
 
     // Demonic Hellfire Aura & Glowing Eyes for Boss Titan
@@ -2496,6 +2957,14 @@ function gameLoop() {
     if (!bh.alive) activeBlackHoles.splice(i, 1);
   }
 
+  // 3.8 Update & Draw Shockwaves (คลื่นระเบิดพลังรอบทิศทาง 100-299 💎)
+  for (let i = activeShockwaves.length - 1; i >= 0; i--) {
+    const sw = activeShockwaves[i];
+    sw.update();
+    sw.draw(ctx);
+    if (!sw.alive) activeShockwaves.splice(i, 1);
+  }
+
   // 4. Update & Draw Fighters (Sorted by Y for isometric depth)
   clientFighters.sort((a, b) => a.y - b.y);
 
@@ -2503,6 +2972,14 @@ function gameLoop() {
     f.update(1 / 60, clientFighters);
     f.draw(ctx);
   });
+
+  // 4.5 Update & Draw Katana Slashes (วิถีดาบคลื่นพลังฟันวงจันทร์ 5-29 💎)
+  for (let i = activeSlashes.length - 1; i >= 0; i--) {
+    const sl = activeSlashes[i];
+    sl.update();
+    sl.draw(ctx);
+    if (!sl.alive) activeSlashes.splice(i, 1);
+  }
 
   // 5. Draw Pixel Hit Sparks
   for (let i = hitParticles.length - 1; i >= 0; i--) {
@@ -2634,6 +3111,8 @@ socket.on('new_round_started', () => {
   activeUltimates = [];
   activeTitanEffects = [];
   activeBlackHoles = [];
+  activeShockwaves = [];
+  activeSlashes = [];
 });
 
 socket.on('fighter_shockwave', (payload) => {
@@ -2642,15 +3121,15 @@ socket.on('fighter_shockwave', (payload) => {
     fighter.state = 'special';
     fighter.frameIndex = 0;
     fighter.animTicks = 0;
-    spawnFloatingText(fighter.x, fighter.y, '💥 SHOCKWAVE!', '#f97316');
+    activeShockwaves.push(new ShockwaveBlastEffect(fighter.x, fighter.y, fighter.id, fighter.nickname));
 
     // Push all nearby enemies away radially with damage
     clientFighters.forEach(other => {
       if (other.id !== fighter.id && other.alive) {
         const d = Math.hypot(other.x - fighter.x, other.y - fighter.y);
-        if (d < 160) {
+        if (d < 175) {
           const angle = Math.atan2(other.y - fighter.y, other.x - fighter.x);
-          const pushForce = Math.max(8, 20 - (d / 12));
+          const pushForce = Math.max(10, 24 - (d / 10));
           other.vx += Math.cos(angle) * pushForce;
           other.vy += Math.sin(angle) * pushForce;
           other.hp -= 20;
@@ -2662,9 +3141,7 @@ socket.on('fighter_shockwave', (payload) => {
         }
       }
     });
-    spawnPixelHitSparks(fighter.x, fighter.y, true);
   }
-  sfx.playSpecial();
 });
 
 socket.on('fighter_heal', (payload) => {
@@ -2688,8 +3165,20 @@ socket.on('fighter_weapon', (payload) => {
   const fighter = clientFighters.find(f => f.id === payload.id);
   if (fighter) {
     fighter.weapon = payload.weapon;
-    spawnFloatingText(fighter.x, fighter.y, '⚔️ KATANA!', '#38bdf8');
-    sfx.playPunch();
+    spawnFloatingText(fighter.x, fighter.y, '⚔️ CYBER KATANA!', '#38bdf8');
+    sfx.playKatanaUnsheathe();
+    // Radiant cyan blade summon sparks
+    for (let k = 0; k < 14; k++) {
+      hitParticles.push({
+        x: fighter.x + (Math.random() - 0.5) * 20,
+        y: fighter.y - 15 + (Math.random() - 0.5) * 35,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -Math.random() * 4 - 1,
+        size: Math.floor(Math.random() * 3 + 2),
+        life: 0.6,
+        color: Math.random() > 0.3 ? '#00f0ff' : '#ffffff'
+      });
+    }
   }
 });
 
@@ -2764,8 +3253,23 @@ socket.on('fighter_shield', (payload) => {
     fighter.hasShield = true;
     fighter.state = 'block';
     fighter.animTicks = 0;
-    spawnFloatingText(fighter.x, fighter.y, '🛡️ SHIELD!', '#38bdf8');
-    sfx.playBlock();
+    spawnFloatingText(fighter.x, fighter.y, '🛡️ CYBER BARRIER!', '#06b6d4');
+    sfx.playShieldDeploy();
+
+    // Hexagonal forcefield deploy burst particles
+    for (let k = 0; k < 18; k++) {
+      const ang = (k / 18) * Math.PI * 2;
+      const spd = Math.random() * 4 + 2;
+      hitParticles.push({
+        x: fighter.x,
+        y: fighter.y - 18,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd * 0.8,
+        size: Math.floor(Math.random() * 3 + 2),
+        life: 0.55,
+        color: ['#06b6d4', '#38bdf8', '#ffffff'][Math.floor(Math.random() * 3)]
+      });
+    }
   }
 });
 
@@ -2963,6 +3467,8 @@ window.simReset = function() {
   activeUltimates = [];
   activeTitanEffects = [];
   activeBlackHoles = [];
+  activeShockwaves = [];
+  activeSlashes = [];
   socket.emit('sim_reset_round');
 };
 window.simForceWin = function() { socket.emit('sim_force_win'); };
