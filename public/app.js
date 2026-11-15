@@ -1426,7 +1426,11 @@ socket.on('state_update', (state) => {
 
   const fightersList = Object.values(state.fighters || {});
   const aliveCount = fightersList.filter(f => f.alive).length;
-  roundInfoText.innerText = `รอบที่ ${state.roundNumber} • เหลือ ${aliveCount}/${fightersList.length} คน`;
+  if (fightersList.length === 0) {
+    roundInfoText.innerText = `รอบที่ ${state.roundNumber} • รอผู้เล่นเข้าร่วม`;
+  } else {
+    roundInfoText.innerText = `รอบที่ ${state.roundNumber} • เหลือ ${aliveCount}/${fightersList.length} คน`;
+  }
 
   syncFighters(state.fighters || {});
   renderLeaderboard(state.leaderboard || []);

@@ -46,7 +46,7 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ind
 const ROUND_TIME_LIMIT = 75; // 75 seconds per round
 
 let gameState = {
-  status: 'FIGHTING', // 'WAITING', 'FIGHTING', 'ROUND_END'
+  status: 'WAITING', // 'WAITING', 'FIGHTING', 'ROUND_END'
   roundNumber: 1,
   timeLeft: ROUND_TIME_LIMIT,
   fighters: {}, // key: username -> fighter data
@@ -245,6 +245,10 @@ function spawnFighter(uniqueId, nickname, avatar, forceRevive = false) {
 
   gameState.fighters[uniqueId] = fighter;
 
+  if (gameState.status === 'WAITING') {
+    gameState.status = 'FIGHTING';
+  }
+
   // Tell client to spawn fighter with drop-in physics
   io.emit('spawn_fighter', fighter);
 
@@ -386,13 +390,31 @@ function handleShare(data) {
 // MATCH LOOP & ROUND CONTROLLER
 // ==========================================
 setInterval(() => {
+  const fightersCount = Object.keys(gameState.fighters).length;
+
+  // ถ้ายังไม่มีผู้เล่นบนเวที ให้รอ (ไม่นับถอยหลังและไม่เปลี่ยนรอบเอง)
+  if (fightersCount === 0) {
+    if (gameState.status !== 'WAITING') {
+      gameState.status = 'WAITING';
+      gameState.timeLeft = ROUND_TIME_LIMIT;
+      broadcastState();
+    }
+    return;
+  }
+
+  // เมื่อมีผู้เล่นลงเวที ให้เริ่มประลอง
+  if (gameState.status === 'WAITING') {
+    gameState.status = 'FIGHTING';
+    broadcastState();
+  }
+
   if (gameState.status === 'FIGHTING') {
     gameState.timeLeft -= 1;
 
     // Check winner condition (Last fighter standing)
     const aliveFighters = Object.values(gameState.fighters).filter(f => f.alive);
 
-    if ((aliveFighters.length === 1 && Object.keys(gameState.fighters).length >= 2) || gameState.timeLeft <= 0) {
+    if ((aliveFighters.length === 1 && fightersCount >= 2) || gameState.timeLeft <= 0) {
       endRound(aliveFighters[0] || null);
     }
   } else if (gameState.status === 'ROUND_END') {
@@ -443,6 +465,15 @@ function endRound(winnerFighter) {
 }
 
 function startNewRound() {
+  const fightersCount = Object.keys(gameState.fighters).length;
+  if (fightersCount === 0) {
+    gameState.status = 'WAITING';
+    gameState.timeLeft = ROUND_TIME_LIMIT;
+    gameState.lastWinner = null;
+    broadcastState();
+    return;
+  }
+
   gameState.roundNumber += 1;
   gameState.timeLeft = ROUND_TIME_LIMIT;
   gameState.status = 'FIGHTING';
@@ -553,7 +584,17 @@ io.on('connection', socket => {
   });
 
   socket.on('sim_reset_round', () => {
-    startNewRound();
+    gameState.roundNumber = 1;
+    gameState.fighters = {};
+    gameState.status = 'WAITING';
+    gameState.timeLeft = ROUND_TIME_LIMIT;
+    gameState.lastWinner = null;
+    broadcastState();
+    io.emit('new_round_started', {
+      roundNumber: gameState.roundNumber,
+      fighters: gameState.fighters
+    });
+    logEvent('system', '🔄 รีเซ็ตการแข่งขันเริ่มต้นรอบที่ 1');
   });
 
   socket.on('sim_force_win', () => {
