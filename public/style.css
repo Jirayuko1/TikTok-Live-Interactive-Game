@@ -92,14 +92,38 @@ body.overlay-mode .arena-vertical-screen {
   aspect-ratio: auto !important;
 }
 
+/* =========================================
+   TIKTOK LIVE SAFE ZONE CONTAINER (TOP 11%, BOTTOM 32%, SIDES 5%)
+   ========================================= */
+.tiktok-safe-zone-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: 11%; /* เว้นจากขอบบนลงมา 10 - 12% (200 - 240px ใน 1080x1920) หลบโปรไฟล์ผู้ไลฟ์ ยอดคนดู ปุ่มปิด */
+  padding-left: 5%; /* เว้นจากขอบซ้าย 5% (60px ใน 1080x1920) ระยะกันตกขอบ */
+  padding-right: 5%; /* เว้นจากขอบขวา 5% (60px ใน 1080x1920) หลบปุ่มแชร์และหัวใจ */
+  pointer-events: none;
+  z-index: 22;
+  display: flex;
+  flex-direction: column;
+}
+
+.tiktok-safe-zone-hud > * {
+  pointer-events: auto;
+}
+
 /* 1. Top HUD Header */
 .arena-top-hud {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: rgba(8, 12, 26, 0.96);
-  border-bottom: 2px solid #f59e0b;
+  padding: 6px 10px;
+  background: rgba(8, 12, 26, 0.94);
+  border: 2px solid #f59e0b;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   z-index: 25;
 }
 
@@ -193,8 +217,11 @@ body.overlay-mode .arena-vertical-screen {
 /* 3. Gift Reward Guide Panel (Retro Pixel Cards) */
 .reward-guide-panel {
   background: rgba(6, 9, 20, 0.96);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid #f59e0b;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
   padding: 5px 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   z-index: 22;
 }
 
@@ -242,9 +269,9 @@ body.overlay-mode .arena-vertical-screen {
 
 /* 4. Champion Leaderboard (Retro Pixel Arcade HUD) */
 .champion-hud-card {
-  position: absolute;
-  top: 98px;
-  right: 8px;
+  position: relative;
+  align-self: flex-end;
+  margin-top: 6px;
   width: 145px;
   background: rgba(8, 12, 26, 0.94);
   border: 2px solid #f59e0b;
@@ -297,13 +324,12 @@ body.overlay-mode .arena-vertical-screen {
 
 /* 5. Main Combat Ring Viewport */
 .arena-ring-viewport {
-  position: relative;
-  flex: 1;
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 1;
   background: #000;
 }
 
@@ -325,6 +351,85 @@ body.overlay-mode .arena-vertical-screen {
   z-index: 10;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+/* Safe Zone Guide Visual Overlay */
+.safe-zone-guide {
+  position: absolute;
+  inset: 0;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+}
+
+.safe-zone-guide.hidden {
+  display: none !important;
+}
+
+.safe-guide-top {
+  height: 11%;
+  background: rgba(239, 68, 68, 0.28);
+  border-bottom: 2px dashed #ef4444;
+  color: #fecaca;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.safe-guide-sides {
+  flex: 1;
+  display: flex;
+}
+
+.safe-guide-left, .safe-guide-right {
+  width: 5%;
+  background: rgba(234, 179, 8, 0.22);
+  border-right: 1px dashed #eab308;
+  color: #fef08a;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+}
+
+.safe-guide-right {
+  border-right: none;
+  border-left: 1px dashed #eab308;
+}
+
+.safe-guide-center {
+  flex: 1;
+  border: 2px solid rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.04);
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.safe-guide-bottom {
+  height: 33%;
+  background: rgba(239, 68, 68, 0.28);
+  border-top: 2px dashed #ef4444;
+  color: #fecaca;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 10px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
 }
 
 /* CRT Scanline Overlay */

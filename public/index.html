@@ -82,64 +82,78 @@
 
       <div id="arenaBox" class="arena-vertical-screen relative flex flex-col overflow-hidden select-none pixel-box">
 
-        <!-- 1. TOP HEADER HUD (สไตล์ Retro Arcade HUD) -->
-        <div class="arena-top-hud">
-          <div class="flex items-center gap-2.5">
-            <div class="arena-logo-badge pixel-badge">⚔️</div>
-            <div>
-              <div class="arena-title font-['Chakra_Petch']">ARENA LIVE: BLAZE</div>
-              <div id="roundInfoText" class="arena-round-sub font-['Kanit']">รอบที่ 131 • เหลือ 0/0 คน</div>
-            </div>
-          </div>
-
-          <!-- Countdown Timer Box -->
-          <div class="timer-badge-box pixel-border">
-            <span class="timer-sub-label font-['Silkscreen']">ROUND TIME</span>
-            <span id="arenaTimerVal" class="timer-num font-['Press_Start_2P']">01:15</span>
-          </div>
-        </div>
-
-        <!-- 2. PINK JOIN BANNER (Arcade Marquee Style) -->
-        <div class="join-banner-bar pixel-marquee">
-          <div class="join-banner-content">
-            <span class="join-dot"></span>
-            <span>💬 พิมพ์ <b>JOIN</b> หรือ <b>เข้า</b> เพื่อลงสู่ศึกดาดฟ้าไซเบอร์!</span>
-          </div>
-        </div>
-
-        <!-- 3. GIFT & REWARD CHEAT-SHEET GUIDE (Pixel Arcade Badges) -->
-        <div class="reward-guide-panel">
-          <div class="reward-tiers-grid">
-            <div class="tier-item pixel-card"><span class="icon">🩸</span> บัฟ <span class="cost">1-4💎</span></div>
-            <div class="tier-item pixel-card"><span class="icon">⚔️</span> อาวุธ <span class="cost">5-29💎</span></div>
-            <div class="tier-item pixel-card"><span class="icon">🛡️</span> โล่บล็อก <span class="cost">30-99💎</span></div>
-            <div class="tier-item pixel-card"><span class="icon">⚡</span> บอลพลัง <span class="cost">100-299💎</span></div>
-            <div class="tier-item pixel-card"><span class="icon">🚀</span> อัลติ <span class="cost">300-999💎</span></div>
-            <div class="tier-item pixel-card"><span class="icon">👹</span> ร่างยักษ์ <span class="cost">1000+💎</span></div>
-          </div>
-          <div class="reward-sub-actions">
-            ❤️ ไลก์ 30 = <b>+พลัง</b> | ➕ ติดตาม = <b>โล่พลังงาน</b> | 🔗 แชร์ = <b>วิ่งไว</b> | 💀 <b>โดน K.O. ส่งของขวัญ = ชุบชีวิต!</b>
-          </div>
-        </div>
-
-        <!-- 4. LEADERBOARD CARD (Top-Right inside stream arena) -->
-        <div class="champion-hud-card pixel-hud">
-          <div class="champ-head font-['Chakra_Petch']">🏆 แชมเปียน</div>
-          <div id="champList" class="champ-list">
-            <!-- Rendered via JS -->
-          </div>
-        </div>
-
-        <!-- 5. PIXEL ART TEMPLE FAIR BACKGROUND & RETRO FIGHTER CANVAS -->
+        <!-- 0. FULL-BLEED CANVAS VIEWPORT (Spans 100% of 9:16 mobile stream in background) -->
         <div class="arena-ring-viewport">
-          <!-- Pixel Background Canvas (Dithered night sky, pixel moon, pixel stupa, pixel ferris wheel) -->
+          <!-- Pixel Background Canvas (Cyber City, Moon, Searchlights, Hovercars, Rooftop) -->
           <canvas id="bgCanvas" class="bg-stage-canvas"></canvas>
 
-          <!-- Main Fighters Physics & Combat Canvas (Fighter: Blaze sprite sheet animations) -->
+          <!-- Main Fighters Physics & Combat Canvas (Fighter: Blaze 16-Bit Sprites) -->
           <canvas id="arenaCanvas" class="combat-canvas"></canvas>
 
           <!-- CRT Scanline Effect (Retro Arcade Touch) -->
           <div class="crt-scanlines pointer-events-none"></div>
+        </div>
+
+        <!-- TIKTOK LIVE SAFE ZONE HUD CONTAINER (Top 11% clear, Bottom 32% clear, Sides 5% clear) -->
+        <div class="tiktok-safe-zone-hud">
+          <!-- 1. TOP HEADER HUD (สไตล์ Retro Arcade HUD) -->
+          <div class="arena-top-hud">
+            <div class="flex items-center gap-2.5">
+              <div class="arena-logo-badge pixel-badge">⚔️</div>
+              <div>
+                <div class="arena-title font-['Chakra_Petch']">ARENA LIVE: BLAZE</div>
+                <div id="roundInfoText" class="arena-round-sub font-['Kanit']">รอบที่ 131 • เหลือ 0/0 คน</div>
+              </div>
+            </div>
+
+            <!-- Countdown Timer Box -->
+            <div class="timer-badge-box pixel-border">
+              <span class="timer-sub-label font-['Silkscreen']">ROUND TIME</span>
+              <span id="arenaTimerVal" class="timer-num font-['Press_Start_2P']">01:15</span>
+            </div>
+          </div>
+
+          <!-- 2. PINK JOIN BANNER (Arcade Marquee Style) -->
+          <div class="join-banner-bar pixel-marquee">
+            <div class="join-banner-content">
+              <span class="join-dot"></span>
+              <span>💬 พิมพ์ <b>JOIN</b> หรือ <b>เข้า</b> เพื่อลงสู่ศึกดาดฟ้าไซเบอร์!</span>
+            </div>
+          </div>
+
+          <!-- 3. GIFT & REWARD CHEAT-SHEET GUIDE (Pixel Arcade Badges) -->
+          <div class="reward-guide-panel">
+            <div class="reward-tiers-grid">
+              <div class="tier-item pixel-card"><span class="icon">🩸</span> บัฟ <span class="cost">1-4💎</span></div>
+              <div class="tier-item pixel-card"><span class="icon">⚔️</span> อาวุธ <span class="cost">5-29💎</span></div>
+              <div class="tier-item pixel-card"><span class="icon">🛡️</span> โล่บล็อก <span class="cost">30-99💎</span></div>
+              <div class="tier-item pixel-card"><span class="icon">⚡</span> บอลพลัง <span class="cost">100-299💎</span></div>
+              <div class="tier-item pixel-card"><span class="icon">🚀</span> อัลติ <span class="cost">300-999💎</span></div>
+              <div class="tier-item pixel-card"><span class="icon">👹</span> ร่างยักษ์ <span class="cost">1000+💎</span></div>
+            </div>
+            <div class="reward-sub-actions">
+              ❤️ ไลก์ 30 = <b>+พลัง</b> | ➕ ติดตาม = <b>โล่พลังงาน</b> | 🔗 แชร์ = <b>วิ่งไว</b> | 💀 <b>โดน K.O. ส่งของขวัญ = ชุบชีวิต!</b>
+            </div>
+          </div>
+
+          <!-- 4. LEADERBOARD CARD (Top-Right inside stream arena) -->
+          <div class="champion-hud-card pixel-hud">
+            <div class="champ-head font-['Chakra_Petch']">🏆 แชมเปียน</div>
+            <div id="champList" class="champ-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Safe Zone Visual Guide Overlay (Optional toggle for OBS setup) -->
+        <div id="safeZoneGuide" class="safe-zone-guide hidden pointer-events-none">
+          <div class="safe-guide-top font-['Kanit']">⚠️ TOP AREA (เว้น 11% / 220px: โปรไฟล์ / คนดู / ปุ่มปิด)</div>
+          <div class="safe-guide-sides">
+            <div class="safe-guide-left font-['Kanit']">เว้น 5%</div>
+            <div class="safe-guide-center font-['Chakra_Petch']">🎯 SAFE ZONE (โซนปลอดภัยกลางจอ: สังเวียนประลอง)</div>
+            <div class="safe-guide-right font-['Kanit']">เว้น 5%</div>
+          </div>
+          <div class="safe-guide-bottom font-['Kanit']">⚠️ BOTTOM AREA (เว้น 32% / 620px: แชทสด / ของขวัญ / ตะกร้าสินค้า)</div>
         </div>
 
         <!-- 6. ROUND WINNER VICTORY OVERLAY (Retro Arcade KO Finish) -->
@@ -294,13 +308,17 @@
           <span class="font-['Chakra_Petch'] uppercase tracking-wider">อัลติเมท! ปล่อยพลังกวาดล้าง</span>
         </button>
 
-        <!-- Round Management -->
+        <!-- Round Management & Safe Zone Overlay Guide -->
         <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800">
           <button onclick="simReset()" class="py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition">
             🔄 เริ่มรอบใหม่
           </button>
           <button onclick="simForceWin()" class="py-1.5 px-2 rounded bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
             🏆 ตัดสินแชมป์
+          </button>
+          <button id="toggleSafeZoneBtn" class="col-span-2 py-1.5 px-2 rounded bg-indigo-950/50 hover:bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 text-[11px] font-bold transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-ruler-combined text-amber-400"></i>
+            <span id="toggleSafeZoneText">👁️ เปิด/ปิด เส้นไกด์ TikTok Safe Zone</span>
           </button>
         </div>
       </div>

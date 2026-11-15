@@ -218,12 +218,12 @@ function resizeCanvases() {
 window.addEventListener('resize', resizeCanvases);
 resizeCanvases();
 
-// Rooftop Arena Combat Boundary (Positioned on the wet rooftop floor)
+// Rooftop Arena Combat Boundary (Center Safe Zone: Top 11% & Bottom 33% Clear for TikTok Live)
 function getRing() {
   const cx = viewW / 2;
-  const cy = viewH * 0.72; // Centered on the open concrete rooftop
-  const rx = viewW * 0.43; // Width
-  const ry = viewH * 0.18; // 2.5D perspective height
+  const cy = viewH * 0.49; // Centered vertically in safe zone
+  const rx = viewW * 0.39; // Leaves >10% clearance on left & right (>5% required)
+  const ry = viewH * 0.14; // Height: bottom edge at 63% (leaves 37% / >650px clear at bottom)
   return { cx, cy, rx, ry };
 }
 
@@ -893,9 +893,10 @@ function drawCyberpunkBackground() {
   });
 
   // 6. Animated Neon Signs (ป้ายไฟนีออนกะพริบ)
-  // Caution Neon Sign on the Rooftop Ledge
-  const cautionX = w * 0.26;
-  const cautionY = h * 0.66;
+  const ring = getRing();
+  // Caution Neon Sign positioned at the ring's left edge
+  const cautionX = ring.cx - ring.rx * 0.95;
+  const cautionY = ring.cy;
   const cautionPulse = 0.7 + 0.3 * Math.sin(time * 6);
   bgCtx.save();
   bgCtx.strokeStyle = `rgba(251, 191, 36, ${cautionPulse})`;
@@ -918,8 +919,8 @@ function drawCyberpunkBackground() {
 
   // 7. Animated Barrels with Fire (ไฟลุกโชนในถังน้ำมัน ขยับลุกเป็นเปลว)
   const barrelPositions = [
-    { x: w * 0.94, y: h * 0.81, size: 1.2 }, // Right foreground barrel
-    { x: w * 0.70, y: h * 0.64, size: 0.9 }  // Mid-right barrel
+    { x: ring.cx + ring.rx * 1.05, y: ring.cy + ring.ry * 0.5, size: 1.0 }, // Right side of combat ring
+    { x: ring.cx - ring.rx * 1.05, y: ring.cy + ring.ry * 0.4, size: 0.9 }  // Left side of combat ring
   ];
 
   barrelPositions.forEach(b => {
@@ -981,8 +982,8 @@ function drawCyberpunkBackground() {
 
   // 8. Animated Steam & Smoke Venting from Pipes (ควันลอยพวยพุ่ง)
   const ventPositions = [
-    { x: w * 0.14, y: h * 0.86 }, // Sewer pipe on left
-    { x: w * 0.08, y: h * 0.68 }  // Pipe vent on wall
+    { x: w * 0.14, y: ring.cy + ring.ry * 0.8 }, // Left vent near ring bottom
+    { x: w * 0.08, y: ring.cy - ring.ry * 0.3 }  // Pipe vent on left wall
   ];
 
   ventPositions.forEach(v => {
@@ -1015,20 +1016,20 @@ function drawCyberpunkBackground() {
 
   // 9. Spectator Crowd Cheering & Bobbing (กองเชียร์ดาดฟ้าโยกตัวเชียร์)
   const crowdBob = Math.sin(time * 6) * 1.5;
+  const crowdY = ring.cy - ring.ry * 0.25;
   // Left crowd glow visors
   bgCtx.fillStyle = '#38bdf8';
-  bgCtx.fillRect(w * 0.08, h * 0.66 + crowdBob, 3, 1.5);
-  bgCtx.fillRect(w * 0.12, h * 0.65 - crowdBob, 3, 1.5);
-  bgCtx.fillRect(w * 0.16, h * 0.67 + crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.08, crowdY + crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.12, crowdY - 4 - crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.16, crowdY + 2 + crowdBob, 3, 1.5);
 
   // Right crowd glow visors
   bgCtx.fillStyle = '#4ade80';
-  bgCtx.fillRect(w * 0.84, h * 0.65 - crowdBob, 3, 1.5);
-  bgCtx.fillRect(w * 0.89, h * 0.66 + crowdBob, 3, 1.5);
-  bgCtx.fillRect(w * 0.93, h * 0.64 - crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.84, crowdY - crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.89, crowdY + 3 + crowdBob, 3, 1.5);
+  bgCtx.fillRect(w * 0.93, crowdY - 2 - crowdBob, 3, 1.5);
 
   // 10. High-Tech Holographic Laser Barrier Boundary (Safety Forcefield)
-  const ring = getRing();
   bgCtx.save();
   const pulse = 0.45 + 0.15 * Math.sin(time * 3);
   bgCtx.strokeStyle = `rgba(56, 189, 248, ${pulse})`;
@@ -1053,6 +1054,14 @@ function drawCyberpunkBackground() {
     });
   });
   bgCtx.restore();
+
+  // 11. Bottom TikTok Live Chat Scrim (Gradient to keep live stream chat legible over bottom 33%)
+  const chatScrim = bgCtx.createLinearGradient(0, h * 0.67, 0, h);
+  chatScrim.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  chatScrim.addColorStop(0.3, 'rgba(8, 12, 26, 0.45)');
+  chatScrim.addColorStop(1, 'rgba(8, 12, 26, 0.85)');
+  bgCtx.fillStyle = chatScrim;
+  bgCtx.fillRect(0, h * 0.67, w, h * 0.33);
 }
 
 // ========================================================
@@ -1518,4 +1527,13 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.innerText = text;
   return div.innerHTML;
+}
+
+// Toggle TikTok Live Safe Zone Overlay Guide (ไกด์จำลอง Safe Zone สำหรับสตรีมเมอร์)
+const toggleSafeZoneBtn = document.getElementById('toggleSafeZoneBtn');
+const safeZoneGuide = document.getElementById('safeZoneGuide');
+if (toggleSafeZoneBtn && safeZoneGuide) {
+  toggleSafeZoneBtn.addEventListener('click', () => {
+    safeZoneGuide.classList.toggle('hidden');
+  });
 }
