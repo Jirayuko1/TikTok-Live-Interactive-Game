@@ -47,14 +47,10 @@ const ROUND_TIME_LIMIT = 75; // 75 seconds per round
 
 let gameState = {
   status: 'FIGHTING', // 'WAITING', 'FIGHTING', 'ROUND_END'
-  roundNumber: 131,
+  roundNumber: 1,
   timeLeft: ROUND_TIME_LIMIT,
   fighters: {}, // key: username -> fighter data
-  leaderboard: [
-    { nickname: 'พี่มารวยขายประกัน', avatar: '/assets/default-avatar-red.svg', wins: 14, kills: 15 },
-    { nickname: 'กฤษดา ประเสริฐสังข์', avatar: '/assets/default-avatar-blue.svg', wins: 3, kills: 16 },
-    { nickname: 'KOJiji', avatar: '/assets/default-avatar-red.svg', wins: 2, kills: 12 }
-  ],
+  leaderboard: [],
   lastWinner: null,
   nextRoundCountdown: 5,
   tiktok: {

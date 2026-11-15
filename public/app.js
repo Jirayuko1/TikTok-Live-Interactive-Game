@@ -1614,7 +1614,7 @@ socket.on('chat_bubble', (data) => {
 
 function renderLeaderboard(board) {
   if (!board || board.length === 0) {
-    champList.innerHTML = '<div class="text-[9px] text-slate-500 text-center py-1">รอแชมเปียน...</div>';
+    champList.innerHTML = '<div class="text-[9.5px] text-amber-200/70 text-center py-2 font-[\'Kanit\'] font-medium">รอแชมเปียนรอบแรก...</div>';
     return;
   }
   champList.innerHTML = board.slice(0, 3).map((item, idx) => `
