@@ -60,7 +60,7 @@ let gameState = {
   tiktok: {
     username: '',
     isConnected: false,
-    viewerCount: 15,
+    viewerCount: 0,
     likeCount: 0,
     lastError: null
   },
@@ -173,12 +173,14 @@ async function connectToTikTok(targetUsername) {
     });
     tiktokLiveConnection.on('disconnected', () => {
       gameState.tiktok.isConnected = false;
+      gameState.tiktok.viewerCount = 0;
       broadcastState();
       logEvent('system', 'ตัดการเชื่อมต่อจาก TikTok Live');
     });
 
   } catch (err) {
     gameState.tiktok.isConnected = false;
+    gameState.tiktok.viewerCount = 0;
     gameState.tiktok.lastError = err.message;
     broadcastState();
   }
@@ -190,6 +192,7 @@ function disconnectTikTok() {
     tiktokLiveConnection = null;
   }
   gameState.tiktok.isConnected = false;
+  gameState.tiktok.viewerCount = 0;
   broadcastState();
   logEvent('system', 'หยุดการเชื่อมต่อ TikTok Live');
 }
