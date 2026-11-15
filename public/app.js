@@ -750,6 +750,298 @@ class ClientFighter {
 }
 
 // ========================================================
+// CYBER COMBAT ARENA STAGE (เวทีประลองไซเบอร์ลอยฟ้า 2.5D)
+// ========================================================
+function drawCyberStagePlatform(ctx, ring, time) {
+  const { cx, cy, rx, ry } = ring;
+  const depth = Math.max(18, Math.round(ry * 0.22)); // 3D platform thickness
+
+  ctx.save();
+
+  // 1. Under-Platform Ground Shadow & Ambient Occlusion (เงาทอดลงเบื้องล่าง)
+  const shadowGrad = ctx.createRadialGradient(cx, cy + ry + depth * 0.8, 10, cx, cy + ry + depth * 0.8, rx * 1.15);
+  shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.8)');
+  shadowGrad.addColorStop(0.55, 'rgba(2, 6, 23, 0.45)');
+  shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = shadowGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + ry + depth * 0.8, rx * 1.1, ry * 0.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 2. Heavy Industrial Support Struts & Suspension Links (เสาไฮดรอลิกยึดโครงสร้าง)
+  ctx.strokeStyle = 'rgba(30, 41, 59, 0.9)';
+  ctx.lineWidth = 3.5;
+  // Left angled steel gantry strut
+  ctx.beginPath();
+  ctx.moveTo(cx - rx * 0.72, cy + ry * 0.6 + depth);
+  ctx.lineTo(cx - rx * 1.15, cy + ry * 1.5 + depth * 2);
+  ctx.stroke();
+  // Right angled steel gantry strut
+  ctx.beginPath();
+  ctx.moveTo(cx + rx * 0.72, cy + ry * 0.6 + depth);
+  ctx.lineTo(cx + rx * 1.15, cy + ry * 1.5 + depth * 2);
+  ctx.stroke();
+  // Center main hydraulic piston
+  ctx.strokeStyle = '#0f172a';
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + ry * 0.9 + depth);
+  ctx.lineTo(cx, cy + ry * 1.6 + depth * 2);
+  ctx.stroke();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.stroke(); // Glowing blue core
+
+  // 3. Anti-Gravity Repulsor / Ion Thrusters (ไอพ่นต้านแรงโน้มถ่วงลอยฟ้า)
+  const thrusters = [
+    { x: cx - rx * 0.55, y: cy + depth + ry * 0.75, scale: 0.85 },
+    { x: cx,             y: cy + depth + ry * 0.95, scale: 1.0 },
+    { x: cx + rx * 0.55, y: cy + depth + ry * 0.75, scale: 0.85 }
+  ];
+
+  thrusters.forEach((th, idx) => {
+    // Metal thruster nozzle housing
+    ctx.fillStyle = '#0f172a';
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(th.x - 7 * th.scale, th.y - 2, 14 * th.scale, 7 * th.scale);
+    ctx.strokeRect(th.x - 7 * th.scale, th.y - 2, 14 * th.scale, 7 * th.scale);
+
+    // Glowing cyan ion thruster plume
+    const flameFlicker = Math.sin(time * 20 + idx * 2.1) * 3;
+    const flameH = (24 + flameFlicker) * th.scale;
+    const flameGrad = ctx.createLinearGradient(th.x, th.y + 4, th.x, th.y + 4 + flameH);
+    flameGrad.addColorStop(0, '#ffffff');
+    flameGrad.addColorStop(0.2, '#00f0ff');
+    flameGrad.addColorStop(0.7, 'rgba(56, 189, 248, 0.4)');
+    flameGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+
+    ctx.fillStyle = flameGrad;
+    ctx.beginPath();
+    ctx.moveTo(th.x - 5 * th.scale, th.y + 4);
+    ctx.lineTo(th.x + 5 * th.scale, th.y + 4);
+    ctx.lineTo(th.x, th.y + 4 + flameH);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // 4. Platform 3D Rim / Side Wall Extrusion (ความหนาฐานเวที 3 มิติ)
+  // Draw the curved front rim between cy and cy + depth
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI, false); // top front arc
+  ctx.lineTo(cx - rx, cy + depth);
+  ctx.ellipse(cx, cy + depth, rx, ry, 0, Math.PI, 0, true); // bottom front arc (counterclockwise back to right)
+  ctx.closePath();
+
+  // Dark titanium rim gradient
+  const rimGrad = ctx.createLinearGradient(0, cy, 0, cy + ry + depth);
+  rimGrad.addColorStop(0, '#1e293b');
+  rimGrad.addColorStop(0.35, '#0f172a');
+  rimGrad.addColorStop(0.85, '#090d16');
+  rimGrad.addColorStop(1, '#030712');
+  ctx.fillStyle = rimGrad;
+  ctx.fill();
+
+  // 4.1 Cyber Industrial Hazard Stripes on Rim (แถบลายบั้งสีส้ม/ดำ สไตล์ Cyberpunk)
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI, false);
+  ctx.lineTo(cx - rx, cy + depth);
+  ctx.ellipse(cx, cy + depth, rx, ry, 0, Math.PI, 0, true);
+  ctx.closePath();
+  ctx.clip();
+
+  const stripeWidth = 14;
+  const numStripes = Math.ceil((rx * 2) / stripeWidth) + 4;
+  ctx.lineWidth = 6;
+  for (let i = -2; i < numStripes; i++) {
+    const sx = cx - rx + i * stripeWidth;
+    ctx.strokeStyle = (i % 2 === 0) ? 'rgba(245, 158, 11, 0.45)' : 'rgba(15, 23, 42, 0.65)';
+    ctx.beginPath();
+    ctx.moveTo(sx, cy);
+    ctx.lineTo(sx - 16, cy + ry + depth);
+    ctx.stroke();
+  }
+
+  // Metallic rim panel vertical division seams
+  [-0.7, -0.35, 0, 0.35, 0.7].forEach(ratio => {
+    const px = cx + rx * ratio;
+    const dy = ry * Math.sqrt(Math.max(0, 1 - ratio * ratio));
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px, cy + dy);
+    ctx.lineTo(px, cy + depth + dy);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  // 4.2 Glowing Neon Underglow on Bottom Rim
+  ctx.save();
+  ctx.strokeStyle = '#00f0ff';
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 10;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + depth, rx, ry, 0, 0, Math.PI, false);
+  ctx.stroke();
+  ctx.restore();
+
+  // 5. Solid Stage Surface Floor (พื้นเวทีสังเวียนประลองด้านบน)
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+
+  const floorGrad = ctx.createRadialGradient(cx, cy, 15, cx, cy, rx);
+  floorGrad.addColorStop(0, '#151f38'); // Center cyan-tinted metal
+  floorGrad.addColorStop(0.55, '#0c1222'); // Mid titanium steel
+  floorGrad.addColorStop(0.9, '#070b14'); // Outer dark perimeter
+  floorGrad.addColorStop(1, '#05070f');
+  ctx.fillStyle = floorGrad;
+  ctx.fill();
+
+  // Clip floor textures to top ellipse
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 5.1 Cyber Isometric Floor Grid Lines (ลายตารางกระเบื้องไฮเทค)
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+  ctx.lineWidth = 1;
+  const gridSpacingY = 11;
+  for (let gy = cy - ry + 4; gy < cy + ry; gy += gridSpacingY) {
+    ctx.beginPath();
+    ctx.moveTo(cx - rx, gy);
+    ctx.lineTo(cx + rx, gy);
+    ctx.stroke();
+  }
+
+  // Radial combat sector lines (แบ่ง 8 แฉกสังเวียน)
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry);
+    ctx.stroke();
+  }
+
+  // 5.2 Concentric Combat Ring Markings (วงแหวนสังเวียนไฟนีออน)
+  // Outer dashed warning circle
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.55)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 5]);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 0.76, ry * 0.76, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Inner duel circle (สังเวียนใจกลาง)
+  const innerPulse = 0.5 + 0.25 * Math.sin(time * 3);
+  ctx.strokeStyle = `rgba(0, 240, 255, ${innerPulse})`;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 0.44, ry * 0.44, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Center Emblem: Glowing Cyber Crosshair & Swords
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 0.18, ry * 0.18, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(254, 240, 138, 0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy);
+  ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6);
+  ctx.stroke();
+
+  // Center Typography "⚡ BLAZE ARENA ⚡"
+  ctx.font = 'bold 8px "Chakra Petch", sans-serif';
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.75)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⚡ BLAZE ARENA ⚡', cx, cy - ry * 0.18);
+
+  ctx.restore(); // end floor clip
+
+  // 6. Perimeter Glowing Neon Edge Rail (ขอบไฟนีออนรอบสังเวียน)
+  ctx.save();
+  ctx.strokeStyle = '#00f0ff';
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 12;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  // 7. Holographic Forcefield Fence & Energy Pylons (เสาม่านพลังงาน 8 เสา)
+  const numPylons = 8;
+  const pylonHeight = 14;
+
+  // Translucent holographic energy curtain wall
+  ctx.save();
+  const wallAlpha = 0.12 + 0.06 * Math.sin(time * 4);
+  const wallGrad = ctx.createLinearGradient(0, cy - pylonHeight, 0, cy + ry);
+  wallGrad.addColorStop(0, `rgba(0, 240, 255, ${wallAlpha})`);
+  wallGrad.addColorStop(1, 'rgba(0, 240, 255, 0.02)');
+  ctx.fillStyle = wallGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - pylonHeight * 0.5, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  for (let i = 0; i < numPylons; i++) {
+    const ang = i * (Math.PI * 2 / numPylons);
+    const px = cx + Math.cos(ang) * rx;
+    const py = cy + Math.sin(ang) * ry;
+
+    // Metal Mount Base
+    ctx.fillStyle = '#0f172a';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1;
+    ctx.fillRect(px - 3, py - 3, 6, 6);
+    ctx.strokeRect(px - 3, py - 3, 6, 6);
+
+    // Glowing Neon Pylon Rod
+    ctx.save();
+    ctx.strokeStyle = (i % 2 === 0) ? '#00f0ff' : '#f59e0b';
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px, py - pylonHeight);
+    ctx.stroke();
+
+    // Pylon Crystal Emitter Tip
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(px - 1.5, py - pylonHeight - 2, 3, 3);
+    ctx.restore();
+  }
+
+  // Connecting laser beam wire between top of pylons
+  ctx.save();
+  const beamPulse = 0.5 + 0.3 * Math.sin(time * 5);
+  ctx.strokeStyle = `rgba(56, 189, 248, ${beamPulse})`;
+  ctx.shadowColor = '#00f0ff';
+  ctx.shadowBlur = 6;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - pylonHeight, rx, ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// ========================================================
 // CYBERPUNK ROOFTOP BACKGROUND & ANIMATED SCENE OBJECTS
 // ========================================================
 function drawCyberpunkBackground() {
@@ -892,8 +1184,11 @@ function drawCyberpunkBackground() {
     bgCtx.restore();
   });
 
-  // 6. Animated Neon Signs (ป้ายไฟนีออนกะพริบ)
+  // 6. High-Tech 2.5D Cyber Arena Combat Platform (เวทีประลองไซเบอร์ 3D ลอยฟ้า)
   const ring = getRing();
+  drawCyberStagePlatform(bgCtx, ring, time);
+
+  // 7. Animated Neon Signs (ป้ายไฟนีออนกะพริบ)
   // Caution Neon Sign positioned at the ring's left edge
   const cautionX = ring.cx - ring.rx * 0.95;
   const cautionY = ring.cy;
@@ -1029,33 +1324,7 @@ function drawCyberpunkBackground() {
   bgCtx.fillRect(w * 0.89, crowdY + 3 + crowdBob, 3, 1.5);
   bgCtx.fillRect(w * 0.93, crowdY - 2 - crowdBob, 3, 1.5);
 
-  // 10. High-Tech Holographic Laser Barrier Boundary (Safety Forcefield)
-  bgCtx.save();
-  const pulse = 0.45 + 0.15 * Math.sin(time * 3);
-  bgCtx.strokeStyle = `rgba(56, 189, 248, ${pulse})`;
-  bgCtx.shadowColor = '#00f0ff';
-  bgCtx.shadowBlur = 8;
-  bgCtx.lineWidth = 2;
-  bgCtx.setLineDash([8, 6]);
-  bgCtx.beginPath();
-  bgCtx.ellipse(ring.cx, ring.cy, ring.rx, ring.ry, 0, 0, Math.PI * 2);
-  bgCtx.stroke();
-  bgCtx.setLineDash([]);
-
-  // Corner holographic laser emitters
-  [-1, 1].forEach(sideX => {
-    [-1, 1].forEach(sideY => {
-      const px = ring.cx + sideX * (ring.rx * 0.85);
-      const py = ring.cy + sideY * (ring.ry * 0.85);
-      bgCtx.fillStyle = '#00f0ff';
-      bgCtx.fillRect(px - 2.5, py - 2.5, 5, 5);
-      bgCtx.fillStyle = '#ffffff';
-      bgCtx.fillRect(px - 1, py - 1, 2, 2);
-    });
-  });
-  bgCtx.restore();
-
-  // 11. Bottom TikTok Live Chat Scrim (Gradient to keep live stream chat legible over bottom 33%)
+  // 10. Bottom TikTok Live Chat Scrim (Gradient to keep live stream chat legible over bottom 33%)
   const chatScrim = bgCtx.createLinearGradient(0, h * 0.67, 0, h);
   chatScrim.addColorStop(0, 'rgba(0, 0, 0, 0)');
   chatScrim.addColorStop(0.3, 'rgba(8, 12, 26, 0.45)');
