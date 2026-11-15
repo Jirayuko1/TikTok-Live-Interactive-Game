@@ -1312,6 +1312,12 @@ sideConnectBtn.addEventListener('click', () => {
   const user = sideUsernameInput.value.trim();
   if (user) socket.emit('tiktok_connect', user);
 });
+sideUsernameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const user = sideUsernameInput.value.trim();
+    if (user) socket.emit('tiktok_connect', user);
+  }
+});
 sideDisconnectBtn.addEventListener('click', () => socket.emit('tiktok_disconnect'));
 
 toggleAdminBtn.addEventListener('click', () => {

@@ -64,7 +64,36 @@ let gameState = {
 // ==========================================
 let tiktokLiveConnection = null;
 
-function connectToTikTok(targetUsername) {
+// Helper: Extract username from raw string or any TikTok URL format
+async function resolveTikTokUsername(input) {
+  if (!input || typeof input !== 'string') return '';
+  let str = input.trim();
+
+  // If it's a mobile short link like vt.tiktok.com/ZS... or tiktok.com/t/...
+  if (/vt\.tiktok\.com|tiktok\.com\/t\//i.test(str)) {
+    try {
+      if (!str.startsWith('http')) str = 'https://' + str;
+      const res = await fetch(str, { method: 'GET', redirect: 'follow' });
+      str = res.url;
+    } catch (e) {
+      console.error('Shortlink resolution error:', e.message);
+    }
+  }
+
+  // 1. Check for @username in URL (e.g. tiktok.com/@somchai_live/live)
+  const match = str.match(/@([a-zA-Z0-9_.-]+)/);
+  if (match && match[1]) return match[1];
+
+  // 2. Check for tiktok.com/live/username or path without @
+  str = str.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+  const urlMatch = str.match(/tiktok\.com\/(?:live\/)?([a-zA-Z0-9_.-]+)/i);
+  if (urlMatch && urlMatch[1]) return urlMatch[1].replace(/^@/, '');
+
+  // 3. Fallback: clean raw username
+  return str.replace(/^@/, '').split('/')[0].split('?')[0].trim();
+}
+
+async function connectToTikTok(targetUsername) {
   if (!WebcastPushConnection) {
     try {
       WebcastPushConnection = require('tiktok-live-connector/legacy').WebcastPushConnection;
@@ -80,8 +109,12 @@ function connectToTikTok(targetUsername) {
     }
   }
 
-  const cleanUsername = targetUsername.replace(/^@/, '').trim();
-  if (!cleanUsername) return;
+  const cleanUsername = await resolveTikTokUsername(targetUsername);
+  if (!cleanUsername) {
+    gameState.tiktok.lastError = 'กรุณาใส่ชื่อช่องหรือลิงก์ TikTok ให้ถูกต้อง';
+    broadcastState();
+    return;
+  }
 
   if (tiktokLiveConnection) {
     try { tiktokLiveConnection.disconnect(); } catch (e) {}
