@@ -1252,7 +1252,18 @@ function renderSidebar(state) {
     tiktokPill.className = "px-2 py-0.2 rounded bg-rose-950 border border-rose-800 text-rose-300 font-semibold flex items-center gap-1.5 inline-flex";
     tiktokPillText.innerText = "ออฟไลน์";
     sideConnectBtn.classList.remove('hidden');
+    sideConnectBtn.innerText = "เชื่อม";
     sideDisconnectBtn.classList.add('hidden');
+  }
+
+  const sideConnError = document.getElementById('sideConnError');
+  if (sideConnError) {
+    if (state.tiktok.lastError && !state.tiktok.isConnected) {
+      sideConnError.innerText = `⚠️ ${state.tiktok.lastError}`;
+      sideConnError.classList.remove('hidden');
+    } else {
+      sideConnError.classList.add('hidden');
+    }
   }
 
   sideViewerCount.innerText = Number(state.tiktok.viewerCount || 0).toLocaleString();
@@ -1310,12 +1321,18 @@ sideClearLogBtn.addEventListener('click', () => {
 
 sideConnectBtn.addEventListener('click', () => {
   const user = sideUsernameInput.value.trim();
-  if (user) socket.emit('tiktok_connect', user);
+  if (user) {
+    sideConnectBtn.innerText = 'กำลังเชื่อม...';
+    socket.emit('tiktok_connect', user);
+  }
 });
 sideUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     const user = sideUsernameInput.value.trim();
-    if (user) socket.emit('tiktok_connect', user);
+    if (user) {
+      sideConnectBtn.innerText = 'กำลังเชื่อม...';
+      socket.emit('tiktok_connect', user);
+    }
   }
 });
 sideDisconnectBtn.addEventListener('click', () => socket.emit('tiktok_disconnect'));

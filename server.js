@@ -4,6 +4,14 @@ const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+// Process-level resilience guards to prevent stream drop crashes
+process.on('uncaughtException', err => {
+  console.error('[UNCAUGHT EXCEPTION GUARD]:', err.message);
+});
+process.on('unhandledRejection', reason => {
+  console.error('[UNHANDLED REJECTION GUARD]:', reason);
+});
+
 let WebcastPushConnection = null;
 try {
   WebcastPushConnection = require('tiktok-live-connector/legacy').WebcastPushConnection;
@@ -129,7 +137,6 @@ async function connectToTikTok(targetUsername) {
   try {
     tiktokLiveConnection = new WebcastPushConnection(cleanUsername, {
       processInitialData: false,
-      enableExtendedGiftInfo: true,
       enableWebsocketUpgrade: true,
       clientParams: { app_language: 'th-TH', device_platform: 'web' }
     });
@@ -139,7 +146,7 @@ async function connectToTikTok(targetUsername) {
         gameState.tiktok.isConnected = true;
         gameState.tiktok.lastError = null;
         broadcastState();
-        logEvent('system', `เชื่อมต่อห้องสด @${cleanUsername} สำเร็จ!`);
+        logEvent('system', `เชื่อมต่อห้องสด @${cleanUsername} สำเร็จ! (ห้อง ${state.roomId || ''})`);
       })
       .catch(err => {
         gameState.tiktok.isConnected = false;
@@ -154,10 +161,15 @@ async function connectToTikTok(targetUsername) {
     tiktokLiveConnection.on('follow', data => handleFollow(data));
     tiktokLiveConnection.on('share', data => handleShare(data));
     tiktokLiveConnection.on('roomUser', data => {
-      if (data && typeof data.viewerCount === 'number') {
-        gameState.tiktok.viewerCount = data.viewerCount;
-        io.emit('viewer_count', data.viewerCount);
+      const viewers = (data && (typeof data.totalUser === 'number' ? data.totalUser : data.viewerCount)) || data.total || 0;
+      if (viewers > 0) {
+        gameState.tiktok.viewerCount = viewers;
+        io.emit('viewer_count', viewers);
+        broadcastState();
       }
+    });
+    tiktokLiveConnection.on('error', err => {
+      console.warn('TikTok Live connection error:', err && err.message ? err.message : err);
     });
     tiktokLiveConnection.on('disconnected', () => {
       gameState.tiktok.isConnected = false;
@@ -265,7 +277,7 @@ function extractTikTokUser(data) {
 // 1. Handle Chat ("เข้า" หรือ "JOIN")
 function handleChat(data) {
   const { username, nickname, avatar } = extractTikTokUser(data);
-  const comment = (data.comment || '').trim();
+  const comment = (data.content || data.comment || '').trim();
   const commentLower = comment.toLowerCase();
 
   if (commentLower === 'เข้า' || commentLower === 'join' || commentLower === 'ลงสนาม' || commentLower === 'สู้' || commentLower === '1') {
@@ -298,9 +310,9 @@ function handleLike(data) {
 // 3. Handle Gifts (หัวใจหลักของระบบมวยวัด)
 function handleGift(data) {
   const { username, nickname, avatar } = extractTikTokUser(data);
-  const giftName = data.giftName || (data.extendedGiftInfo && data.extendedGiftInfo.name) || 'Gift';
-  const rawDiamonds = data.diamondCount || (data.extendedGiftInfo && data.extendedGiftInfo.diamond_count) || 1;
-  const diamondCount = rawDiamonds * (data.repeatCount || 1);
+  const giftName = data.giftName || (data.gift && data.gift.giftName) || (data.extendedGiftInfo && data.extendedGiftInfo.name) || data.describe || 'Gift';
+  const rawDiamonds = data.diamondCount || (data.extendedGiftInfo && data.extendedGiftInfo.diamond_count) || (data.gift && data.gift.diamond_count) || data.comboCount || 1;
+  const diamondCount = rawDiamonds * (data.repeatCount || (data.gift && data.gift.repeat_count) || 1);
 
   let fighter = gameState.fighters[username];
 
