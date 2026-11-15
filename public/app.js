@@ -319,6 +319,16 @@ function spawnPixelDamage(x, y, amount) {
   });
 }
 
+function spawnFloatingText(x, y, text, color = '#38bdf8') {
+  damageFloats.push({
+    x: x + (Math.random() - 0.5) * 10,
+    y: y - 30,
+    text,
+    life: 1.2,
+    color
+  });
+}
+
 function spawnPixelGhost(x, y, palette) {
   ghosts.push({
     x, y,
@@ -687,11 +697,28 @@ class ClientFighter {
       ctx.scale(-1, 1);
     }
 
-    // Crown for Kill Leader
-    if (this.kills >= 2) {
-      ctx.font = '16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('👑', 0, -82);
+    // Status Badges & Crown for Kill Leader
+    ctx.textAlign = 'center';
+    if (this.isBoss) {
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('👹 BOSS', 0, -84);
+    } else {
+      if (this.kills >= 2) {
+        ctx.font = '16px sans-serif';
+        ctx.fillText('👑', 0, -84);
+      }
+      if (this.weapon === 'sword') {
+        ctx.font = '12px sans-serif';
+        ctx.fillText('⚔️', 18, -72);
+      }
+      if (this.hasShield) {
+        ctx.font = '12px sans-serif';
+        ctx.fillText('🛡️', -18, -72);
+      }
+      if (this.speedBoost > 1.2) {
+        ctx.font = '12px sans-serif';
+        ctx.fillText('⚡', 0, -72);
+      }
     }
 
     // Retro 16-Bit Arcade HP Bar
@@ -1182,8 +1209,92 @@ socket.on('fighter_shockwave', (payload) => {
     fighter.state = 'special';
     fighter.frameIndex = 0;
     fighter.animTicks = 0;
+    spawnFloatingText(fighter.x, fighter.y, '💥 SHOCKWAVE!', '#f97316');
+
+    // Push all nearby enemies away radially with damage
+    clientFighters.forEach(other => {
+      if (other.id !== fighter.id && other.alive) {
+        const d = Math.hypot(other.x - fighter.x, other.y - fighter.y);
+        if (d < 160) {
+          const angle = Math.atan2(other.y - fighter.y, other.x - fighter.x);
+          const pushForce = Math.max(8, 20 - (d / 12));
+          other.vx += Math.cos(angle) * pushForce;
+          other.vy += Math.sin(angle) * pushForce;
+          other.hp -= 20;
+          other.lastAttackerId = fighter.id;
+          other.state = 'hurt';
+          other.animTicks = 0;
+          spawnPixelHitSparks(other.x, other.y, true);
+          spawnPixelDamage(other.x, other.y, 20);
+        }
+      }
+    });
+    spawnPixelHitSparks(fighter.x, fighter.y, true);
   }
   sfx.playSpecial();
+});
+
+socket.on('fighter_heal', (payload) => {
+  const fighter = clientFighters.find(f => f.id === payload.id);
+  if (fighter) {
+    fighter.hp = payload.hp;
+    spawnFloatingText(fighter.x, fighter.y, '+HP ❤️', '#4ade80');
+  }
+});
+
+socket.on('fighter_buff', (payload) => {
+  const fighter = clientFighters.find(f => f.id === payload.id);
+  if (fighter) {
+    fighter.hp = payload.hp;
+    spawnFloatingText(fighter.x, fighter.y, 'BUFF! 🩸', '#fbbf24');
+    spawnPixelHitSparks(fighter.x, fighter.y, true);
+  }
+});
+
+socket.on('fighter_weapon', (payload) => {
+  const fighter = clientFighters.find(f => f.id === payload.id);
+  if (fighter) {
+    fighter.weapon = payload.weapon;
+    spawnFloatingText(fighter.x, fighter.y, '⚔️ KATANA!', '#38bdf8');
+    sfx.playPunch();
+  }
+});
+
+socket.on('fighter_boss', (payload) => {
+  const fighter = clientFighters.find(f => f.id === payload.id);
+  if (fighter) {
+    fighter.isBoss = true;
+    fighter.weapon = 'giant_glove';
+    fighter.maxHp += 300;
+    fighter.hp = fighter.maxHp;
+    spawnFloatingText(fighter.x, fighter.y, '👹 TITAN BOSS!', '#f43f5e');
+    sfx.playSpecial();
+    spawnPixelHitSparks(fighter.x, fighter.y, true);
+  }
+});
+
+socket.on('fighter_speed', (payload) => {
+  const fighter = clientFighters.find(f => f.id === payload.id);
+  if (fighter) {
+    fighter.speedBoost = payload.speed;
+    spawnFloatingText(fighter.x, fighter.y, '⚡ SPEED UP!', '#38bdf8');
+  }
+});
+
+socket.on('like_burst', (payload) => {
+  const ring = getRing();
+  const count = Math.min(payload.count || 1, 6);
+  for (let i = 0; i < count; i++) {
+    hitParticles.push({
+      x: ring.cx + (Math.random() - 0.5) * ring.rx * 0.9,
+      y: ring.cy + (Math.random() - 0.5) * ring.ry * 0.9,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: -Math.random() * 2 - 1,
+      size: 3,
+      life: 0.8,
+      color: '#f43f5e'
+    });
+  }
 });
 
 socket.on('fighter_ultimate', (payload) => {
@@ -1205,6 +1316,7 @@ socket.on('fighter_shield', (payload) => {
     fighter.hasShield = true;
     fighter.state = 'block';
     fighter.animTicks = 0;
+    spawnFloatingText(fighter.x, fighter.y, '🛡️ SHIELD!', '#38bdf8');
     sfx.playBlock();
   }
 });
@@ -1398,6 +1510,7 @@ window.simWeapon = function() { socket.emit('sim_gift', { giftName: 'Sword', dia
 window.simShield = function() { socket.emit('sim_gift', { giftName: 'Shield', diamonds: 50 }); };
 window.simSpecial = function() { socket.emit('sim_gift', { giftName: 'SpecialBeam', diamonds: 150 }); };
 window.simUltimate = function() { socket.emit('sim_gift', { giftName: 'UltimateBlast', diamonds: 500 }); };
+window.simBoss = function() { socket.emit('sim_gift', { giftName: 'TitanBoss', diamonds: 1000 }); };
 window.simReset = function() { socket.emit('sim_reset_round'); };
 window.simForceWin = function() { socket.emit('sim_force_win'); };
 
